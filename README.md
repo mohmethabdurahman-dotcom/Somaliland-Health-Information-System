@@ -1,6 +1,6 @@
-# Somaliland Health Information System
+# Blood Bank System
 
-Hospital Information System for Somaliland, including the **Blood Bank** module (Hargeisa Group Hospital).
+Hospital Information System blood bank for Somaliland (Hargeisa Group Hospital).
 
 ## What this system does
 
