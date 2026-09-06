@@ -1,0 +1,525 @@
+﻿@using KMU.HisOrder.MVC.Areas.HisOrder.ViewModels;
+@model IEnumerable<VKmuNonMedicine>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+
+    var inhospitalid = TempData["InhospitalId"];
+    var healthid = TempData["HealthId"];
+    var nmType = TempData["NmType"];
+    var Date = TempData["Date"];
+
+    var dt = Date.ToString();
+
+    /* " && c.ItemType != "Comor" && c.ItemType != "Hist" && c.ItemType != "Vital" && c.ItemType != "Hyper" && c.ItemType != "Asthma" && c.ItemType != "Heart" && c.ItemType != "Diabetes" */
+
+    var GroupbyList = Model.OrderBy(c => c.RefShowseq).GroupBy(x => new { x.GroupCode, x.RefName, x.ItemType });
+    IEnumerable<VKmuNonMedicine> OtherList = Model.Where(c => c.ItemType != "Biography" && c.ItemType != "Hist" && c.ItemType != "DC" && c.ItemType != "PSHX" && c.ItemType != "AH" && c.ItemType != "MSE" && c.ItemType != "GPE" && c.ItemType != "PI" && c.ItemType != "DEV");
+
+}
+
+<style>
+    .BiographyHeader {
+        background-color: #006d92;
+    }
+
+    .HistHeader {
+        background-color: #a881af;
+    }
+
+    .DCHeader {
+        background-color: #4d3c77;
+    }
+
+    .PIheader {
+        background-color: #DD6E0F;
+    }
+
+    .PSHXheader {
+        background-color: #5E716A;
+    }
+
+    .AHheader {
+        background-color: #0E86D4;
+    }
+
+    .MSEheader {
+        background-color: #bb3e03;
+    }
+
+    .GPEheader {
+        background-color: #008B8B;
+    }
+
+
+    .Biography-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #006d92;
+    }
+
+    .Hist-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #a881af;
+    }
+
+    .DC-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #4d3c77;
+    }
+
+    .PI-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #DD6E0F;
+    }
+
+    .PSHX-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #5E716A;
+    }
+
+    .AH-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #0E86D4;
+    }
+
+    .MSE-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #bb3e03;
+    }
+
+    .GPE-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #008B8B;
+    }
+
+
+    .Biography-body > .ncd_items {
+        border: 1px solid #006d92;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 10px;
+    }
+
+    .Hist-body > .ncd_items {
+        border: 1px solid #a881af;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 10px;
+    }
+
+    .DC-body > .ncd_items {
+        border: 1px solid #4d3c77;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 10px;
+    }
+
+    .PI-body > .ncd_items {
+        border: 1px solid #DD6E0F;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .PSHX-body > .ncd_items {
+        border: 1px solid #5E716A;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .AH-body > .ncd_items {
+        border: 1px solid #0E86D4;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 10px;
+    }
+
+    .MSE-body > .ncd_items {
+        border: 1px solid #bb3e03;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 10px;
+    }
+
+    .GPE-body > .ncd_items {
+        border: 1px solid #008B8B;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 10px;
+    }
+
+    .bgheader {
+        background-color: #D3D3D3;
+    }
+
+    .headerround {
+        border: 1px solid;
+        margin-right: 18px;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .textwrap {
+        white-space: nowrap;
+        max-width: 320px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .vitalInput {
+        margin-left: 20px;
+        width: 100px;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        border-bottom: 1px solid gray;
+    }
+
+</style>
+
+
+<p hidden id="inhospitalid">@inhospitalid</p>
+<p hidden id="healthid">@healthid</p>
+<p hidden id="NmType">@nmType</p>
+<p hidden id="Date">@dt</p>
+
+@if (OtherList.Count() <= 0)
+{
+    <div id="All" class="row TabMenuColumn">
+
+        <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+            @foreach (var item in GroupbyList)
+            {
+                switch (item.Key.ItemType)
+                {
+                    case "Biography":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader BiographyHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody Biography-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Biography" && c.ItemSpec != "Comment"))
+                                {
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-3">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" checked class="checkbox  ncd ncd_input" value="@Node.ItemId" /> @Node.ItemName</li> </ul>
+                                            <input class="form-control  Mental_inp" placeholder="@Node.PlanDes" />
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" checked value="@Node.ItemId" /> @Node.ItemName</li> </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "Hist":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader HistHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody Hist-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Hist" && c.ItemSpec != "Comment"))
+                                {
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-3">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                            <input class="form-control  Mental_inp" placeholder="@Node.PlanDes" />
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "DC":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader DCHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody DC-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "DC" && c.ItemSpec != "Comment"))
+                                {
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-3">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                            <input class="form-control  Mental_inp" placeholder="@Node.PlanDes" />
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "PSHX":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader PSHXHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody PSHX-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "PSHX" && c.ItemSpec != "Comment"))
+                                {
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-3">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                            <input class="form-control  Mental_inp" placeholder="@Node.PlanDes" />
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "AH":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader AHHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody AH-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "AH" && c.ItemSpec != "Comment"))
+                                {
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-3">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                            <input class="form-control  Mental_inp" placeholder="@Node.PlanDes" />
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "MSE":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader MSEHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody MSE-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "MSE" && c.ItemSpec != "Comment"))
+                                {
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-3">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                            <input class="form-control  Mental_inp" placeholder="@Node.PlanDes" />
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "GPE":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader GPEHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody GPE-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "GPE" && c.ItemSpec != "Comment"))
+                                {
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-3">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                            <input class="form-control  Mental_inp" placeholder="@Node.PlanDes" />
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "PI":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader PIHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody PI-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "PI" && c.ItemSpec != "Comment"))
+                                {
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-3">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                            <input class="form-control  Mental_inp" placeholder="@Node.PlanDes" />
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "DEV":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader HistHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody Hist-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "DEV" && c.ItemSpec != "Comment"))
+                                {
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-3">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                            <input class="form-control  Mental_inp" placeholder="@Node.PlanDes" />
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked /> @Node.ItemName</li> </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                }
+            }
+        </div>
+
+    </div>
+}
+else
+{
+    <!-- Supply & Other-->
+    @*<div id="SupplyMenu" class="row" style="width:100%;">
+        <div class="TabMenuColumn">
+            <table id="SupplyMenuTable" class="table table-striped jambo_table MenuTable">
+                <thead>
+                    <tr>
+                        <th>
+                            Code
+                        </th>
+                        <th>
+                            Name
+                        </th>
+                        <th style="display:none;"><!--ItempType--></th>
+                        <th style="display:none;"><!--Remark--></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in OtherList)
+                    {
+                        <tr class="SupplyMenutr" ondblclick="AddNonMedData(event,null,this)">
+                            <td class="ItemId">
+                                @Html.DisplayFor(modelItem => item.ItemId)
+                            </td>
+                            <td class="ItemName">
+                                @Html.DisplayFor(modelItem => item.ItemName)
+                            </td>
+                            <td class="ItemType" style="display:none;">
+                                @Html.DisplayFor(modelItem => item.ItemType)
+                            </td>
+                            <td class="Remark" style="display:none;">
+                                @Html.DisplayFor(modelItem => item.Remark)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>*@
+}
+
+<div class="row headerround shadow p-3 mb-2">
+    <button class="btn form-control btn-primary btn-sm col-md-12" onclick="ShowModal1('@Url.Action("Update","Mental", new {inhospitalId = inhospitalid, HealthId = healthid,NmType = nmType, date = dt},Context.Request.Scheme)','Mental Department - Update ')"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+</div>
+
+<script>
+    $("#ncd li .ncd_input").each(function (k, v) {
+        var value = $(v).find(".ncd:checked").val();
+        if (value != undefined) {
+            var ids = $(v).find(".ncd").val();
+            alert(ids);
+        });
+    });
+
+   @*  $(".delete").on("click", function () {
+        var inhospitalId = $("#inhospitalid").text();
+        var healthid = $("#healthid").text();
+        var NmType = $("#NmType").text();
+        var date = $("#Date").text();
+
+        $("#ncd li").each(function (k, v) {
+            var value = $(v).find(".ncd:checked").val();
+
+            if (value != undefined) {
+                var ids = $(v).find(".ncd").val();
+                $.ajax({
+                    type: "post",
+                    url: "/HisOrder/Ncd/deleteNcd",
+                    data: {
+                        inhospitalId: inhospitalId,
+                        healthId: healthid,
+                        NmType: NmType,
+                        items: ids
+                    },
+                    success: function (response) {
+                        $('#form-modal1').modal('hide');
+                        layer.msg('Deleted Successfully', { time: 2200, icon: 2 });
+
+                    }
+                })//ajax end
+            }
+            else {
+
+                layer.msg("Select at least one item");
+
+            }
+        })
+    }) *@
+</script>

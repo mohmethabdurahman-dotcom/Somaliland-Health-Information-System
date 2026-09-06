@@ -1,0 +1,74 @@
+﻿@model KMU.HisOrder.MVC.Areas.MedicalRecord.ViewModels.PatientListReturn
+@using KMU.HisOrder.MVC.Models;
+@using KMU.HisOrder.MVC.Areas.MedicalRecord.ViewModels;
+@using KMU.HisOrder.MVC.Extesion;
+@{
+
+}
+<table id="ptInfo_tb" class="table">
+    @if (Model.ReturnT != null && Model.ReturnT.isSuccess)
+    {
+        <thead>
+            <tr>
+                <th class="font-weight-bold text-dark py-0" style="width:100px">Patient ID</th>
+                <th class="font-weight-bold text-dark py-0" style="width:250px">Patient Name</th>
+                <th class="font-weight-bold text-dark py-0" style="width:150px">Mobile Phone</th>
+                <th class="font-weight-bold text-dark py-0" style="width:80px">Sex</th>
+                <th class="font-weight-bold text-dark py-0" style="width:180px">Date of Birth</th>
+                <th class="font-weight-bold text-dark py-0" style="width:450px">Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.ptList != null && Model.ptList.Any())
+            {
+                foreach (var pt in Model.ptList)
+                {
+                    var ptName = pt.FIRSTNAME + "&nbsp;" + pt.MIDNAME + "&nbsp;" + pt.LASTNAME;
+                    var Age = DateTime.Today.Year - pt.BIRTHDATE.Value.Year;
+                    <tr id="tr_@pt.PATIENTID" style="cursor:pointer" onclick="fn_SelectRow(this)" class="@if(pt.enumGender == EnumClass.EnumGender.Male){        @Html.Raw(" text-primary")}else{        @Html.Raw(" text-danger")}">
+                        <td class="font-weight-bold py-0">@Html.Raw(pt.PATIENTID.Trim())</td>
+                        <td class="font-weight-bold py-0" style="">@Html.Raw(ptName)</td>
+                        <td class="font-weight-bold py-0">@Html.Raw(pt.MOBILEPHONE)</td>
+                        @if (pt.enumGender != null)
+                        {
+                            <td class="font-weight-bold text-center py-0"> @pt.enumGender.Value.EnumToString()</td>
+                        }
+                        else
+                        {
+                            <td class="font-weight-bold text-center py-0" style=""></td>
+                        }
+                        <td class="font-weight-bold py-0">@Html.Raw(pt.BIRTHDATE.Value.ToString("dd/MM/yyyy")) (@Age.AgeFormat())</td>
+                        <td class="font-weight-bold py-0">@Html.Raw(pt.ADDRESS)</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="font-weight-bold text-danger" colspan="6">Not Patient Has Found!!</td>
+                </tr>
+            }
+
+        </tbody>
+    }
+    else
+    {
+        <tbody>
+            <tr>
+                <td class="text-center font-weight-bold text-danger" style="width:100%">Empty Param! </td>
+            </tr>
+        </tbody>
+    }
+</table>
+<script>
+    $(document).ready(function () {
+        $("#ptInfo_tb").DataTable({
+            scrollX: true,
+            lengthMenu: [3],
+            searching: false,
+            info: false,
+            dom: '<"top">rt<"clear">',
+        });
+        $(".dataTables_info").css("width", "100%");
+    });
+</script>

@@ -1,0 +1,79 @@
+﻿@model KMU.HisOrder.MVC.Models.KmuNonMedicine
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Details";
+}
+<link href="~/css/style.css" rel="stylesheet" />
+<h2>Details</h2>
+
+<div>
+    <h4>KmuNonMedicine</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ItemName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ItemName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ItemType)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ItemType)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ItemSpec)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ItemSpec)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.StartDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.StartDate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.EndDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.EndDate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CreateUser)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CreateUser)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CreateDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CreateDate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ModifyUser)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ModifyUser)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ModifyDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ModifyDate)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.ItemId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

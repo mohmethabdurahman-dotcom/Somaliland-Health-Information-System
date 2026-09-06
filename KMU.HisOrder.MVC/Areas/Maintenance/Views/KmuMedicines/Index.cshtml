@@ -1,0 +1,101 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.KmuMedicine>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    ViewData["Title"] = "Medicines";
+}
+
+<link href="~/css/style.css" rel="stylesheet" />
+
+<h4>&nbsp;&nbsp;&nbsp;Medicines</h4>
+<div class="row" style="margin:0px;">
+    <div class="col-md-9">
+        <div class="border-right" style=" display:inline-block; padding-right:35px; margin-right:30px;">
+            <label style="font-weight:bold; display:inline-block;">MedType</label>
+            <select id="MedTypeQuery" name="MedTypeQuery" class="form-control font-weight-bold" style="margin-left:10px; width:150px; display:inline-block;">
+                <option value="-">ALL</option>
+                <option value="1">Oral</option>
+                <option value="2">Injection</option>
+                <option value="3">External</option>
+            </select>
+        </div>
+        <label style="font-weight:bold; display:inline-block;">GenericName/BrandName</label>
+        <input type="text" id="MedName" name="MedName" class="form-control rounded" style="margin-left:10px; width:250px; display:inline-block;" />
+        <button type="button" id="MedSearchBtn" name="btn_Search" class="btn btn-primary" style="margin-left:10px; display:inline-block;" onclick="fn_MedSearch()">Search</button>
+    </div>
+    <div class="col-md-3" style="text-align:right;">
+        <a asp-action="Create" class="btn btn-info">Create New</a>
+    </div>
+</div>
+
+<div id="MedDetailContain" style="0px 10px">
+    @Html.Partial("Search", Model)
+</div>
+
+<span id="loading" style="display:none;"><h4>loading...</h4></span>
+
+@section scripts{
+    <script type="text/javascript">
+        function fn_MedSearch() {
+            $('#MedDetailContain').empty().html($('#loading').html());
+
+            let postData = {
+                MedTypeQuery: $('#MedTypeQuery').val(),
+                MedName: $('#MedName').val()
+            };
+
+            $.post('@Url.Action("Search", "KmuMedicines")', postData, function (html) {
+                $('#MedDetailContain').html(html)
+              
+                $('#MedSearchTable').DataTable({
+                    "searching": false,
+                    "ordering": false,
+                    "lengthChange": false,
+                });
+            });
+        }
+
+        function fn_Status(inMedId) {
+            var checked = $('input[name="' + inMedId + '"]').is(':checked')
+
+            let postData = {
+                inMedId: inMedId
+            };
+            $.post('@Url.Action("UpdateStatus", "KmuMedicines")', postData, null);
+        }
+
+        $(document).ready(function () {
+            $('#MedSearchTable').DataTable({
+                "searching": false,
+                "ordering": false,
+                "lengthChange": false,
+            });
+
+            $("#MedName").keypress(function (e) {
+                var key = window.event ? e.keyCode : e.which;
+                if (key == 13) { // Enter
+                    fn_MedSearch();
+                }
+            });
+        })
+    </script>
+
+}
+
+
+    @*<style>
+
+    $('.openBtn').on('click',function(){
+        $('.modal-body').load('getContent.php?id=2',function(){
+            $('#myModal').modal({show:true});
+        });});
+
+
+
+</style>*@
+
+
+
+
+
+

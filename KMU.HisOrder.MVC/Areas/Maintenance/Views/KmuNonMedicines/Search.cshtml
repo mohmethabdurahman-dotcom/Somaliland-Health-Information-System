@@ -1,0 +1,112 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.KmuNonMedicine>
+
+<div class="row" style="height: 79vh; width: 100%; overflow: auto;">
+    <div class="col-md-12">
+        <table id="NonMedSearchTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>
+                        ItemID
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Spec
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.StartDate)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.EndDate)
+                    </th>
+                    <th>
+                        Off/On
+                    </th>
+                    <th>
+                        Remarks
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.ShowSeq)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.GroupCode)
+                    </th>
+                    <th style="white-space:nowrap;">
+                        Created by
+                    </th>
+                    <th style="white-space:nowrap;">
+                        Created Date
+                    </th>
+                    <th style="white-space:nowrap;">
+                        Modified by
+                    </th>
+                    <th style="white-space:nowrap;">
+                        Modified Date
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td style="white-space:nowrap; width:80px;">
+                            &nbsp&nbsp<a asp-action="Edit" asp-route-id="@item.ItemId" class="fa-solid fa-pencil"></a>
+                            &nbsp&nbsp<a asp-action="Delete" asp-route-id="@item.ItemId" class="fa-solid fa-trash"></a>
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.ItemId)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ItemName)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.ItemType)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.ItemSpec)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StartDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EndDate)
+                        </td>
+                        <td>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="@item.ItemId" name="@item.ItemId" @(item.Status =='1' ?" checked":"") onclick="fn_Status('@item.ItemId')">
+                                <label for="@item.ItemId" class="custom-control-label"></label>
+                            </div>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Remark)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.ShowSeq)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.GroupCode)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.CreateUser)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CreateDate)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.ModifyUser)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ModifyDate)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

@@ -1,0 +1,957 @@
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "New Walk-In Request";
+}
+
+@section head {
+    <!-- Toastr CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+}
+
+<style>
+    .page-container {
+        background-color: #e8eef5;
+        min-height: 100vh;
+   
+    }
+
+    .search-panel {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        height: calc(100vh - 140px);
+        overflow-y: auto;
+    }
+
+    .exam-panel {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        height: calc(100vh - 140px);
+        overflow-y: auto;
+    }
+
+    .exam-panel-header {
+        background: linear-gradient(135deg, #4c8bf5 0%, #6c63ff 100%);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .exam-panel-body {
+        padding: 25px;
+    }
+
+    .panel-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #2c3e50;
+    }
+
+    .search-input-group {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .search-input-group input {
+        padding-left: 40px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        height: 45px;
+        width: 100%;
+        font-size: 14px;
+    }
+
+    .search-input-group i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+    }
+
+    .btn-search {
+        height: 45px;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 0 30px;
+        width: 100%;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #adb5bd;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h6 {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #6c757d;
+    }
+
+    .empty-state p {
+        font-size: 14px;
+        color: #adb5bd;
+    }
+
+    .patient-table-container {
+        margin-top: 20px;
+    }
+
+    .found-count {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .patient-table {
+        width: 100%;
+        font-size: 14px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .patient-table thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 600;
+        padding: 12px 8px;
+        font-size: 13px;
+        color: #495057;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .patient-table tbody td {
+        padding: 12px 8px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .patient-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .patient-table tbody tr.selected-row {
+        background-color: #e7f3ff;
+    }
+
+    .btn-select {
+        padding: 5px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-select.btn-primary {
+        background-color: #4c8bf5;
+        color: white;
+    }
+
+    .btn-select.btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .workflow-steps {
+        background: #f0f4ff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .workflow-steps h6 {
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+
+    .workflow-step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: #495057;
+    }
+
+    .workflow-step .step-number {
+        background: #4c8bf5;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-right: 12px;
+        flex-shrink: 0;
+        font-size: 12px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #495057;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-group label i {
+        margin-right: 8px;
+        font-size: 16px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #4c8bf5;
+        box-shadow: 0 0 0 0.2rem rgba(76, 139, 245, 0.15);
+    }
+
+    .bodypart-section-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #495057;
+        display: flex;
+        align-items: center;
+    }
+
+    .bodypart-section-label i {
+        margin-right: 8px;
+    }
+
+    .bodypart-section-label .count-badge {
+        margin-left: auto;
+        background: #e9ecef;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .bodypart-search {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .bodypart-search input {
+        padding-left: 40px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        width: 100%;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .bodypart-search i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+    }
+
+    .bodypart-category {
+        margin-bottom: 20px;
+    }
+
+    .bodypart-category-title {
+        font-weight: 700;
+        font-size: 14px;
+        color: #2c3e50;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+    }
+
+    .bodypart-category-title .category-icon {
+        margin-right: 8px;
+        font-size: 16px;
+    }
+
+    .bodypart-category-title .count {
+        margin-left: auto;
+        background: #e9ecef;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .bodypart-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .bodypart-item {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        background: white;
+    }
+
+    .bodypart-item:hover {
+        background-color: #f8f9fa;
+        border-color: #4c8bf5;
+    }
+
+    .bodypart-item.selected {
+        background: linear-gradient(135deg, #4c8bf5 0%, #6c63ff 100%);
+        border-color: #4c8bf5;
+        color: white;
+    }
+
+    .bodypart-item .bodypart-icon {
+        margin-right: 10px;
+        font-size: 18px;
+    }
+
+    .bodypart-item .bodypart-name {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .bodypart-item .check-icon {
+        font-size: 18px;
+        display: none;
+    }
+
+    .bodypart-item.selected .check-icon {
+        display: block;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #4c8bf5 0%, #6c63ff 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .btn-submit:hover {
+        opacity: 0.9;
+        color: white;
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #f0f4ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 36px;
+        color: #adb5bd;
+    }
+</style>
+<div class="row page-header pt-1">
+    <div class="col-12">
+        <div class="row bg-white shadow-sm d-flex justify-content-between align-items-center py-3">
+            <div class="col-6">
+                <a href="@Url.Action("Index", "Recieption")" class="btn btn-light">
+                    <i class="fa fa-arrow-left mr-2"></i> Back to List
+                </a>
+            </div>
+            <div class="header-badges col-6 text-right">
+                <a href="@Url.Action("NewWalkInRequest", "Recieption")" class="btn btn-success btn-sm">
+                    <i class="fa fa-plus"></i> New Request
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="page-container px-3">
+    <div class="row py-3">
+        <!-- Left Panel: Search Patients -->
+        <div class="col-lg-5">
+            <div class="search-panel">
+                <h5 class="panel-title">Search Patients</h5>
+                
+                <div class="row">
+                    <div class="col-8">
+                        <div class="search-input-group">
+                            <i class="fa fa-search"></i>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search by Patient ID, Name, or Phone...">
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <button id="searchBtn" class="btn btn-primary btn-search">
+                            <i class="fa fa-search mr-1"></i> Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state">
+                    <i class="fa fa-search"></i>
+                    <h6>Enter search criteria</h6>
+                    <p>Search by Patient ID, Name, or Phone Number</p>
+                </div>
+
+                <!-- Patient Results Table -->
+                <div id="patientResults" style="display: none;">
+                    <div class="found-count" id="foundCount">Found 0 patients</div>
+                    <div class="table-responsive">
+                        <table class="patient-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>ID</th>
+                                    <th>Phone</th>
+                                    <th>Age</th>
+                                    <th>Gender</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patientTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Create Exam Request -->
+        <div class="col-lg-7">
+            <div class="exam-panel">
+                <!-- Empty State - No Patient Selected -->
+                <div id="examEmptyState">
+                    <div class="exam-panel-body">
+                        <div class="icon-circle">
+                            <i class="fa fa-user-plus"></i>
+                        </div>
+                        <h4 class="text-center font-weight-bold mb-2">Create Exam Request</h4>
+                        <p class="text-center text-muted mb-4">Select a patient from the left panel to create an exam request</p>
+
+                    </div>
+                </div>
+
+                <!-- Exam Request Form - Patient Selected -->
+                <div id="examFormState" style="display: none;">
+                    <div class="exam-panel-header">
+                        <h5 class="mb-0 font-weight-bold">Creating Exam Request</h5>
+                        <div class="mt-1" id="selectedPatientInfo" style="font-size: 14px; opacity: 0.95;">
+                            Patient: <span id="headerPatientName"></span> (ID: <span id="headerPatientId"></span>)
+                        </div>
+                    </div>
+                    <div class="exam-panel-body">
+                        <!-- Department and Room in same row -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fa fa-building"></i>
+                                        Department
+                                    </label>
+                                    <select id="departmentSelect" class="form-control py-2">
+                                        <option value="">Select Department</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fa fa-door-open"></i>
+                                        Room
+                                    </label>
+                                    <select id="roomSelect" class="form-control py-2">
+                                        <option value="">Select Room</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Body Parts to Scan -->
+                        <div class="form-group">
+                            <div class="bodypart-section-label">
+                                <i class="fa fa-circle-dot"></i>
+                                Body Parts to Scan
+                                <span class="count-badge" id="selectedCount">(0 selected)</span>
+                            </div>
+
+                            <!-- Body Part Search -->
+                            <div class="bodypart-search">
+                                <i class="fa fa-search"></i>
+                                <input type="text" id="bodyPartSearchInput" class="form-control" placeholder="Search body parts...">
+                            </div>
+
+                            <!-- Body Part Categories -->
+                            <div id="bodyPartCategories" style="max-height: 400px; overflow-y: auto;">
+                            </div>
+                        </div>
+
+                        <!-- Remark -->
+                        <div class="form-group">
+                            <label>
+                                <i class="fa fa-comment"></i>
+                                Remark (Optional)
+                            </label>
+                            <textarea id="remarkInput" class="form-control" rows="3" placeholder="Enter any additional remarks..."></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button id="submitBtn" class="btn btn-submit" disabled>
+                            <i class="fa fa-check mr-2"></i> Submit Exam Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    <script>
+    let selectedPatient = null;
+    let selectedBodyParts = [];
+    let allBodyParts = [];
+
+    $(document).ready(function () {
+        loadDepartments();
+
+        $('#searchBtn').click(function () {
+            performSearch();
+        });
+
+        $('#searchInput').keypress(function (e) {
+            if (e.which === 13) {
+                performSearch();
+            }
+        });
+
+        $('#departmentSelect').change(function () {
+            const dptCode = $(this).val();
+            updateRoomsByDepartment(dptCode);
+            loadBodyPartsByDepartment(dptCode);
+        });
+
+        $('#roomSelect').change(function () {
+            updateSubmitButton();
+        });
+
+        $('#bodyPartSearchInput').on('input', function () {
+            filterBodyParts($(this).val());
+        });
+
+        $('#submitBtn').click(function () {
+            submitRequest();
+        });
+    });
+
+    function performSearch() {
+        const searchTerm = $('#searchInput').val().trim();
+        
+        if (!searchTerm) {
+            toastr.warning('Please enter search criteria');
+            return;
+        }
+
+        $.ajax({
+            type: 'GET', 
+            url: "/Radiology/Recieption/SearchPatients",
+            data: { searchTerm: searchTerm },
+            success: function (response) {
+                if (response.success && response.data.length > 0) {
+                    displayPatientResults(response.data);
+                    $('#emptyState').hide();
+                    $('#patientResults').show();
+                } else {
+                    toastr.info('No patients found');
+                    $('#patientResults').hide();
+                    $('#emptyState').show();
+                }
+            },
+            error: function () {
+                toastr.error('Error searching for patients');
+            }
+        });
+    }
+
+    function displayPatientResults(patients) {
+        $('#foundCount').text(`Found ${patients.length} patient${patients.length > 1 ? 's' : ''}`);
+        
+        const tbody = $('#patientTableBody');
+        tbody.empty();
+
+        patients.forEach(patient => {
+            const row = `
+                <tr data-patient='${JSON.stringify(patient)}' class="${selectedPatient && selectedPatient.chrHealthId === patient.chrHealthId ? 'selected-row' : ''}">
+                    <td>${patient.fullName}</td>
+                    <td>${patient.chrHealthId}</td>
+                    <td>${patient.chrMobilePhone || 'N/A'}</td>
+                    <td>${patient.age || 'N/A'}</td>
+                    <td>${patient.chrSex === 'M' ? 'Male' : patient.chrSex === 'F' ? 'Female' : 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-select ${selectedPatient && selectedPatient.chrHealthId === patient.chrHealthId ? 'btn-success' : 'btn-primary'}" 
+                                onclick="selectPatient(this)">
+                            ${selectedPatient && selectedPatient.chrHealthId === patient.chrHealthId ? 'Selected' : 'Select'}
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    function selectPatient(btn) {
+        const row = $(btn).closest('tr');
+        selectedPatient = JSON.parse(row.attr('data-patient'));
+
+        $('.patient-table tbody tr').removeClass('selected-row');
+        $('.btn-select').removeClass('btn-success').addClass('btn-primary').text('Select');
+        
+        row.addClass('selected-row');
+        $(btn).removeClass('btn-primary').addClass('btn-success').text('Selected');
+
+        $('#headerPatientName').text(selectedPatient.fullName);
+        $('#headerPatientId').text(selectedPatient.chrHealthId);
+
+        $('#examEmptyState').hide();
+        $('#examFormState').show();
+
+        updateSubmitButton();
+    }
+
+    function loadDepartments() {
+        $.ajax({
+            type: 'GET', 
+            url: "/Radiology/Recieption/GetDepartments",
+            success: function (data) {
+                const select = $('#departmentSelect');
+                select.empty().append('<option value="">Select Department</option>');
+                data.forEach(dept => {
+                    select.append(`<option value="${dept.code}">${dept.name}</option>`);
+                });
+            },
+            error: function () {
+                toastr.error('Error loading departments');
+            }
+        });
+    }
+
+    function updateRoomsByDepartment(dptCode) {
+        if (!dptCode) {
+            $('#roomSelect').empty().append('<option value="">Select Room</option>');
+            updateSubmitButton();
+            return;
+        }
+
+        $.ajax({
+            type: 'GET',  
+            url: '@Url.Action("GetRooms", "Recieption")',
+            data: { dptCode: dptCode },
+            success: function (data) {
+                const select = $('#roomSelect');
+                select.empty().append('<option value="">Select Room</option>');
+                
+                if (data.length === 0) {
+                    toastr.info('No rooms available for this department');
+                } else {
+                    data.forEach(room => {
+                        select.append(`<option value="${room.roomId}" data-modality="${room.modality}" data-room-number="${room.roomNumber}">
+                            ${room.roomNumber} - ${room.modality} ${room.description ? '(' + room.description + ')' : ''}
+                        </option>`);
+                    });
+                }
+                
+                updateSubmitButton();
+            },
+            error: function () {
+                toastr.error('Error loading rooms');
+            }
+        });
+    }
+
+    function loadBodyParts() {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetBodyParts", "Recieption")',
+            success: function (data) {
+                allBodyParts = data;
+                renderBodyParts(data);
+            },
+            error: function () {
+                toastr.error('Error loading body parts');
+            }
+        });
+    }
+
+    function loadBodyPartsByDepartment(dptCode) {
+        if (!dptCode) {
+            // Clear body parts
+            allBodyParts = [];
+            $('#bodyPartCategories').empty();
+            $('#selectedCount').text('0');
+            selectedBodyParts = [];
+            return;
+        }
+
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetBodyParts", "Recieption")',
+            data: { dptCode: dptCode },
+            success: function (data) {
+                allBodyParts = data;
+                selectedBodyParts = []; // Reset selection
+                renderBodyParts(data);
+                $('#selectedCount').text('0');
+                updateSubmitButton();
+                
+                if (data.length === 0) {
+                    toastr.info('No body parts available for this department');
+                }
+            },
+            error: function () {
+                toastr.error('Error loading body parts');
+            }
+        });
+    }
+
+    function renderBodyParts(bodyParts) {
+        const categories = {};
+        
+        bodyParts.forEach(part => {
+            const categoryName = part.groupCode || 'Other';
+            if (!categories[categoryName]) {
+                categories[categoryName] = [];
+            }
+            categories[categoryName].push(part);
+        });
+
+        const container = $('#bodyPartCategories');
+        container.empty();
+
+        const categoryIcons = {
+            'HEAD': '🧠',
+            'CHEST': '🫁',
+            'ABDOMEN': '🫄',
+            'SPINE': '🦴',
+            'LIMB': '🦵',
+            'Other': '📋'
+        };
+
+        Object.keys(categories).forEach(categoryName => {
+            const parts = categories[categoryName];
+            const icon = categoryIcons[categoryName] || categoryIcons['Other'];
+            
+            const categoryHtml = `
+                <div class="bodypart-category" data-category="${categoryName}">
+                    <div class="bodypart-category-title">
+                        <span class="category-icon">${icon}</span>
+                        ${categoryName.replace(/_/g, ' ')}
+                        <span class="count">(${parts.length})</span>
+                    </div>
+                    <div class="bodypart-list">
+                        ${parts.map(part => `
+                            <div class="bodypart-item" data-item-id="${part.itemId}" data-item-name="${part.itemName}">
+                                <span class="bodypart-icon">${getBodyPartIcon(part.itemName)}</span>
+                                <span class="bodypart-name">${part.itemName}</span>
+                                <i class="fa fa-check-circle check-icon"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            container.append(categoryHtml);
+        });
+
+        $('.bodypart-item').click(function () {
+            toggleBodyPart($(this));
+        });
+    }
+
+    function getBodyPartIcon(partName) {
+        const name = partName.toLowerCase();
+        if (name.includes('skull') || name.includes('brain') || name.includes('head')) return '🧠';
+        if (name.includes('sinus')) return '👃';
+        if (name.includes('jaw') || name.includes('mandible')) return '🦷';
+        if (name.includes('neck')) return '🗣️';
+        if (name.includes('thyroid')) return '🦋';
+        if (name.includes('chest') || name.includes('lung')) return '🫁';
+        if (name.includes('heart')) return '❤️';
+        if (name.includes('abdomen') || name.includes('stomach')) return '🫄';
+        if (name.includes('pelvis')) return '🦴';
+        if (name.includes('spine') || name.includes('vertebra')) return '🦴';
+        if (name.includes('arm') || name.includes('hand') || name.includes('finger')) return '✋';
+        if (name.includes('leg') || name.includes('foot') || name.includes('toe')) return '🦵';
+        return '📍';
+    }
+
+    function toggleBodyPart(element) {
+        const itemId = element.data('item-id');
+        const itemName = element.data('item-name');
+
+        if (element.hasClass('selected')) {
+            element.removeClass('selected');
+            selectedBodyParts = selectedBodyParts.filter(id => id !== itemId);
+        } else {
+            element.addClass('selected');
+            selectedBodyParts.push(itemId);
+        }
+
+        $('#selectedCount').text(`(${selectedBodyParts.length} selected)`);
+        updateSubmitButton();
+    }
+
+    function filterBodyParts(searchTerm) {
+        searchTerm = searchTerm.toLowerCase();
+
+        if (!searchTerm) {
+            $('.bodypart-category').show();
+            $('.bodypart-item').show();
+            return;
+        }
+
+        $('.bodypart-item').each(function () {
+            const itemName = $(this).data('item-name').toLowerCase();
+            if (itemName.includes(searchTerm)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+
+        $('.bodypart-category').each(function () {
+            const visibleItems = $(this).find('.bodypart-item:visible').length;
+            if (visibleItems > 0) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+
+    function updateSubmitButton() {
+        const hasPatient = selectedPatient !== null;
+        const hasDepartment = $('#departmentSelect').val() !== '';
+        const hasRoom = $('#roomSelect').val() !== '';
+        const hasBodyParts = selectedBodyParts.length > 0;
+
+        if (hasPatient && hasDepartment && hasRoom && hasBodyParts) {
+            $('#submitBtn').prop('disabled', false);
+        } else {
+            $('#submitBtn').prop('disabled', true);
+        }
+    }
+
+    function submitRequest() {
+        if (!selectedPatient) {
+            toastr.warning('Please select a patient first');
+            return;
+        }
+
+        const department = $('#departmentSelect').val();
+        const roomId = $('#roomSelect').val();
+
+        if (!department || !roomId || selectedBodyParts.length === 0) {
+            toastr.warning('Please fill in all required fields and select at least one body part');
+            return;
+        }
+
+        const requestData = {
+            patientId: selectedPatient.chrHealthId,
+            department: department,
+            roomId: parseInt(roomId),
+            bodyPartIds: selectedBodyParts,
+            remark: $('#remarkInput').val()
+        };
+
+        $.ajax({
+            type: 'POST', 
+            url: '@Url.Action("CreateWalkInRequest", "Recieption")',
+            contentType: 'application/json',
+            data: JSON.stringify(requestData),
+            success: function (response) {
+                if (response.success) {
+                    // Open print page directly - it will auto-trigger print dialog
+                    var requestId = response.data.requestIds ? response.data.requestIds[0] : response.data.requestId;
+                    window.open('@Url.Action("PrintTicket", "Recieption")?id=' + requestId, '_blank');
+                    
+                    // Reset form immediately
+                    setTimeout(function () {
+                        resetForm();
+                    }, 500);
+                } else {
+                    toastr.error(response.message || 'Unknown error occurred');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX Error:', xhr, status, error);
+                console.error('Response:', xhr.responseText);
+                var errorMessage = 'Error creating request';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                toastr.error(errorMessage);
+            }
+        });
+    }
+
+    function resetForm() {
+        selectedPatient = null;
+        selectedBodyParts = [];
+        
+        $('#searchInput').val('');
+        $('#departmentSelect').val('');
+        $('#roomSelect').empty().append('<option value="">Select Room</option>');
+        $('#bodyPartSearchInput').val('');
+        $('#remarkInput').val('');
+        
+        $('.bodypart-item').removeClass('selected');
+        $('#selectedCount').text('(0 selected)');
+        
+        $('#patientResults').hide();
+        $('#emptyState').show();
+        $('#examFormState').hide();
+        $('#examEmptyState').show();
+        
+        updateSubmitButton();
+    }
+</script>
+}

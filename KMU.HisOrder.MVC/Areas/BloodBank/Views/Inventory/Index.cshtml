@@ -1,0 +1,188 @@
+@model InventoryListViewModel
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@using KMU.HisOrder.MVC.Models.BloodBank
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Blood Bank → Inventory"; }
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+@{
+    var units = Model.Units;
+    var available = units.Count(u => u.Status == "Available" && u.ExpiryDate > DateTime.Now);
+    var expiring = units.Count(u => u.Status == "Available" && u.ExpiryDate <= DateTime.Now.AddDays(7) && u.ExpiryDate > DateTime.Now);
+    var expired = units.Count(u => u.ExpiryDate <= DateTime.Now);
+    var dispensed = units.Count(u => u.Status == UnitStatuses.Dispensed);
+
+    string InvBloodClass(string? bt) => bt switch
+    {
+        "A+" => "bb-inv-bt-a-pos",
+        "A-" => "bb-inv-bt-a-neg",
+        "B+" => "bb-inv-bt-b-pos",
+        "B-" => "bb-inv-bt-b-neg",
+        "AB+" => "bb-inv-bt-ab-pos",
+        "AB-" => "bb-inv-bt-ab-neg",
+        "O+" => "bb-inv-bt-o-pos",
+        "O-" => "bb-inv-bt-o-neg",
+        _ => "bb-inv-bt-other"
+    };
+
+    string InvCompClass(string? component) =>
+        component?.Contains("PRBC", StringComparison.OrdinalIgnoreCase) == true
+        || component?.Contains("Packed", StringComparison.OrdinalIgnoreCase) == true
+            ? "bb-inv-comp-prbc"
+        : component?.Contains("FFP", StringComparison.OrdinalIgnoreCase) == true
+        || component?.Contains("Frozen", StringComparison.OrdinalIgnoreCase) == true
+            ? "bb-inv-comp-ffp"
+        : component?.Contains("Platelet", StringComparison.OrdinalIgnoreCase) == true
+            ? "bb-inv-comp-platelets"
+        : component?.Contains("Cryo", StringComparison.OrdinalIgnoreCase) == true
+            ? "bb-inv-comp-cryo"
+        : component?.Contains("Whole", StringComparison.OrdinalIgnoreCase) == true
+            ? "bb-inv-comp-whole"
+            : "bb-inv-comp-other";
+
+    string InvStatusClass(string? status) => status switch
+    {
+        UnitStatuses.Available => "bb-inv-status-available",
+        UnitStatuses.Dispensed => "bb-inv-status-dispensed",
+        UnitStatuses.Reserved => "bb-inv-status-reserved",
+        UnitStatuses.Expired => "bb-inv-status-expired",
+        UnitStatuses.Rejected => "bb-inv-status-rejected",
+        UnitStatuses.Quarantined => "bb-inv-status-quarantined",
+        _ => "bb-inv-status-other"
+    };
+
+    string InvRowClass(string? status, bool expiringRow, bool expiredRow) =>
+        expiredRow ? "bb-inv-row--expired"
+        : expiringRow ? "bb-inv-row--expiring"
+        : status == UnitStatuses.Available ? "bb-inv-row--available"
+        : status == UnitStatuses.Dispensed ? "bb-inv-row--dispensed"
+        : status == UnitStatuses.Reserved ? "bb-inv-row--reserved"
+        : "bb-inv-row--other";
+}
+<div class="bb-his-shell bb-inventory-page">
+    <h6 class="direction mx-2">@ViewData["Title"]</h6>
+    @if (TempData["Success"] != null) { <div data-bb-toast data-bb-toast-type="success" class="bb-sr-only">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div data-bb-toast data-bb-toast-type="error" class="bb-sr-only">@TempData["Error"]</div> }
+
+    <div class="bb-kpi-row mx-2 bb-inventory-kpi-row" style="margin-bottom:1.25rem;">
+        <div class="bb-kpi-card bb-kpi-card--emerald">
+            <i class="fa-solid fa-droplet bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@available</p>
+            <p class="bb-kpi-card__label">Available units</p>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--amber">
+            <i class="fa-solid fa-hourglass-half bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@expiring</p>
+            <p class="bb-kpi-card__label">Expiring in 7 days</p>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--crimson">
+            <i class="fa-solid fa-ban bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@expired</p>
+            <p class="bb-kpi-card__label">Expired units</p>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--sky">
+            <i class="fa-solid fa-vials bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@units.Count</p>
+            <p class="bb-kpi-card__label">Showing in list</p>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--navy">
+            <i class="fa-solid fa-truck-medical bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@dispensed</p>
+            <p class="bb-kpi-card__label">Dispensed units</p>
+        </div>
+    </div>
+
+    <h6 class="bb-section-direction mx-2"><i class="fa-solid fa-filter"></i> Filter inventory</h6>
+    <div class="bb-card bb-filter-bar bb-inventory-filter mx-2">
+        <div class="bb-card__header"><h4><i class="fa-solid fa-magnifying-glass"></i> Search blood units</h4></div>
+        <div class="bb-card__body">
+            <form method="get" class="bb-filter-bar__form">
+                <div class="bb-filter-field bb-input-icon-wrap">
+                    <label class="bb-label">Search units</label>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input name="SearchTerm" value="@Model.SearchTerm" class="form-control" placeholder="BB-UNIT-5, serial, BB-DONOR, phone..." />
+                </div>
+                <div class="bb-filter-field">
+                    <label class="bb-label">Blood type</label>
+                    <select name="FilterBloodType" class="form-control">
+                        <option value="">All</option>
+                        @foreach (var bt in BloodBankLookups.BloodTypes) {
+                            <option value="@bt" selected="@(Model.FilterBloodType == bt)">@bt</option>
+                        }
+                    </select>
+                </div>
+                <div class="bb-filter-field">
+                    <label class="bb-label">Component</label>
+                    <select name="FilterComponent" class="form-control">
+                        <option value="">All</option>
+                        @foreach (var c in BloodBankLookups.Components) {
+                            <option value="@c" selected="@(Model.FilterComponent == c)">@c</option>
+                        }
+                    </select>
+                </div>
+                <div class="bb-filter-field">
+                    <label class="bb-label">Status</label>
+                    <select name="FilterStatus" class="form-control">
+                        <option value="">All</option>
+                        @foreach (var s in BloodBankLookups.UnitStatusesList) {
+                            <option value="@s" selected="@(Model.FilterStatus == s)">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="bb-filter-field">
+                    <label class="bb-label">&nbsp;</label>
+                    <button type="submit" class="bb-btn bb-btn-primary">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="bb-table-wrap bb-inventory-table-wrap mx-2">
+        <table class="bb-table bb-inventory-table">
+            <thead>
+                <tr><th>BB unit ID</th><th>Serial</th><th>Blood type</th><th>Component</th><th>Status</th><th>Screening</th><th>Expiry</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var u in Model.Units) {
+                var expiringRow = u.Status == "Available" && u.ExpiryDate <= DateTime.Now.AddDays(7) && u.ExpiryDate > DateTime.Now;
+                var expiredRow = u.ExpiryDate <= DateTime.Now;
+                var daysLeft = (int)(u.ExpiryDate.Date - DateTime.Now.Date).TotalDays;
+                var screenBadge = u.ScreeningResult == ScreeningResults.Passed ? "bb-inv-screen-passed"
+                    : u.ScreeningResult == ScreeningResults.Failed ? "bb-inv-screen-failed"
+                    : "bb-inv-screen-pending";
+                var rowClass = InvRowClass(u.Status, expiringRow, expiredRow);
+                <tr class="@rowClass">
+                    <td class="bb-mono bb-inv-unit-id">@BloodBankIds.FormatUnit(u.UnitId)</td>
+                    <td class="bb-mono">@u.SerialNumber</td>
+                    <td><span class="bb-inv-pill bb-inv-pill--blood @InvBloodClass(u.BloodType)">@u.BloodType</span></td>
+                    <td><span class="bb-inv-pill bb-inv-pill--component @InvCompClass(u.ComponentType)">@u.ComponentType</span></td>
+                    <td><span class="bb-inv-pill bb-inv-pill--status @InvStatusClass(u.Status)">@u.Status</span></td>
+                    <td><span class="bb-inv-pill bb-inv-pill--screen @screenBadge">@u.ScreeningResult</span></td>
+                    <td class="bb-inv-expiry">
+                        <span class="bb-inv-expiry__date">@u.ExpiryDate.ToString("dd/MM/yyyy")</span>
+                        @if (expiringRow) { <span class="bb-inv-pill bb-inv-pill--warn">@daysLeft d left</span> }
+                        @if (expiredRow) { <span class="bb-inv-pill bb-inv-pill--danger">Expired</span> }
+                    </td>
+                    <td class="bb-table-actions">
+                        <a asp-action="History" asp-route-id="@u.UnitId" class="bb-btn bb-btn-primary bb-btn-sm" title="Unit traceability and donor name / phone">
+                            <i class="fa-solid fa-clock-rotate-left"></i> History
+                        </a>
+                        @if (u.Status == "Available" && !expiredRow) {
+                            if (u.RequestId.HasValue) {
+                                <a asp-controller="Requests" asp-action="Dispense" asp-route-id="@u.RequestId" class="bb-btn bb-btn-success bb-btn-sm">Dispense (HIS)</a>
+                            } else {
+                                <a asp-controller="Dispense" asp-action="Create" asp-route-unitId="@u.UnitId" class="bb-btn bb-btn-success bb-btn-sm">Dispense</a>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        @if (!Model.Units.Any()) {
+            <div class="bb-empty-state">
+                <i class="fa-solid fa-box-open"></i>
+                <p>No units match your filters.</p>
+            </div>
+        }
+    </div>
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />

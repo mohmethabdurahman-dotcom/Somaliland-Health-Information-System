@@ -1,0 +1,317 @@
+﻿@using KMU.HisOrder.MVC.Areas.HisOrder.ViewModels;
+@model IEnumerable<VKmuNonMedicine>
+
+@{
+    var GroupbyList = Model.OrderBy(c => c.RefShowseq).GroupBy(x => new { x.GroupCode, x.RefName, x.ItemType });
+    IEnumerable<VKmuNonMedicine> OtherList = Model.Where(c => c.ItemType != "Lab" && c.ItemType != "Exam" && c.ItemType != "Path" && c.ItemType != "Blood");
+}
+
+
+@if (OtherList.Count() <= 0)
+{
+    <div class="row TabMenuColumn">
+        <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+            @foreach (var item in GroupbyList)
+            {
+                switch (item.Key.ItemType)
+                {
+                    case "Lab":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader LabCard-header">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody LabCard-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Lab" && c.ItemSpec != "Comment"))
+                                {
+                                    <div class="NonMedNodes" title="@Node.ItemId  @Node.ItemName  @Node.ItemSpec" ondblclick="AddNonMedData(event,this,null)">
+                                        <span class="ItemId" style="text-decoration:underline;">@Node.ItemId</span>&nbsp;&nbsp;
+                                        <span class="ItemName" style="text-decoration:underline;">@Node.ItemName</span>&nbsp;&nbsp;
+                                        <span class="ItemSpec" style="text-decoration:underline;">@Node.ItemSpec</span>
+                                        <span class="ItemType" style="display:none;">@Node.ItemType</span>
+                                        <span class="Remark" style="display:none;">@Node.Remark</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "Exam":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader ExamCard-header">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody ExamCard-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Exam" && c.ItemSpec != "Comment"))
+                                {
+                                    <div class="NonMedNodes" title="@Node.ItemId  @Node.ItemName  @Node.ItemSpec" ondblclick="AddNonMedData(event,this,null)">
+                                        <span class="ItemId" style="text-decoration:underline;">@Node.ItemId</span>&nbsp;&nbsp;
+                                        <span class="ItemName" style="text-decoration:underline;">@Node.ItemName</span>&nbsp;&nbsp;
+                                        <span class="ItemSpec" style="text-decoration:underline;">@Node.ItemSpec</span>
+                                        <span class="ItemType" style="display:none;">@Node.ItemType</span>
+                                        <span class="Remark" style="display:none;">@Node.Remark</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "Path":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader PathCard-header">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody PathCard-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Path" && c.ItemSpec != "Comment"))
+                                {
+                                    <div class="NonMedNodes" title="@Node.ItemId  @Node.ItemName  @Node.ItemSpec" ondblclick="AddNonMedData(event,this,null)">
+                                        <span class="ItemId" style="text-decoration:underline;">@Node.ItemId</span>&nbsp;&nbsp;
+                                        <span class="ItemName" style="text-decoration:underline;">@Node.ItemName</span>&nbsp;&nbsp;
+                                        <span class="ItemSpec" style="text-decoration:underline;">@Node.ItemSpec</span>
+                                        <span class="ItemType" style="display:none;">@Node.ItemType</span>
+                                        <span class="Remark" style="display:none;">@Node.Remark</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "Blood":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader BloodCard-header">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody BloodCard-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Blood" && c.ItemSpec != "Comment"))
+                                {
+                                    <div class="NonMedNodes" title="@Node.ItemId  @Node.ItemName  @Node.ItemSpec" ondblclick="AddNonMedData(event,this,null)">
+                                        <span class="ItemId" style="text-decoration:underline;">@Node.ItemId</span>&nbsp;&nbsp;
+                                        <span class="ItemName" style="text-decoration:underline;">@Node.ItemName</span>&nbsp;&nbsp;
+                                        <span class="ItemSpec" style="text-decoration:underline;">@Node.ItemSpec</span>
+                                        <span class="ItemType" style="display:none;">@Node.ItemType</span>
+                                        <span class="Remark" style="display:none;">@Node.Remark</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+                        @*
+        default:
+        <div class="card">
+        <div class="card-header NodeCardHeader OtherCard-header">
+        @item.Key.RefName
+        </div>
+        <div class="card-body NodeCardBody OtherCard-body">
+        @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType != "Lab" && c.ItemType != "Exam" && c.ItemType != "Path" && c.ItemSpec != "Comment"))
+        {
+        <div class="NonMedNodes" title="@Node.ItemId  @Node.ItemName  @Node.ItemSpec" ondblclick="AddNonMedData(event,this,null)">
+        <span class="ItemId" style="text-decoration:underline;">@Node.ItemId</span>&nbsp;&nbsp;
+        <span class="ItemName" style="text-decoration:underline;">@Node.ItemName</span>&nbsp;&nbsp;
+        <span class="ItemSpec" style="text-decoration:underline;">@Node.ItemSpec</span>
+        <span class="ItemType" style="display:none;">@Node.ItemType</span>
+        <span class="Remark" style="display:none;">@Node.Remark</span>
+        </div>
+        }
+        </div>
+        </div>
+        break;
+        *@
+                }
+            }
+        </div>
+    </div>
+}
+else
+{
+    <!-- Supply & Other-->
+    <div id="SupplyMenu" class="row" style="width:100%;">
+        <div class="TabMenuColumn">
+            <table id="SupplyMenuTable" class="table table-striped jambo_table MenuTable">
+                <thead>
+                    <tr>
+                        <th>
+                            Code
+                        </th>
+                        <th>
+                            Name
+                        </th>
+                        <th style="display:none;"><!--ItempType--></th>
+                        <th style="display:none;"><!--Remark--></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in OtherList)
+                    {
+                        <tr class="SupplyMenutr" ondblclick="AddNonMedData(event,null,this)">
+                            <td class="ItemId">
+                                @Html.DisplayFor(modelItem => item.ItemId)
+                            </td>
+                            <td class="ItemName">
+                                @Html.DisplayFor(modelItem => item.ItemName)
+                            </td>
+                            <td class="ItemType" style="display:none;">
+                                @Html.DisplayFor(modelItem => item.ItemType)
+                            </td>
+                            <td class="Remark" style="display:none;">
+                                @Html.DisplayFor(modelItem => item.Remark)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+
+
+@*<div id="" class="TabMenuColumn hidden" style="overflow:unset;">
+    <div class="row" style="margin:0px; display:block; height:60%;">
+        <div class="col-md-6 NonMedMenuTableCol">
+            <div class="card-title">
+                <span class="section">
+                    Lab
+                </span>
+            </div>
+            <div class="card-body card-body-border NonMedMenuCardBody" style="height:90%;">
+                <table id="LabMenuTable" class="table jambo_table MenuTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Name)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Spec)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Id)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Where(c => c.Type == "Lab"))
+                        {
+                            if (@item.Spec == "Comment")
+                            {
+                                <tr>
+                                    <td colspan="3" class="CommentRow">@item.Name</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td class="NonMedName">
+                                        @Html.DisplayFor(modelItem => item.Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Spec)
+                                    </td>
+                                    <td class="NonMedId">
+                                        @Html.DisplayFor(modelItem => item.Id)
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6 NonMedMenuTableCol">
+            <div class="card-title">
+                <span class="section">
+                    Path
+                </span>
+            </div>
+            <div class="card-body card-body-border NonMedMenuCardBody" style="height:90%;">
+                <table id="PathMenuTable" class="table jambo_table MenuTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Name)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Spec)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Id)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Where(c => c.Type == "Path"))
+                        {
+                            if (@item.Spec == "Comment")
+                            {
+                                <tr>
+                                    <td colspan="3" class="CommentRow">@item.Name</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td class="NonMedName">
+                                        @Html.DisplayFor(modelItem => item.Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Spec)
+                                    </td>
+                                    <td class="NonMedId">
+                                        @Html.DisplayFor(modelItem => item.Id)
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin:0px; display:block; height:40%;">
+        <div class="col-md-12 NonMedMenuTableCol">
+            <div class="card-title">
+                <span class="section">
+                    Exam
+                </span>
+            </div>
+            <div class="card-body card-body-border NonMedMenuCardBody" style="height:85%;">
+                <table id="ExamMenuTable" class="table jambo_table MenuTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Name)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Spec)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Id)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Where(c => c.Type == "Exam"))
+                        {
+                            if (@item.Spec == "Comment")
+                            {
+                                <tr>
+                                    <td colspan="3" class="CommentRow">@item.Name</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td class="NonMedName">
+                                        @Html.DisplayFor(modelItem => item.Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Spec)
+                                    </td>
+                                    <td class="NonMedId">
+                                        @Html.DisplayFor(modelItem => item.Id)
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>*@

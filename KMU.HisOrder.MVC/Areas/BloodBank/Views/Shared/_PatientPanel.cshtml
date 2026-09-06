@@ -1,0 +1,59 @@
+@model BloodBankPatientPanelViewModel
+@if (Model != null && !string.IsNullOrEmpty(Model.PatientId) && !string.Equals(Model.PatientId, "EXTERNAL", StringComparison.OrdinalIgnoreCase))
+{
+    var btClass = string.IsNullOrEmpty(Model.BloodType) ? "" : "bb-bt-" + Model.BloodType;
+    var urgBadge = Model.UrgencyLevel == "Emergency" ? "emergency" : Model.UrgencyLevel == "Urgent" ? "urgent" : "routine";
+    <div class="bb-patient-panel" id="patientPanelBlock">
+        <div class="bb-patient-panel__header">
+            <h4><i class="fa-solid fa-user-injured"></i> HIS Patient Context</h4>
+        </div>
+        <div class="bb-patient-panel__body">
+            <div class="bb-patient-panel__grid">
+                <div class="bb-patient-panel__field">
+                    <strong>Patient ID</strong>
+                    <span class="bb-mono">@Model.PatientId <i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Name</strong>
+                    <span>@Model.PatientName <i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Type</strong>
+                    <span>@Model.PatientType <i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Doctor requested</strong>
+                    <span class="bb-badge bb-badge-blood @btClass">@(string.IsNullOrEmpty(Model.BloodType) ? "—" : Model.BloodType)</span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Ward</strong>
+                    <span>@(Model.Ward ?? "—") <i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Bed</strong>
+                    <span>@(Model.BedLocation ?? "—") <i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Doctor</strong>
+                    <span>@(Model.RequestingDoctor ?? "—") <i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Request</strong>
+                    <span>@(Model.RequestDateTime?.ToString("dd/MM/yyyy HH:mm") ?? "-") <i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Component</strong>
+                    <span>@(Model.ComponentType ?? "—") <i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Units</strong>
+                    <span>@Model.UnitsRequested <i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="bb-patient-panel__field">
+                    <strong>Urgency</strong>
+                    <span class="bb-badge bb-badge-@urgBadge">@Model.UrgencyLevel</span>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,63 @@
+﻿@using Microsoft.EntityFrameworkCore
+@inject KMU.HisOrder.MVC.Models.KMUContext _Context
+@model KMU.HisOrder.MVC.Models.Ward
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var departments = _Context.KmuDepartments.Where(d => d.DptParent == "")
+        .OrderBy(d => d.DptName)
+        .Select(d => new SelectListItem
+                {
+                    Value = d.DptCode,
+                    Text = d.DptName
+                })
+        .ToList();
+}
+
+<div class="px-3 text-center">
+    <h3 class="">Create Ward</h3>
+</div>
+<hr />
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <form asp-area="Maintenance" asp-controller="Ward" asp-action="create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
+
+            <div class="form-group">
+                <label for="wardName" class="control-label">Ward Name</label>
+                <input asp-for="wardName" class="form-control" placeholder="Enter ward name" />
+                <span asp-validation-for="wardName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="department" class="control-label">Department</label>
+                <select asp-for="department" class="form-control">
+                    <option disabled selected>--Select Department--</option>
+                    @foreach (var department in departments)
+                    {
+                        <option value="@department.Value">@department.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="department" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="capacity" class="control-label">Capacity</label>
+                <input asp-for="capacity" class="form-control" placeholder="Enter capacity" />
+                <span asp-validation-for="capacity" class="text-danger"></span>
+            </div>
+
+            <div class="row justify-content-between">
+                <div class="col-6">
+                    <a class="btn btn-danger" asp-action="Index">Back to List</a>
+                </div>
+                <div class="col-6">
+                    <input type="submit" value="Create" class="btn btn-primary form-control" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+

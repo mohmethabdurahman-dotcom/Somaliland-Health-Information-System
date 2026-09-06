@@ -1,0 +1,92 @@
+﻿@model KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.PrintClass
+@using KMU.HisOrder.MVC.Models
+
+@{
+    Model.FormTitle = "★ Emergency Laboratory (Shaybaadh) ★";
+    List<Hisorderplan> IcdOrder = Model.OrderData.Where(c => c.HplanType == "ICD").ToList();
+    List<Hisorderplan> LabOrder = Model.OrderData.Where(c => c.HplanType == "Lab").ToList();
+    var Locations = ViewData["Locations"] as List<KmuCoderef>;
+    List<string> GroupByOrderLocation = LabOrder.GroupBy(c => c.LocationCode).Select(g => g.Key).ToList();
+}
+
+<div id="LaboratoryPage" class="page">
+    <table class="PageContainerTable">
+        <thead>
+            <tr>
+                <td class="PageFormTitleTd">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="header-space"></div>
+                </td>
+            </tr>
+        </thead>
+        <tbody style="vertical-align: top;">
+            <tr>
+                <td>
+                    <div class="PageContent" style="width: 80%">
+                        <h2 class="PageFormTitle">@Model.FormTitle</h2>
+                        @if (IcdOrder.Count() > 0)
+                        {
+                            <h3 style="font-style:italic;">※ Diagnosis</h3>
+                            @for (int i = 0; i < IcdOrder.Count(); i++)
+                            {
+                                <span style="margin-right: 21px; padding-right: 20px; font-size: 20px;">@(i + 1). @IcdOrder[i].PlanCode @IcdOrder[i].PlanDes</span>
+                                <br />
+                            }
+                        }
+                        <h3 style="font-style:italic;">※ Medical Category Item</h3>
+                        <table id="ERLabDetailTable" class="DetailContentTable">
+                            <thead>
+                                <tr style="text-decoration:underline;">
+                                    <th></th>
+                                    <th>ItemName</th>
+                                    <th>Remarks</th>
+                                    <th>Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (LabOrder.Count > 0)
+                                {
+                                    <tr><td colspan="4"><hr style="margin:0px;" /></td></tr>
+                                    @for (int i = 0; i < GroupByOrderLocation.Count(); i++)
+                                    {
+                                        @for (int j = 0; j < LabOrder.Where(c => c.LocationCode == GroupByOrderLocation[i]).Count(); j++)
+                                        {
+                                            <tr>
+                                                <td style="width:20px; max-width:20px">@(j + 1).</td>
+                                                <td style="width:250px; max-width:250px; white-space: normal;">@LabOrder.Where(c => c.LocationCode == GroupByOrderLocation[i]).ToList()[j].PlanDes</td>
+                                                <td style="width:150px; max-width:150px; white-space: normal; word-wrap: break-word;">@LabOrder.Where(c => c.LocationCode == GroupByOrderLocation[i]).ToList()[j].Remark</td>
+                                                <td>@LabOrder.Where(c => c.LocationCode == GroupByOrderLocation[i]).ToList()[j].PlanCode</td>
+                                            </tr>
+                                        }
+                                        if (!string.IsNullOrWhiteSpace(GroupByOrderLocation[i]))
+                                        {
+                                            <tr>
+                                                <td colspan="4">
+                                                    <h4>★` Location：@Locations.Where(c=>c.RefCode == GroupByOrderLocation[i]).Select(c=>c.RefName).FirstOrDefault()</h4>
+                                                </td>
+                                            </tr>
+                                        }
+                                        <tr><td colspan="4"><hr style="margin:0px;" /></td></tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+@*         <tfoot>
+            <tr>
+                <td>
+                    <div class="footer-space"></div>
+                </td>
+            </tr>
+        </tfoot> *@
+    </table>
+    <div style="width: 100%; margin-left: 35px">
+        @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_v_Footer.cshtml",Model)
+    </div>
+</div>

@@ -1,0 +1,80 @@
+@model BloodBankPatientSearchResultViewModel
+<table id="patientInfo_tb" class="table">
+    @if (Model.EmptyParam)
+    {
+        <tbody>
+            <tr>
+                <td class="text-center font-weight-bold text-danger" style="width:100%">Empty Param!</td>
+            </tr>
+        </tbody>
+    }
+    else if (Model.Rows.Any())
+    {
+        <thead>
+            <tr>
+                <th class="font-weight-bold text-dark" style="width:140px">Actions</th>
+                <th class="font-weight-bold text-dark py-0" style="width:120px">Patient ID</th>
+                <th class="font-weight-bold text-dark py-0" style="width:220px">Patient Name</th>
+                <th class="font-weight-bold text-dark py-0" style="width:130px">Mobile Phone</th>
+                <th class="font-weight-bold text-dark py-0" style="width:60px">Sex</th>
+                <th class="font-weight-bold text-dark py-0" style="width:80px">Blood</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                var id = row.PatientId;
+                var rowClass = row.Chart.ChrSex == "M" ? "text-primary" : row.Chart.ChrSex == "F" ? "text-danger" : "";
+                var profileUrl = Url.Action("Profile", "Patients", new { area = "BloodBank", id })!;
+                var requestsFilterBase = ViewBag.RequestsFilterBaseUrl as string;
+                var requestsUrl = !string.IsNullOrWhiteSpace(requestsFilterBase)
+                    ? requestsFilterBase + "?patientIdFilter=" + Uri.EscapeDataString(id)
+                    : Url.Action("Index", "Requests", new { area = "BloodBank", patientIdFilter = id })!;
+                var donorCreateUrl = Url.Action("Create", "Donors", new { area = "BloodBank", patientId = id, requestId = row.PendingRequestId })!;
+                var findDonorUrl = Url.Action("Find", "Donors", new { area = "BloodBank", bloodType = row.BloodType })!;
+                <tr id="tr_patient_@id.Replace("/", "_")" style="cursor:pointer" onclick="fn_SelectRow(this)" class="@rowClass" data-profile-url="@profileUrl">
+                    <td class="font-weight-bold text-nowrap">
+                        <i class="fa-solid fa-user-injured fa-lg" title="Patient profile"
+                           onclick="event.stopPropagation(); location.href='@profileUrl'"></i>
+                        &nbsp;
+                        <i class="fa-solid fa-user-plus fa-lg text-primary" title="Register directed donor for this patient"
+                           onclick="event.stopPropagation(); location.href='@donorCreateUrl'"></i>
+                        &nbsp;
+                        @if (!string.IsNullOrWhiteSpace(row.BloodType))
+                        {
+                            <i class="fa-solid fa-magnifying-glass fa-lg text-success" title="Find compatible donor (@row.BloodType)"
+                               onclick="event.stopPropagation(); location.href='@findDonorUrl'"></i>
+                            @:&nbsp;
+                        }
+                        <i class="fa-solid fa-fill-drip fa-lg text-danger" title="View Dr requests for this patient"
+                           onclick="event.stopPropagation(); location.href='@requestsUrl'"></i>
+                    </td>
+                    <td class="font-weight-bold">@id</td>
+                    <td class="font-weight-bold">@row.FullName</td>
+                    <td class="font-weight-bold">@(row.Chart.ChrMobilePhone ?? "—")</td>
+                    <td class="font-weight-bold text-center">@row.Chart.ChrSex</td>
+                    <td class="font-weight-bold text-center">@(row.BloodType ?? "—")</td>
+                </tr>
+            }
+        </tbody>
+    }
+    else
+    {
+        <tbody>
+            <tr>
+                <td class="font-weight-bold text-danger" colspan="6">No Patient Has Found!!</td>
+            </tr>
+        </tbody>
+    }
+</table>
+<p class="small text-muted mb-0 mt-2 px-1">
+  <i class="fa-solid fa-circle-info"></i>
+  @if (!string.IsNullOrWhiteSpace(ViewBag.RequestsFilterBaseUrl as string))
+  {
+      <text><strong>Double-click a row</strong> to filter Dr requests for that patient, or use <i class="fa-solid fa-fill-drip"></i> for requests and <i class="fa-solid fa-user-injured"></i> for profile.</text>
+  }
+  else
+  {
+      <text><strong>Need a donor?</strong> Use <i class="fa-solid fa-user-plus"></i> to register a directed donor or <i class="fa-solid fa-magnifying-glass"></i> to find a compatible donor.</text>
+  }
+</p>

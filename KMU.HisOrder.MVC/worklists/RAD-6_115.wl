@@ -1,0 +1,23 @@
+{
+  "patientName": "Guled^Saado^Cabdilaahi",
+  "patientID": "HG00161550",
+  "patientBirthDate": "19740726",
+  "patientSex": "F",
+  "patientAge": "052Y",
+  "accessionNumber": "RAD-6-115",
+  "requestedProcedureID": "115",
+  "requestedProcedureDescription": "X-ray - Clavicle",
+  "studyInstanceUID": "1.2.826.0.1.3680043.8.498.20260307200539858.115",
+  "modality": "X-Ray 1",
+  "scheduledStationAETitle": "X-Ray 1_ROOM_01",
+  "scheduledProcedureStepStartDate": "20260307",
+  "scheduledProcedureStepStartTime": "230539",
+  "scheduledPerformingPhysicianName": "system",
+  "scheduledProcedureStepDescription": "X-ray - Clavicle",
+  "scheduledProcedureStepID": "2",
+  "requestedProcedureComments": "",
+  "sourceType": "WALKIN",
+  "ticketNumber": 2,
+  "roomNumber": "01",
+  "status": "SCHEDULED"
+}

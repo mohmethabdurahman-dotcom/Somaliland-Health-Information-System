@@ -1,0 +1,103 @@
+@model BloodRequestFormViewModel
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Blood Bank → New Request";
+    var patientTypes = ViewBag.PatientTypes as string[] ?? BloodBankLookups.PatientTypes;
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+
+<div class="bb-his-shell bb-page">
+    <header class="bb-dr-requests-hero">
+        <div class="bb-dr-requests-hero__row">
+            <h6 class="direction mb-0"><i class="fa-solid fa-fill-drip"></i> @ViewData["Title"]</h6>
+            <a asp-action="Index" class="bb-btn bb-btn-ghost bb-btn-sm"><i class="fa fa-arrow-left"></i> Dr Requests</a>
+        </div>
+    </header>
+
+    @if (TempData["Error"] != null) { <div class="bb-alert bb-alert--error mx-2">@TempData["Error"]</div> }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="bb-alert bb-alert--error mx-2">
+            @Html.ValidationSummary(false)
+        </div>
+    }
+
+    <section class="bb-dr-find-panel mx-2" aria-label="Load HIS patient">
+        <div class="bb-dr-find-panel__title">
+            <span class="bb-dr-find-panel__icon"><i class="fa-solid fa-user-injured"></i></span>
+            <div>
+                <h2 class="bb-dr-find-panel__heading">Load patient from HIS</h2>
+                <p class="bb-dr-find-panel__hint">Enter a chart / health ID to fill name, ward, and visit details</p>
+            </div>
+        </div>
+        <form method="get" asp-action="Create" class="bb-dr-find-panel__row">
+            <label class="bb-dr-field bb-dr-field--id">
+                <span class="bb-dr-field__label"><i class="fa-solid fa-id-card"></i> Patient ID</span>
+                <input type="text" name="patientId" class="bb-dr-field__input bb-mono"
+                       value="@Model.PatientId" placeholder="e.g. HG00205470" autocomplete="off" />
+            </label>
+            <button type="submit" class="bb-dr-find-btn">
+                <i class="fa-solid fa-search"></i> Load
+            </button>
+        </form>
+    </section>
+
+    @if (Model.PatientPanel != null)
+    {
+        <div class="mx-2 mb-3">
+            <partial name="~/Areas/BloodBank/Views/Shared/_PatientPanel.cshtml" model="Model.PatientPanel" />
+        </div>
+    }
+
+    <form asp-action="Create" method="post" class="bb-card mx-2 mb-3">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="RequestingDoctorId" />
+        <input type="hidden" asp-for="RequestingDoctorName" />
+        <div class="bb-card__header"><h4><i class="fa-solid fa-droplet"></i> Blood request</h4></div>
+        <div class="bb-card__body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label asp-for="PatientId">Patient ID</label>
+                    <input asp-for="PatientId" class="form-control bb-mono" required />
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="PatientName">Patient name</label>
+                    <input asp-for="PatientName" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="PatientType">Patient type</label>
+                    <select asp-for="PatientType" class="form-control">
+                        @foreach (var t in patientTypes)
+                        {
+                            <option value="@t">@t</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label asp-for="Inhospid">Visit / Inhosp ID</label>
+                    <input asp-for="Inhospid" class="form-control bb-mono" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Ward">Ward</label>
+                    <input asp-for="Ward" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="BedLocation">Bed</label>
+                    <input asp-for="BedLocation" class="form-control" />
+                </div>
+            </div>
+            <partial name="~/Areas/BloodBank/Views/Shared/_BloodTypeUrgencyFields.cshtml" model="Model" />
+            <div class="mt-3">
+                <button type="submit" class="bb-btn bb-btn-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Send to Dr Requests
+                </button>
+                <a asp-action="Index" class="bb-btn bb-btn-ghost">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />

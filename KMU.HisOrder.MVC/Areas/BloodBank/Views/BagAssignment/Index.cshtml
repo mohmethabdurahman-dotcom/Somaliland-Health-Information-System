@@ -1,0 +1,167 @@
+@model IEnumerable<BagAssignmentQueueItemViewModel>
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Blood Bank → Bag Assignment"; }
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+@{
+    var queue = Model.ToList();
+    var total = queue.Count;
+    var directed = queue.Count(i => !string.IsNullOrWhiteSpace(i.PatientId));
+    var due = queue.Count(i => (DateTime.Now - i.RegisteredAt).TotalHours >= 8);
+    var today = queue.Count(i => i.RegisteredAt.Date == DateTime.Today);
+}
+<div class="bb-his-shell bb-bag-assign-page">
+    <h6 class="direction mx-2">@ViewData["Title"]</h6>
+    <div class="form-group row mx-0 mb-1">
+        <div class="col-lg-12 text-right">
+            <a asp-controller="Donors" asp-action="Find" class="bb-btn bb-btn-ghost bb-btn-sm"><i class="fa-solid fa-user-magnifying-glass"></i> Find donor</a>
+        </div>
+    </div>
+    @if (TempData["Success"] != null) { <div data-bb-toast data-bb-toast-type="success" class="bb-sr-only">@TempData["Success"]</div> }
+
+    <div class="bb-kpi-row mx-2">
+        <div class="bb-kpi-card bb-kpi-card--navy">
+            <i class="fa-solid fa-tag bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@total</p>
+            <p class="bb-kpi-card__label">Awaiting bag assign</p>
+            <span class="bb-kpi-card__link">Queue →</span>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--violet">
+            <i class="fa-solid fa-user-group bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@directed</p>
+            <p class="bb-kpi-card__label">Directed donations</p>
+            <span class="bb-kpi-card__link">Directed →</span>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--amber">
+            <i class="fa-solid fa-clock bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@due</p>
+            <p class="bb-kpi-card__label">Due (&gt; 8 hours)</p>
+            <span class="bb-kpi-card__link">Priority →</span>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--emerald">
+            <i class="fa-solid fa-calendar-day bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@today</p>
+            <p class="bb-kpi-card__label">Registered today</p>
+            <span class="bb-kpi-card__link">Today →</span>
+        </div>
+    </div>
+
+    <h6 class="bb-section-direction mx-2"><i class="fa-solid fa-filter"></i> Queue filters</h6>
+    <div class="bb-card bb-bag-assign-filter mx-2">
+        <div class="bb-card__header"><h4><i class="fa-solid fa-magnifying-glass"></i> Search assignment queue</h4></div>
+        <div class="bb-card__body bb-screening-toolbar">
+            <div class="bb-screening-toolbar__search">
+                <label class="bb-label" for="bagAssignQueueFilter">Search queue</label>
+                <input type="search" id="bagAssignQueueFilter" class="form-control" placeholder="Donor ID, name, phone, blood type…" autocomplete="off" />
+            </div>
+            <div class="bb-screening-toolbar__filters">
+                <span class="bb-label">Show</span>
+                <button type="button" class="bb-chip is-active" data-bag-filter="all">All</button>
+                <button type="button" class="bb-chip" data-bag-filter="directed">Directed</button>
+                <button type="button" class="bb-chip" data-bag-filter="due">Due</button>
+            </div>
+            <div class="bb-screening-toolbar__blood">
+                <label class="bb-label" for="bagAssignBloodFilter">Blood type</label>
+                <select id="bagAssignBloodFilter" class="form-control">
+                    <option value="">Any</option>
+                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                    <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @if (queue.Any())
+    {
+        <div class="bb-table-wrap bb-bag-assign-table-wrap mx-2">
+            <table class="bb-table bb-table-compact" id="bagAssignQueueTable">
+                <thead>
+                    <tr>
+                        <th>Donor ID</th>
+                        <th>Name</th>
+                        <th>Mobile phone</th>
+                        <th>Blood</th>
+                        <th>Type</th>
+                        <th>Registered</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in queue)
+                {
+                    var isDue = (DateTime.Now - item.RegisteredAt).TotalHours >= 8;
+                    var isDirected = !string.IsNullOrWhiteSpace(item.PatientId);
+                    <tr class="@(isDue ? "bb-bag-row-due" : "")"
+                        data-bag-row
+                        data-directed="@(isDirected ? "yes" : "no")"
+                        data-due="@(isDue ? "yes" : "no")"
+                        data-blood="@item.BloodType"
+                        data-search="@($"{item.BloodBankDonorId} {item.FullName} {item.Phone} {item.BloodType} {item.DonationType}".ToLowerInvariant())">
+                        <td class="bb-mono">@item.BloodBankDonorId</td>
+                        <td><strong>@item.FullName</strong></td>
+                        <td class="bb-mono">@item.Phone</td>
+                        <td><span class="bb-badge bb-badge-blood">@item.BloodType</span></td>
+                        <td>
+                            @item.DonationType
+                            @if (isDirected) { <span class="bb-badge bb-badge-pending">Directed</span> }
+                        </td>
+                        <td>@item.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="bb-table-actions">
+                            <a asp-area="BloodBank" asp-controller="Donors" asp-action="Profile" asp-route-donorId="@item.DonorId" class="bb-btn bb-btn-sm bb-btn-ghost" title="@item.FullName · @item.Phone">History</a>
+                            <a asp-area="BloodBank" asp-controller="Donors" asp-action="Edit" asp-route-donorId="@item.DonorId" class="bb-btn bb-btn-sm bb-btn-ghost">Edit</a>
+                            <a asp-action="Create" asp-route-donorId="@item.DonorId" class="bb-btn bb-btn-sm bb-btn-success">Assign bag</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <p class="bb-page-subtitle bb-mt-4 mx-2" id="bagAssignFilterEmpty" hidden>No rows match the current filters.</p>
+    }
+    else
+    {
+        <div class="bb-empty-state mx-2">
+            <i class="fa-solid fa-tag"></i>
+            <p>No donors in bag assignment queue.</p>
+        </div>
+    }
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+@section scripts {
+<script>
+(function () {
+    'use strict';
+    var search = document.getElementById('bagAssignQueueFilter');
+    var blood = document.getElementById('bagAssignBloodFilter');
+    var chips = document.querySelectorAll('[data-bag-filter]');
+    var rows = document.querySelectorAll('[data-bag-row]');
+    var empty = document.getElementById('bagAssignFilterEmpty');
+    var mode = 'all';
+
+    function applyFilters() {
+        var q = (search?.value || '').trim().toLowerCase();
+        var bt = blood?.value || '';
+        var visible = 0;
+        rows.forEach(function (row) {
+            var okSearch = !q || (row.getAttribute('data-search') || '').includes(q);
+            var okBlood = !bt || row.getAttribute('data-blood') === bt;
+            var okMode = mode === 'all'
+                || (mode === 'directed' && row.getAttribute('data-directed') === 'yes')
+                || (mode === 'due' && row.getAttribute('data-due') === 'yes');
+            var show = okSearch && okBlood && okMode;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        if (empty) empty.hidden = visible > 0;
+    }
+
+    chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            mode = chip.getAttribute('data-bag-filter') || 'all';
+            chips.forEach(function (c) { c.classList.toggle('is-active', c === chip); });
+            applyFilters();
+        });
+    });
+    search?.addEventListener('input', applyFilters);
+    blood?.addEventListener('change', applyFilters);
+})();
+</script>
+}

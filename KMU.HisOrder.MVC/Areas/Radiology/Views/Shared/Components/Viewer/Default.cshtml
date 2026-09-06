@@ -1,0 +1,11 @@
+@model KMU.HisOrder.MVC.Areas.Radiology.ViewComponents.ViewerFrameModel
+
+<div class="dicom-viewer-wrapper">
+    <iframe
+        title="DICOM Viewer"
+        src="@Model.StreamUrl"
+        data-study-uid="@Model.StudyInstanceUid"
+        class="w-100 h-100 border-0"
+        loading="lazy">
+    </iframe>
+</div>

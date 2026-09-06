@@ -1,0 +1,85 @@
+<script>
+(function () {
+  'use strict';
+
+  function $(id) { return document.getElementById(id); }
+
+  function valNum(el) {
+    if (!el || el.value === '') return NaN;
+    return parseFloat(el.value, 10);
+  }
+
+  function setVitalStatus(key, ok, empty) {
+    var span = document.querySelector('.bb-vital-status[data-for="' + key + '"]');
+    if (!span) return;
+    if (empty) { span.textContent = '—'; span.className = 'bb-vital-status'; return; }
+    span.textContent = ok ? 'OK' : 'Out of range';
+    span.className = 'bb-vital-status ' + (ok ? 'is-ok' : 'is-fail');
+  }
+
+  function refreshVitalStatuses() {
+    var hb = valNum($('scrHb'));
+    var wbc = valNum($('scrWbc'));
+    var rbc = valNum($('scrRbc'));
+    var plt = valNum($('scrPlatelet'));
+    setVitalStatus('scrHb', !isNaN(hb) && hb >= 12.0 && hb <= 20, isNaN(hb));
+    setVitalStatus('scrWbc', !isNaN(wbc) && wbc >= 4.0 && wbc <= 11.0, isNaN(wbc));
+    setVitalStatus('scrRbc', !isNaN(rbc) && rbc >= 3.8 && rbc <= 6.0, isNaN(rbc));
+    setVitalStatus('scrPlatelet', !isNaN(plt) && plt >= 150 && plt <= 400, isNaN(plt));
+  }
+
+  function vitalsInRange() {
+    var hb = valNum($('scrHb'));
+    var wbc = valNum($('scrWbc'));
+    var rbc = valNum($('scrRbc'));
+    var plt = valNum($('scrPlatelet'));
+    if (isNaN(hb) || hb < 12.0 || hb > 20) return false;
+    if (isNaN(wbc) || wbc < 4.0 || wbc > 11.0) return false;
+    if (isNaN(rbc) || rbc < 3.8 || rbc > 6.0) return false;
+    if (isNaN(plt) || plt < 150 || plt > 400) return false;
+    return true;
+  }
+
+  function getDeferralFlags() {
+    return Array.prototype.slice.call(document.querySelectorAll('.bb-deferral-flag:checked'))
+      .map(function (cb) { return cb.value; });
+  }
+
+  function validatePreDonation() {
+    var attest = $('scrAttest');
+    if (!attest || !attest.checked) {
+      alert('Check the pre-donation eligibility attestation before submitting.');
+      return false;
+    }
+    if (getDeferralFlags().length > 0) {
+      alert('Uncheck all deferral criteria or mark infectious disease tests as FAIL.');
+      return false;
+    }
+    if (!vitalsInRange()) {
+      alert('Enter hemoglobin and CBC values within the reference ranges.');
+      return false;
+    }
+    return true;
+  }
+
+  function init() {
+    ['scrHb', 'scrWbc', 'scrRbc', 'scrPlatelet'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener('input', refreshVitalStatuses);
+      el.addEventListener('change', refreshVitalStatuses);
+    });
+    refreshVitalStatuses();
+
+    var form = $('screeningForm');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        if (!validatePreDonation()) e.preventDefault();
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>

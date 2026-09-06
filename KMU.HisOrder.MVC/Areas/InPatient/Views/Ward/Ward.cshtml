@@ -1,0 +1,287 @@
+﻿@model List<patientlist>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context;
+@using Microsoft.EntityFrameworkCore
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/css/style.css" rel="stylesheet" />
+<style>
+    .btn-group .btn {
+        min-width: 80px;
+        font-weight: 500;
+    }
+
+    .btn i {
+
+        font-size: 14px;
+    }
+
+</style>
+<div class="container p-3">
+    <div class="row justify-content-between mt-2">
+        <div class="col-6">
+            <h2 class="mb-1">Patient Medication</h2>
+            <label class="badge rounded-pill badge-outline-primary "></label>
+            <label class="badge rounded-pill badge-outline-primary "></label>
+            @* @ViewBag.WardName.wardName *@ 
+            @* @ViewBag.Department.departmentName *@
+        </div>
+        <div class="col-auto">
+            @* Reserved buttons here if needed *@
+        </div>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="row mb-3">
+        <div class="col-lg-3 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa fa-shapes text-info border-info"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">All Patients</div>
+                        <div class="stat-digit"><strong>@ViewBag.AllPatients</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa-solid fa-bed text-primary border-primary"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">All Beds</div>
+                        <div class="stat-digit"><strong>@ViewBag.AllBeds</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa-solid fa-bed-pulse text-danger border-danger"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">Occupied Beds</div>
+                        <div class="stat-digit"><strong>@ViewBag.OccupiedBeds</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa-solid fa-bed text-success border-secondary"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">Available Beds</div>
+                        <div class="stat-digit"><strong>@ViewBag.AvailableBeds</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient List -->
+    <table id="ptInfo_tb" class="table">
+        @{
+            var reservations = ViewBag.ReservationList;
+        }
+        <thead>
+            <tr class="mb-5">
+                <th style="width:5%">BedNo.</th>
+                <th style="width:8%">Patient ID</th>
+                <th style="width:17%">Patient Name</th>
+                <th style="width:16%">Diagnose</th>
+                <th style="width:14%">Mobile Phone</th>
+                <th style="width:3%">Sex</th>
+                <th style="width:5%">Status</th>
+                <th style="width:5%">Address</th>
+                <th style="width:3%">Nurse</th>
+                <th style="width:3%">Doctor</th>
+                <th style="width:19%">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if ( Model != null)
+            {
+                foreach (patientlist pt in Model)
+                {
+                    <tr id="tr_@pt.healthid" style="cursor:pointer" class="mt-5">
+                        <td>@pt.bed</td>
+                        <td>@Html.Raw(pt.healthid.Trim())</td>
+                        <td>@Html.Raw(pt.fullname)</td>
+                             @{
+                                 var plan = _context.Hisorderplans.OrderBy(t=> t.CreateDate).LastOrDefault(t => t.Inhospid == pt.inhospId && t.HplanType == "ICD");
+                                        
+                                                    
+                                                     @if(plan != null)
+                                                     {
+                                                         <td class="text-danger">@plan.PlanDes</td>
+                                                     }
+                                                     else
+                                                     {
+                                                         <td class="text-danger">-</td> <!-- or empty -->
+                                           }
+                                           }
+                        <td>@Html.Raw(pt.phone)</td>
+                        <td class="text-center">@pt.sex</td>
+                        <td>@Html.Raw(pt.status)</td>
+                        <td>@Html.Raw(pt.address)</td>
+                        <td>@Html.Raw(pt.doctor)</td>
+                        <td>@Html.Raw(pt.nurse)</td>
+                        
+                        <td>
+                            <div class="btn-group" role="group">
+                                <!-- Medication -->
+                                <button type="button" class="btn btn-success btn-sm"
+                                        onclick="ShowModalMedication('@Url.Action("Medication", "Ward", new { healthid = pt.healthid, inhospid = pt.inhospId })', 'Medication')">
+                                    <i class="fa-solid fa-pills me-1"></i> Medication
+                                </button>
+
+                                <!-- Vital Sign -->
+                                <button type="button" class="btn btn-primary btn-sm mx-2"
+                                        onclick="ShowModalVitalSign('@Url.Action("VitalSign", "Ward", new { healthid = pt.healthid, inhospid = pt.inhospId })', 'Vital Sign')">
+                                    <i class="fa-solid fa-heart-pulse me-1"></i> Vital Sign
+                                </button>
+
+                                <!-- Change Bed -->
+                                <button type="button" class="btn btn-warning btn-sm text-dark"
+                                        onclick="ShowChangeBedModal('@pt.healthid', '@pt.inhospId', '@pt.bed')">
+                                    <i class="fa-solid fa-bed me-1"></i> Change Bed
+                                </button>
+
+                                <!-- Weekly Vitals -->
+                                <button type="button" class="btn btn-secondary btn-sm mx-2"
+                                        onclick="weakly('@Url.Action("WeeklyVitals", "Ward", new { healthid = pt.healthid, inhospid = pt.inhospId })', '7-Day Patient Vitals Overview')">
+                                    <i class="fa-solid fa-calendar-week me-1"></i> Weekly Vitals
+                                </button>
+                                     <!-- Duty Nurse or Doctor -->
+                                <button type="button" class="btn btn-primary btn-sm mx-2"
+                                        onclick="ShowModal('@Url.Action("Duty", "Ward", new { healthid = pt.healthid, inhospid = pt.inhospId})', 'Duty')">
+                                    <i class="fa-solid fa-user-nurse me-1"></i> Duty
+                                </button>
+                            </div>
+                        </td>
+
+                        
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="text-danger">No Patient Is Inward</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="drugModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Drug Administration</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="vitalSignModel">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Vital Sign</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changeBedModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Patient Bed</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#ptInfo_tb").DataTable({
+                scrollX: true,
+                pageLength: 50
+            });
+        });
+
+        function ShowModalMedication(url, title) {
+            $.get(url, function (data) {
+                $("#drugModal .modal-title").text(title);
+                $("#drugModal .modal-body").html(data);
+                $("#drugModal").modal("show");
+            }).fail(function () {
+                layer.alert("Failed to load medication.", { icon: 2, title: 'Error' });
+            });
+        }
+
+        function ShowModalVitalSign(url, title) {
+            $.get(url, function (data) {
+                $("#vitalSignModel .modal-title").text(title);
+                $("#vitalSignModel .modal-body").html(data);
+                $("#vitalSignModel").modal("show");
+            }).fail(function () {
+                layer.alert("Failed to load vital sign.", { icon: 2, title: 'Error' });
+            });
+        }
+
+        function ShowChangeBedModal(healthid, inhospid, currentBed) {
+            $.get('@Url.Action("ChangeBedPartial", "Ward")',
+                { healthid: healthid, inhospid: inhospid },
+                function (data) {
+                    $("#changeBedModal .modal-body").html(data);
+                    $("#changeBedModal").modal("show");
+                }
+            ).fail(function () {
+                layer.alert("Failed to load bed info.", { icon: 2, title: 'Error' });
+            });
+        }
+
+        function changeBed() {
+            var healthid = $("#changeBedModal").data("healthid");
+            var inhospid = $("#changeBedModal").data("inhospid");
+            var currentBedId = $("#changeBedModal").data("currentBedId");
+            var newBedId = $("#newBedSelect").val();
+
+            $.post('@Url.Action("ChangeBedPartial", "Ward")',
+                { healthid, inhospid, currentBedId, newBedId },
+                function (response) {
+                    if (response.success) {
+                        layer.alert(response.message, { icon: 1, title: 'Success' }, function () {
+                            $("#changeBedModal").modal("hide");
+                            location.reload();
+                        });
+                    } else {
+                        layer.alert(response.message, { icon: 2, title: 'Error' });
+                    }
+                }
+            ).fail(function () {
+                layer.alert("Failed to change bed.", { icon: 2, title: 'Error' });
+            });
+        }
+    </script>
+}

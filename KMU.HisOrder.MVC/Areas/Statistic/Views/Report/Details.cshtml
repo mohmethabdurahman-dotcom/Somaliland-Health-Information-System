@@ -1,0 +1,40 @@
+﻿@using Microsoft.EntityFrameworkCore
+@model IEnumerable<KMU.HisOrder.MVC.Models.KmuDepartment>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Index";
+
+
+}
+<div class="mx-4">
+    <div>
+
+    </div>
+    <div class="col-4">
+        <div class="row mt-2">
+            <input class="form-control col-6" id="month" />
+            <input class="btn btn-primary col-2" id="btnsearch" value="Search" type="submit" />
+        </div>
+    </div>
+
+   
+</div>
+
+<script src="~/lib/jquery1.min.js"></script>
+<script>
+    $("#btnsearch").click(function () {
+        var month = $("#month").val();
+
+
+        $.ajax({
+            type: "post",
+            url: "/Statistic/Report/Index?month=" + month,
+            success: function () {
+                alert("success");
+            }
+        })
+
+    })
+</script>

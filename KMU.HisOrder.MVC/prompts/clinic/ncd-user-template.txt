@@ -1,0 +1,18 @@
+Generate a comprehensive NCD clinic remark note based solely on the patient information below.
+
+Follow this output structure closely (plain text tags, no markdown fences):
+
+clinic_remark
+summary of the clinic remark: [Start with Patient Demographics (Age, Gender) followed by an NCD-focused visit summary: chronic conditions, control status, key vitals, and today's findings.]
+diagnosis: [if available from ICD or notes]
+prescription: [if available]
+chronic_disease_review: [control status, vitals, NCD form highlights—skip entire line if no NCD data]
+management_plan: [from Management field, non-med orders, medications, and follow-up—skip entire line if empty]
+non_med_orders: [labs, imaging, pathology, blood, materials ordered—skip entire line if none]
+recommendations: [exactly one NCD-appropriate recommendation or observation]
+
+[If applicable only when provider notes remain unsummarized:]
+<note>
+[additional provider notes not summarized above]
+</note>
+

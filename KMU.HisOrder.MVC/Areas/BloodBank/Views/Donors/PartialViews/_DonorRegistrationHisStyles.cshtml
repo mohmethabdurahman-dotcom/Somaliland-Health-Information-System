@@ -1,0 +1,218 @@
+<style>
+/* Donor registration — match Medical Record MRCreate (/MedRecord/MRCreate) */
+.bb-donor-mr-page label.form-control {
+  background-color: inherit !important;
+}
+.bb-donor-mr-page .direction {
+  font-weight: bold;
+}
+.bb-donor-mr-page .direction:hover {
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.bb-donor-mr-page .bb-reg-stepper-mr {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0.75rem 0 1rem;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid #ddd;
+}
+.bb-donor-mr-page .bb-reg-stepper-mr__item {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #73879c;
+  text-align: center;
+  border-bottom: 3px solid transparent;
+}
+.bb-donor-mr-page .bb-reg-stepper-mr__item.is-active {
+  color: #2a3f54;
+  border-bottom-color: #26b99a;
+}
+.bb-donor-mr-page .bb-reg-stepper-mr__item.is-done {
+  color: #1a7f5a;
+}
+
+.bb-donor-mr-page .bb-mr-section {
+  margin-bottom: 1rem;
+}
+.bb-donor-mr-page .bb-mr-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2a3f54;
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed #e6e9ed;
+}
+
+.bb-donor-mr-page #screeningBar {
+  background: #f7f7f7;
+}
+.bb-donor-mr-page #screeningBar.is-cleared {
+  background: #edf9f6;
+  border-color: #26b99a !important;
+}
+.bb-donor-mr-page .bb-vital-status.is-ok { color: #1a7f5a; font-weight: 700; }
+.bb-donor-mr-page .bb-vital-status.is-fail { color: #c0392b; font-weight: 700; }
+.bb-donor-mr-page .bb-screening-inline-table .input-group-text { font-size: 0.75rem; padding: 0 0.35rem; }
+.bb-donor-mr-page .bb-screening-deferral-details summary { cursor: pointer; color: #2a3f54; }
+.bb-donor-mr-page .bb-pre-donation-status {
+  font-size: 0.85rem;
+  margin: 0.35rem 0 0;
+  color: #555;
+}
+.bb-donor-mr-page .bb-verification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1a7f5a;
+}
+
+.bb-donor-mr-page .bb-his-panel--locked {
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+.bb-donor-mr-page .bb-his-lock-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #e67e22;
+  text-transform: uppercase;
+}
+
+.bb-donor-mr-page .bb-donation-type-pills {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: none;
+}
+.bb-donor-mr-page .bb-donation-pill {
+  flex: 1;
+  margin: 0;
+  cursor: pointer;
+}
+.bb-donor-mr-page .bb-donation-pill input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.bb-donor-mr-page .bb-donation-pill span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.75rem;
+  border: 2px solid #e6e9ed;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #73879c;
+  background: #fff;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.bb-donor-mr-page .bb-donation-pill input:checked + span {
+  border-color: #26b99a;
+  background: #edf9f6;
+  color: #1a7f5a;
+}
+.bb-donor-mr-page .bb-volunteer-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  margin-bottom: 0.5rem;
+  background: #f0f9f6;
+  border: 1px solid #c8ebe3;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #2a3f54;
+}
+.bb-donor-mr-page .bb-volunteer-note i { color: #26b99a; margin-top: 0.1rem; }
+.bb-donor-mr-page .bb-directed-panel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.2s ease;
+}
+.bb-donor-mr-page .bb-directed-panel.is-open {
+  max-height: 1200px;
+  opacity: 1;
+  margin-top: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+.bb-donor-mr-page .bb-donation-type-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.bb-donor-mr-page .bb-donation-type-radios label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bb-donor-mr-page .bb-table-scroll {
+  max-height: 220px;
+  overflow: auto;
+}
+.bb-donor-mr-page .bb-linked-request-summary {
+  background: #f9f9f9;
+  border: 1px solid #e6e9ed;
+  border-radius: 3px;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+}
+.bb-donor-mr-page .bb-review-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  margin: 0;
+}
+.bb-donor-mr-page .bb-review-grid dt { font-weight: 700; color: #73879c; margin: 0; }
+.bb-donor-mr-page .bb-review-grid dd { margin: 0; }
+
+.bb-donor-mr-page .bb-typeahead-wrap { position: relative; }
+.bb-donor-mr-page .bb-typeahead-dropdown {
+  position: absolute;
+  left: 0; right: 0; top: 100%;
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+}
+.bb-donor-mr-page .bb-typeahead-dropdown.is-open { display: block; }
+.bb-donor-mr-page .bb-typeahead-dropdown li {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.bb-donor-mr-page .bb-typeahead-dropdown li:hover { background: #f0f0f0; }
+
+@@media (max-width: 991px) {
+  .bb-donor-mr-page .col-lg-7.border-right,
+  .bb-donor-mr-page .col-lg-5.border-left {
+    border: none !important;
+  }
+}
+</style>

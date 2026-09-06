@@ -1,0 +1,288 @@
+@model BloodBankRequest
+@using KMU.HisOrder.MVC.Models.BloodBank
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Blood Bank → Dr Request #" + Model.RequestId;
+    var panel = ViewBag.PatientPanel as BloodBankPatientPanelViewModel;
+    var dispenses = ViewBag.Dispenses as IList<BloodBankDispenseRecord> ?? new List<BloodBankDispenseRecord>();
+    var urgClass = Model.UrgencyLevel == UrgencyLevels.Emergency ? "emergency"
+        : Model.UrgencyLevel == UrgencyLevels.Urgent ? "urgent" : "routine";
+    var urgBadge = Model.UrgencyLevel == UrgencyLevels.Emergency ? "bb-badge-emergency"
+        : Model.UrgencyLevel == UrgencyLevels.Urgent ? "bb-badge-urgent" : "bb-badge-routine";
+    var statusBadge = Model.Status == RequestStatuses.Fulfilled ? "bb-badge-fulfilled"
+        : Model.Status == RequestStatuses.Rejected ? "bb-badge-rejected" : "bb-badge-pending";
+    var wardBed = BloodBankService.FormatWardBed(Model.Ward, Model.BedLocation);
+    var isPending = Model.Status == RequestStatuses.Pending;
+    var isFulfilled = Model.Status == RequestStatuses.Fulfilled;
+    var isRejected = Model.Status == RequestStatuses.Rejected;
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell bb-page bb-request-detail-page">
+    @if (TempData["Success"] != null) { <div data-bb-toast data-bb-toast-type="success" class="bb-sr-only">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="bb-alert bb-alert--error bb-mb-3">@TempData["Error"]</div> }
+
+    <section class="bb-request-detail-hero @urgClass" aria-labelledby="requestDetailTitle">
+        <div class="bb-request-detail-hero__inner">
+            <div class="bb-request-detail-hero__row">
+                <div>
+                    <h6 id="requestDetailTitle" class="direction mb-0">
+                        <i class="fa-solid fa-user-doctor"></i> Dr Request #@Model.RequestId · @Model.PatientName
+                    </h6>
+                    <p class="bb-request-detail-hero__meta">
+                        <span class="bb-mono">@Model.PatientId</span>
+                        · @wardBed
+                        · Dr. @Model.RequestingDoctorName
+                    </p>
+                </div>
+                <div class="bb-request-detail-hero__chips">
+                    <span class="bb-request-detail-hero__id">REQ-@Model.RequestId</span>
+                    <span class="bb-badge @statusBadge">@Model.Status</span>
+                    <span class="bb-badge @urgBadge">@Model.UrgencyLevel</span>
+                    @if (Model.Orderplanid.HasValue)
+                    {
+                        <span class="bb-badge bb-badge-routine bb-mono">HIS #@Model.Orderplanid</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="bb-request-detail-stats">
+        <div class="bb-request-detail-stat">
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--blood" aria-hidden="true"><i class="fa-solid fa-droplet"></i></span>
+            <div>
+                <p class="bb-request-detail-stat__label">Blood type</p>
+                <p class="bb-request-detail-stat__value">@Model.BloodType</p>
+            </div>
+        </div>
+        <div class="bb-request-detail-stat">
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--units" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></span>
+            <div>
+                <p class="bb-request-detail-stat__label">Units requested</p>
+                <p class="bb-request-detail-stat__value">@Model.UnitsRequested unit@(Model.UnitsRequested == 1 ? "" : "s")</p>
+            </div>
+        </div>
+        <div class="bb-request-detail-stat">
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--component" aria-hidden="true"><i class="fa-solid fa-vial"></i></span>
+            <div>
+                <p class="bb-request-detail-stat__label">Component</p>
+                <p class="bb-request-detail-stat__value">@Model.ComponentType</p>
+            </div>
+        </div>
+        <div class="bb-request-detail-stat">
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--time" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
+            <div>
+                <p class="bb-request-detail-stat__label">Requested</p>
+                <p class="bb-request-detail-stat__value">@Model.RequestDateTime.ToString("dd MMM yyyy")</p>
+                <p class="bb-page-subtitle" style="margin:0;font-size:0.8rem;">@Model.RequestDateTime.ToString("HH:mm")</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bb-request-detail-workflow" aria-label="Request workflow">
+        <div class="bb-request-detail-step is-done">
+            <span class="bb-request-detail-step__dot"><i class="fa-solid fa-check"></i></span>
+            <span class="bb-request-detail-step__label">Submitted</span>
+            <span class="bb-request-detail-step__sub">@Model.RequestDateTime.ToString("dd/MM/yy")</span>
+        </div>
+        <div class="bb-request-detail-step @(isPending ? "is-current" : isFulfilled || isRejected ? "is-done" : "") @(isRejected ? "is-fail" : "")">
+            <span class="bb-request-detail-step__dot">
+                @if (isRejected) { <i class="fa-solid fa-xmark"></i> }
+                else if (isFulfilled || isPending) { <i class="fa-solid @(isPending ? "fa-hourglass-half" : "fa-check")"></i> }
+                else { <span>2</span> }
+            </span>
+            <span class="bb-request-detail-step__label">@(isRejected ? "Rejected" : "Processing")</span>
+            <span class="bb-request-detail-step__sub">@Model.Status</span>
+        </div>
+        <div class="bb-request-detail-step @(isFulfilled ? "is-done" : "")">
+            <span class="bb-request-detail-step__dot">
+                @if (isFulfilled) { <i class="fa-solid fa-check"></i> } else { <span>3</span> }
+            </span>
+            <span class="bb-request-detail-step__label">Fulfilled</span>
+            <span class="bb-request-detail-step__sub">@(isFulfilled && Model.ModifyDate.HasValue ? Model.ModifyDate.Value.ToString("dd/MM/yy") : "—")</span>
+        </div>
+    </div>
+
+    @if (isRejected && !string.IsNullOrWhiteSpace(Model.RejectReason))
+    {
+        <div class="bb-request-detail-alert bb-request-detail-alert--reject" role="alert">
+            <i class="fa-solid fa-circle-xmark" style="font-size:1.25rem;margin-top:0.1rem;"></i>
+            <div>
+                <strong>Request rejected</strong>
+                <p style="margin:0.35rem 0 0;">@Model.RejectReason</p>
+            </div>
+        </div>
+    }
+
+    <div class="bb-request-details-grid">
+        <div class="bb-card bb-request-detail-panel">
+            <div class="bb-card__header">
+                <h4><i class="fa-solid fa-user-injured"></i> Patient context (HIS)</h4>
+            </div>
+            <div class="bb-card__body">
+                @if (panel != null && !string.IsNullOrEmpty(panel.PatientId))
+                {
+                    <partial name="~/Areas/BloodBank/Views/Shared/_PatientPanel.cshtml" model="panel" />
+                }
+                else
+                {
+                    <div class="bb-request-detail-specs">
+                        <div class="bb-request-detail-spec">
+                            <span class="bb-request-detail-spec__icon"><i class="fa-solid fa-user"></i></span>
+                            <div>
+                                <p class="bb-request-detail-spec__label">Patient name</p>
+                                <p class="bb-request-detail-spec__value">@Model.PatientName</p>
+                            </div>
+                        </div>
+                        <div class="bb-request-detail-spec">
+                            <span class="bb-request-detail-spec__icon"><i class="fa-solid fa-id-card"></i></span>
+                            <div>
+                                <p class="bb-request-detail-spec__label">Patient ID</p>
+                                <p class="bb-request-detail-spec__value bb-mono">@Model.PatientId</p>
+                            </div>
+                        </div>
+                        <div class="bb-request-detail-spec">
+                            <span class="bb-request-detail-spec__icon"><i class="fa-solid fa-bed"></i></span>
+                            <div>
+                                <p class="bb-request-detail-spec__label">Ward / bed</p>
+                                <p class="bb-request-detail-spec__value">@wardBed</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="bb-card">
+            <div class="bb-card__header">
+                <h4><i class="fa-solid fa-file-medical"></i> Clinical order</h4>
+            </div>
+            <div class="bb-card__body">
+                <div class="bb-request-detail-specs">
+                    <div class="bb-request-detail-spec">
+                        <span class="bb-request-detail-spec__icon"><i class="fa-solid fa-user-doctor"></i></span>
+                        <div>
+                            <p class="bb-request-detail-spec__label">Requesting doctor</p>
+                            <p class="bb-request-detail-spec__value">@Model.RequestingDoctorName</p>
+                        </div>
+                    </div>
+                    <div class="bb-request-detail-spec">
+                        <span class="bb-request-detail-spec__icon"><i class="fa-solid fa-hospital"></i></span>
+                        <div>
+                            <p class="bb-request-detail-spec__label">Patient type</p>
+                            <p class="bb-request-detail-spec__value">@Model.PatientType</p>
+                        </div>
+                    </div>
+                    <div class="bb-request-detail-spec">
+                        <span class="bb-request-detail-spec__icon"><i class="fa-solid fa-barcode"></i></span>
+                        <div>
+                            <p class="bb-request-detail-spec__label">Inpatient ID</p>
+                            <p class="bb-request-detail-spec__value bb-mono">@(string.IsNullOrWhiteSpace(Model.Inhospid) ? "—" : Model.Inhospid)</p>
+                        </div>
+                    </div>
+                    @if (Model.ModifyDate.HasValue)
+                    {
+                        <div class="bb-request-detail-spec">
+                            <span class="bb-request-detail-spec__icon"><i class="fa-solid fa-pen"></i></span>
+                            <div>
+                                <p class="bb-request-detail-spec__label">Last updated</p>
+                                <p class="bb-request-detail-spec__value">@Model.ModifyDate.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (isPending)
+                {
+                    <div class="bb-request-detail-actions">
+                        <a asp-action="Dispense" asp-route-id="@Model.RequestId" class="bb-btn bb-btn-success bb-btn-lg">
+                            <i class="fa-solid fa-droplet"></i> Dispense blood
+                        </a>
+                        <button type="button" class="bb-btn bb-btn-ghost" data-bb-reject-toggle>
+                            <i class="fa-solid fa-ban"></i> Reject request
+                        </button>
+                        <a asp-action="Index" class="bb-btn bb-btn-ghost">← Queue</a>
+                    </div>
+                    <div class="bb-request-detail-reject-panel" id="rejectPanelDetail">
+                        <label class="bb-label">Reason for rejection</label>
+                        <form asp-action="Reject" method="post" onsubmit="return confirm('Reject this blood request?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.RequestId" />
+                            <input type="text" name="reason" class="form-control" placeholder="Clinical reason (required)" required />
+                            <button type="submit" class="bb-btn bb-btn-danger bb-btn-sm bb-mt-3">Confirm rejection</button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <div class="bb-request-detail-actions">
+                        @if (isFulfilled)
+                        {
+                            <a asp-action="Dispense" asp-route-id="@Model.RequestId" class="bb-btn bb-btn-ghost">
+                                <i class="fa-solid fa-eye"></i> View dispense record
+                            </a>
+                        }
+                        <a asp-action="Index" class="bb-btn bb-btn-ghost">← Back to queue</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="bb-card bb-mt-4">
+        <div class="bb-card__header">
+            <h4><i class="fa-solid fa-truck-medical"></i> Dispense history</h4>
+            @if (dispenses.Any())
+            {
+                <span class="bb-badge bb-badge-fulfilled">@dispenses.Count record@(dispenses.Count == 1 ? "" : "s")</span>
+            }
+        </div>
+        <div class="bb-card__body">
+            @if (dispenses.Any())
+            {
+                <div class="bb-request-detail-dispense-list">
+                    @foreach (var d in dispenses)
+                    {
+                        <article class="bb-request-detail-dispense-item">
+                            <div class="bb-request-detail-dispense-item__when">
+                                <span class="bb-request-detail-dispense-item__date">@d.DispenseDateTime.ToString("dd MMM")</span>
+                                <span class="bb-request-detail-dispense-item__time">@d.DispenseDateTime.ToString("HH:mm")</span>
+                            </div>
+                            <div class="bb-request-detail-dispense-item__meta">
+                                <span><strong>Staff:</strong> @d.DispensingStaffName</span>
+                                <span><strong>Collector:</strong> @d.CollectorName</span>
+                                <span><strong>Destination:</strong> @d.WardDestination</span>
+                                <span><strong>Units:</strong> @d.UnitsReleased</span>
+                            </div>
+                            <div class="bb-request-detail-dispense-item__serials">@d.SerialNumbers</div>
+                        </article>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="bb-request-detail-empty">
+                    <i class="fa-solid fa-inbox"></i>
+                    <p>No dispense events recorded for this request yet.</p>
+                    @if (isPending)
+                    {
+                        <a asp-action="Dispense" asp-route-id="@Model.RequestId" class="bb-btn bb-btn-primary bb-mt-3">Start dispense</a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+<script>
+(function () {
+  var btn = document.querySelector('[data-bb-reject-toggle]');
+  var panel = document.getElementById('rejectPanelDetail');
+  if (btn && panel) {
+    btn.addEventListener('click', function () {
+      panel.classList.toggle('is-open');
+    });
+  }
+})();
+</script>

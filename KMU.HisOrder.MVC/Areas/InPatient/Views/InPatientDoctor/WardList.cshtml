@@ -1,0 +1,27 @@
+﻿@model List<KMU.HisOrder.MVC.Models.Ward>
+ @{ 
+     Layout = "_Layout"; 
+ } 
+
+ <div class="container p-3 bg-light"> 
+     <span class="ml-1 mr-2">Ward List</span> 
+     <div class="row g-3 align-content-start"> 
+        @foreach (var ward in Model.Where(w => w.wardid == "WI000" || w.wardid == "WI001"))
+                {
+            <div class="col-lg-3 col-sm-6 pt-1 pb-0 mb-3">
+                <a href="@Url.Action("Enter_ward_clinc", "HisOrder", new { area = "HisOrder", id = ward.wardid })" class="btn-ward w-100">
+                    <div class="card p-1">
+                        <div class="stat-widget-one card-body">
+                            <div class="stat-icon d-inline-block">
+                                @* <i class="fa-solid fa-bed text-success border-secondary"></i> *@
+                            </div>
+                            <div class="stat-content d-inline-block text-center">
+                                <h5 class="card-title mb-0">@ward.wardName</h5>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+         } 
+     </div> 
+ </div>

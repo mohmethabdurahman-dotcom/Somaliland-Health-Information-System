@@ -1,0 +1,712 @@
+﻿@using KMU.HisOrder.MVC.Areas.InPatient.ViewModels
+@model ReservationVM
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    var get_session = Context.Session.GetObject<KMU.HisOrder.MVC.Areas.HisOrder.Models.LoginDTO>("LoginDTO");
+    var findRol = _context.KmuAuths.Where(e => e.UserIdno == get_session.EMPCODE && e.ProjectId == "NcdDataEntry").ToList();
+}
+
+<style>
+    /* Bed Selection Grid */
+    .bed-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .bed-card {
+        width: calc(16.666% - 15px); /* 6 items per row accounting for gap */
+        padding: 10px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+        background: #f8f9fa;
+        text-align: center;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+
+        .bed-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .bed-card.selected-bed {
+            border-color: #28a745;
+            background: #e8f5e9;
+        }
+
+        .bed-card.occupied {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .bed-image {
+        width: 100%;
+        height: auto;
+        max-height: 80px;
+        object-fit: contain;
+        margin-bottom: 8px;
+    }
+
+    .bed-name {
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .bed-status {
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .selected-indicator {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        background: #28a745;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        border: 2px solid white;
+    }
+
+    .occupied-badge {
+        background: #dc3545;
+        color: white;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 11px;
+        display: inline-block;
+        margin-top: 3px;
+    }
+
+    /* Custom dropdown styling */
+    .custom-dropdown {
+        position: relative;
+        width: 100%;
+    }
+
+    .dropdown-selected {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background-color: #fff;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-height: 38px;
+    }
+
+    .dropdown-selected:hover {
+        border-color: #80bdff;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ced4da;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 1000;
+        display: none;
+/*         max-height: 300px;
+        overflow-y: auto; */
+    }
+
+    .dropdown-menu.show {
+        display: block;
+    }
+
+    .department-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .department-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .department-item:last-child {
+        border-bottom: none;
+    }
+
+    .department-name {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .fa-chevron-right {
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+    .wards-submenu {
+        position: absolute;
+        left: 100%;
+        top: 0;
+        background: white;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+        min-width: 200px;
+        z-index: 1001;
+        display: none;
+/*         max-height: 250px;
+        overflow-y: auto; */
+    }
+
+    .wards-submenu.show {
+        display: block;
+    }
+
+    .ward-item {
+        padding: 8px 15px;
+        cursor: pointer;
+        color: #666;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .ward-item:hover {
+        background-color: #e9ecef;
+        color: #333;
+    }
+
+    .ward-item:last-child {
+        border-bottom: none;
+    }
+
+    .ward-loading {
+        padding: 8px 15px;
+        color: #6c757d;
+        font-style: italic;
+        text-align: center;
+    }
+
+    .ward-error {
+        padding: 8px 15px;
+        color: #dc3545;
+        font-style: italic;
+        text-align: center;
+    }
+</style>
+<div class="row">
+    <!-- Left Column: Patient Info & Bed Details -->
+    <div class="col-md-12">
+        <div id="patCard">
+            <div>
+                <div class="d-flex align-items-center justify-content-between ">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-1 position-relative d-flex justify-content-end align-items-end">
+                            <img src="/images/avatar.png" class="avatar-xl rounded-circle border-width-4 border-white" alt="" style="width: 66px; height:66px;" />
+
+                        </div>
+                        <div class="ml-2">
+                            <div class="mt-2 d-block">
+                                <h5 class="d-inline-block" id="patientName"><strong>@Model.Patient.ChrPatientFirstname @Model.Patient.ChrPatientMidname @Model.Patient.ChrPatientLastname</strong></h5>
+                                <div class="d-inline-block  ml-2 ">
+                                    <label class="badge rounded-pill badge-danger" hidden>Waiting</label>
+                                    <label class="badge rounded-pill badge-warning "><i class="fa far fa-star"></i></label>
+                                </div>
+                            </div>
+
+                            <div class="text-dark ">
+
+
+                                <h6 class="d-inline-block mr-3 pt-bl-color">
+                                    <a href="#" title="Patient ID">
+                                        <i class="fa-solid fa-id-card mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a> <span id="patientID">@Model.Patient.ChrHealthId </span>
+                                </h6>
+                                <h6 class="d-inline-block mr-3 ">
+                                    <a href="#" title="Birthday / Age">
+                                        <i class="fa-solid fa-b mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a><span id="brithdate">@Model.Patient.ChrBirthDate</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-3">
+                                    <a href="#" title="Sex">
+                                        <i class="fa-solid  fas fa-venus-mars mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a>
+                                    <span id="sex">@Model.Patient.ChrSex</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-2 ">
+                                    <a href="#" title="Mobile">
+                                        <i class="fa fa-phone mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a> <span id="phoneNumber">@Model.Patient.ChrMobilePhone</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-2 pt-br-color">
+                                    <a href="#" title="Address">
+                                        <i class="fa far fas fa-location-dot mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="address"></i>
+                                    </a> <span id="address">@Model.Patient.ChrAddress</span>
+                                </h6>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <hr />
+        </div>
+    </div>
+</div>
+<div class="row bg-white rounded infoCard p-2 ml-3">
+    <div class="col-6">
+
+        <form id="reservationForm" method="post" asp-area="InPatient" asp-controller="Reception" asp-action="SaveReservation">
+            @Html.Hidden("healthId", Model.Patient?.ChrHealthId)
+            @Html.Hidden("inhospId", Model.Reservation?.inhospId)
+            @Html.Hidden("reserveDate", Model.Reservation?.reserveDate)
+            @Html.Hidden("transferStatus", Model.Reservation?.status)
+
+            @if (Model.Reservation?.status == "transfer")
+            {
+                <div class="form-group">
+                    <label for="departmentSelect">Department</label>
+                    <select name="department" id="departmentSelect" class="form-control" required>
+                        @foreach (var department in Model.Departments)
+                        {
+                            <!option @(Model.Reservation?.department == department.DptCode ? "selected" : "") value="@department.DptCode">@department.DptName</!option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group" id="wardSection">
+                    <label for="wardSelect">Ward</label>
+                    <select id="wardSelect" class="form-control" name="wardId" required>
+                        @foreach (var ward in Model.Wards)
+                        {
+                            <!option @(Model.Reservation?.wardId == ward.wardid ? "selected" : "") value="@ward.wardid">@ward.wardName</!option>
+                        }
+                        <!-- Ward options will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group" id="bedSection">
+                    <label for="bedSelect">Bed</label>
+                    <select id="bedSelect" class="form-control" name="bedId" required>
+                        <option value="">Select Bed</option>
+                        @foreach (var bed in Model.AvailableBeds.Where(ba => ba.wardId == Model.Reservation?.wardId))
+                        {
+                            <option value="@bed.bedId">@bed.bedName</option>
+                        }
+                        <!-- Bed options will be populated here -->
+                    </select>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label for="departmentSelect">Department</label>
+                    <select name="department" id="departmentSelect" class="form-control" required>
+                        <option value="">Select Department</option>
+                        @foreach (var department in Model.Departments.Where(d=> d.DptCode == "1700"))
+                        {
+                            <option value="@department.DptCode">@department.DptName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group" id="wardSection" style="display:none;">
+                    <label for="wardSelect">Ward</label>
+                    <select id="wardSelect" class="form-control" name="wardId" required>
+                        <option value="">Select Ward</option>
+                        <!-- Ward options will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group" id="bedSection" style="display:none;">
+                    <label for="bedSelect">Bed</label>
+                    <div id="bedImagesContainer" class="d-flex flex-wrap">
+                    </div>
+                    <input type="hidden" id="bedSelect" name="bedId" required />
+                </div>
+            }
+
+            @* <button type="submit" id="submitBtn" class="btn btn-primary mt-2">Submit Reservation</button> *@
+        </form>
+        <div id="result"></div>
+    </div>
+    <div class="col-6">
+        <div class="form-row">
+            <div class="form-group col-md-2">
+                <label for="shift">Shift</label>
+                <input type="text" id="shift" readonly value="@Model.Shift" class="form-control font-weight-bold text-center" />
+            </div>
+
+         <div class="form-group col-md-8">
+                <label for="referral_place">Referral Department & Ward</label>
+                <div class="custom-dropdown" id="referral_dropdown">
+                    <div class="dropdown-selected" id="referral_selected">
+                        <span>Select Department & Ward</span>
+                        <i class="fa fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu" id="referral_menu">
+                        @foreach (var dpt in ViewBag.Departments as List<KmuDepartment>)
+                        {
+                            <div class="department-item" data-department="@dpt.DptCode">
+                                <span class="department-name">@dpt.DptName</span>
+                                <i class="fa fa-chevron-right"></i>
+                                <div class="wards-submenu" data-department="@dpt.DptCode">
+                                    <!-- Wards will be loaded on hover -->
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <input type="hidden" id="referral_place" name="referral_place" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Payment Method</label>
+            <select required class="form-control" id="paymentMethod">
+                <option value="normal">Normal</option>
+                <option value="discount">Discount</option>
+                <option value="freeofcharge">Free Of Charge</option>
+            </select>
+        </div>
+
+
+        @if (findRol.Count > 0)
+        {
+            <div class="form-group">
+                <label class="border-0 font-weight-bold mb-0 px-0"><font color="red">*</font>Reserve Date:</label>
+                <input type="date" id="Txt_ReserveDate" value='@DateTime.Now.ToString("yyyy-MM-dd")' class="form-control font-weight-bold text-center" />
+            </div>
+        }
+        else
+        {
+            <div class="form-group">
+                <label class="border-0 font-weight-bold mb-0 px-0"><font color="red">*</font>Reserve Date:</label>
+                <input type="date" id="Txt_ReserveDate" readonly value='@DateTime.Now.ToString("yyyy-MM-dd")' class="form-control font-weight-bold text-center" />
+            </div>
+        }
+    </div>
+
+</div>
+<script>
+        $(document).ready(function () {
+        // Check transfer status
+        if ($("#transferStatus").val() != "transfer") {
+            // Department change event
+            $('#departmentSelect').on('change', function () {
+                var selectedDptCode = $(this).val();
+
+                if (selectedDptCode) {
+                    // Show ward section; hide bed section until ward is selected
+                    $('#wardSection').show();
+                    $('#bedSection').hide();
+
+                    // AJAX GET to load wards for the selected department
+                    $.get('/InPatient/Reception/GetWardsByDepartment', { dpt_code: selectedDptCode }, function (data) {
+                        $('#wardSelect').empty();
+                        $('#wardSelect').append('<option value="">Select Ward</option>');
+
+                        if (data.length > 0) {
+                            data.forEach(function (ward) {
+                                $('#wardSelect').append('<option value="' + ward.wardid + '">' + ward.wardName + '</option>');
+                            });
+                        }
+                    }).fail(function () {
+                        // Handle ward load error
+                        $('#wardSelect').append('<option value="">Failed to load wards</option>');
+                    });
+                } else {
+                    // If no department selected, hide ward and bed sections
+                    $('#wardSection').hide();
+                    $('#bedSection').hide();
+                }
+            });
+
+
+            // Ward change event - dynamically populate beds when ward changes
+            $('#wardSelect').on('change', function () {
+                var selectedWardId = $(this).val();
+
+                if (selectedWardId) {
+                    $('#bedSection').show();
+
+                    $.get('/InPatient/Reception/GetBedsByWard', { wardid: selectedWardId }, function (data) {
+                        var $bedContainer = $('#bedImagesContainer');
+                        $bedContainer.empty();
+                        $('#bedSection').find('#noBedsMessage').remove();
+
+                        if (data.success === false) {
+                            $bedContainer.append('<p id="noBedsMessage" class="text-danger">' + data.message + '</p>');
+                        } else if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(function (bed) {
+                                var isOccupied = bed.status === 'occupied';
+                                var bedElement = `
+                                    <div class="bed-card ${isOccupied ? 'occupied' : ''} ${bed.bedId === $('#bedSelect').val() ? 'selected-bed' : ''}"
+                                         data-bed-id="${bed.bedId}"
+                                         ${isOccupied ? 'onclick="return false;"' : ''}>
+                                        <i class="fa-solid fa-bed-pulse fa-lg"></i>
+                                        <div class="bed-name">${bed.bedName}</div>
+                                        ${isOccupied
+                                            ? '<div class="occupied-badge">Occupied</div>'
+                                            : '<div class="bed-status">Available</div>'}
+                                        ${bed.bedId === $('#bedSelect').val()
+                                            ? '<div class="selected-indicator"><i class="fas fa-check"></i></div>'
+                                            : ''}
+                                    </div>
+                                `;
+                                $bedContainer.append(bedElement);
+                            });
+
+                            // Add click handler for bed cards
+                            $(document).off('click', '.bed-card:not(.occupied)').on('click', '.bed-card:not(.occupied)', function() {
+                                var $bedCard = $(this);
+                                var bedId = $bedCard.data('bed-id');
+
+                                if ($bedCard.hasClass('selected-bed')) {
+                                    // If already selected, unselect it
+                                    $bedCard.removeClass('selected-bed');
+                                    $bedCard.find('.selected-indicator').remove();
+                                    $('#bedSelect').val('');
+                                } else {
+                                    // Remove selection from all beds
+                                    $('.bed-card').removeClass('selected-bed');
+                                    $('.selected-indicator').remove();
+
+                                    // Add selection to clicked bed
+                                    $bedCard.addClass('selected-bed');
+                                    $('#bedSelect').val(bedId);
+
+                                    // Add checkmark indicator
+                                    $bedCard.append(`
+                                        <div class="selected-indicator">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                    `);
+                                }
+                            });
+                        } else {
+                            $bedContainer.append('<p id="noBedsMessage" class="text-danger">No Beds Available</p>');
+                        }
+                    }).fail(function () {
+                        $('#bedImagesContainer').append('<p id="noBedsMessage" class="text-danger">Failed to load beds</p>');
+                    });
+                } else {
+                    $('#bedSection').hide();
+                }
+            });
+        } else {
+            // Transfer status branch: if transfer, load beds immediately based on existing ward selection.
+            var selectedWardId = $('#wardSelect').val();
+            if (selectedWardId) {
+                $.get('/InPatient/Reception/GetBedsByWard', { wardid: selectedWardId }, function (data) {
+                    console.log("Response:", data);  // Debug output
+
+                    var $bedSelect = $('#bedSelect');
+                    var $bedSection = $('#bedSection');
+
+                    $bedSelect.empty().append('<option value="">Select Bed</option>');
+                    $bedSection.find('#noBedsMessage').remove();
+
+                    if (data.success === false) {
+                        $bedSelect.hide();
+                        $bedSection.append('<p id="noBedsMessage" style="color:red;">' + data.message + '</p>');
+                    } else if (Array.isArray(data) && data.length > 0) {
+                        $bedSelect.show();
+                        data.forEach(function (bed) {
+                            $bedSelect.append(`<option value="${bed.bedId}">${bed.bedName}</option>`);
+                        });
+                    } else {
+                        $bedSelect.hide();
+                        $bedSection.append('<p id="noBedsMessage" style="color:red;">No Beds Available</p>');
+                    }
+                }).fail(function () {
+                    $('#bedSelect').hide();
+                    $('#bedSection').find('#noBedsMessage').remove();
+                    $('#bedSection').append('<p id="noBedsMessage" style="color:red;">Failed to load beds</p>');
+                });
+            }
+        }
+
+        // Custom dropdown functionality
+        var selectedValue = '';
+        var selectedText = '';
+
+        // Toggle dropdown menu
+        $('#referral_selected').on('click', function(e) {
+            e.stopPropagation();
+            $('#referral_menu').toggleClass('show');
+        });
+
+        // Close dropdown when clicking outside
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#referral_dropdown').length) {
+                $('#referral_menu').removeClass('show');
+                $('.wards-submenu').removeClass('show');
+            }
+        });
+
+        // Department hover event
+        $('.department-item').on('mouseenter', function() {
+            var $this = $(this);
+            var deptCode = $this.data('department');
+            var $submenu = $this.find('.wards-submenu');
+            
+            // Hide other submenus
+            $('.wards-submenu').not($submenu).removeClass('show');
+            
+            // Show current submenu
+            $submenu.addClass('show');
+            
+            // Load wards if not already loaded
+            if ($submenu.find('.ward-item').length === 0 && !$submenu.hasClass('loading')) {
+                $submenu.addClass('loading');
+                $submenu.html('<div class="ward-loading">Loading wards...</div>');
+                
+                $.get('/InPatient/Reception/GetWardsByDepartment', { dpt_code: deptCode }, function (data) {
+                    $submenu.removeClass('loading');
+                    
+                    if (data.length > 0) {
+                        var html = '';
+                        data.forEach(function (ward) {
+                            html += '<div class="ward-item" data-ward-id="' + ward.wardid + '" data-ward-name="' + ward.wardName + '">' + ward.wardName + '</div>';
+                        });
+                        $submenu.html(html);
+                    } else {
+                        $submenu.html('<div class="ward-error">No wards available</div>');
+                    }
+                }).fail(function () {
+                    $submenu.removeClass('loading');
+                    $submenu.html('<div class="ward-error">Failed to load wards</div>');
+                });
+            }
+        });
+
+        // Ward selection event
+        $(document).on('click', '.ward-item', function(e) {
+            e.stopPropagation();
+            
+            var wardId = $(this).data('ward-id');
+            var wardName = $(this).data('ward-name');
+            var departmentName = $(this).closest('.department-item').find('.department-name').text();
+            
+            selectedValue = wardId;
+            selectedText = departmentName + ' - ' + wardName;
+            
+            $('#referral_selected span').text(selectedText);
+            $('#referral_place').val(selectedValue);
+            
+            // Close all menus
+            $('#referral_menu').removeClass('show');
+            $('.wards-submenu').removeClass('show');
+        });
+
+        // Prevent submenu from closing when hovering over it
+        $('.wards-submenu').on('mouseenter', function(e) {
+            e.stopPropagation();
+        });
+
+        // Reserve button click event: prevent multiple submissions
+        $('#reserveBtn').on('click', function (e) {
+            e.preventDefault();
+            var $btn = $(this);
+            if ($btn.data('processing')) return;
+            $btn.data('processing', true);
+
+            // Gather form values
+            var bedId = $("#bedSelect").val();
+            var inhospId = $('input[name="inhospId"]').val();
+
+            if (!bedId) {
+                alert("Please select a bed.");
+                $btn.data('processing', false);
+                return;
+            }
+
+            // Validate referral selection
+            var referralWard = $('#referral_place').val();
+            
+            if (!referralWard) {
+                alert("Please select a referral department and ward.");
+                $btn.data('processing', false);
+                return;
+            }
+
+            // Build form data; note that the reserveDate is not being sent if commented out.
+            var formData = {
+                wardId: $("#wardSelect").val(),
+                reserveDate: $("#Txt_ReserveDate").val(),
+                department: $("#departmentSelect").val(),
+                bedId: bedId,
+                healthId: $("#healthId").val(),
+                inhospId: inhospId,
+                referral_place: $('#referral_place').val()
+            };
+            console.log(formData);
+
+            // AJAX POST to save reservation
+            $.ajax({
+                type: "POST",
+                url: "/Inpatient/Reception/SaveReservations",
+                contentType: "application/json",
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    if(response.success == true){
+                        $('#reservationForm')[0].reset();
+                        $('#wardSection').hide();
+                        $('#bedSection').hide();
+                        $("#reserveModel").modal("hide");
+                        $btn.data('processing', false);
+                        layer.msg(`${response.message}`, { time: 1500, icon: 1 });
+                    }else{
+                        $('#reservationForm')[0].reset();
+                        $('#wardSection').hide();
+                        $('#bedSection').hide();
+                        $("#reserveModel").modal("hide");
+                        $btn.data('processing', false);
+                        layer.alert(response.message, {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        }, function (index) {
+                            layer.close(index);
+                        });
+                    }
+
+                },
+                error: function () {
+                    $btn.data('processing', false);
+                    alert("An error occurred. Please try again later.");
+                }
+            });
+        });
+    });
+</script>

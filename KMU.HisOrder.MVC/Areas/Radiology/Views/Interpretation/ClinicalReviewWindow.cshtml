@@ -1,0 +1,199 @@
+@{
+    Layout = null;
+    var examRequestId = (int)ViewData["ExamRequestId"];
+    var studyUid = (string)ViewData["StudyInstanceUid"];
+    var reportHtml = (string)ViewData["ReportHtml"];
+    var impression = (string)ViewData["Impression"];
+    var finalizedAt = ViewData["FinalizedAt"] as DateTime?;
+
+    var patientName = (string)ViewData["PatientName"] ?? "Unknown Patient";
+    var gender = (string)ViewData["Gender"] ?? "U";
+    var dob = (string)ViewData["BirthDate"] ?? "N/A";
+    var age = ViewData["PatientAge"]?.ToString() ?? "--";
+    // Construct the OHIF link using your local Orthanc/OHIF instance
+    var ohifUrl = $"http://localhost:8042/ohif/viewer?StudyInstanceUIDs={studyUid}";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Review - Exam #@examRequestId</title>
+    
+    <link rel="stylesheet" href="~/lib/bootstrap-4.6.2-dist/css/bootstrap.min.css" />
+    
+    <style>
+        :root {
+            --medical-blue: #0d6efd;
+            --diagnostic-black: #0a0a0a;
+            --paper-white: #ffffff;
+            --border-color: #dee2e6;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Layout Structure */
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 15px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .content-card {
+            flex-grow: 1;
+            display: flex;
+            background: var(--paper-white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Left Side: Reporting */
+        .report-side {
+            width: 35%;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding: 30px;
+        }
+
+        /* Right Side: Interactive Viewer */
+        .viewer-side {
+            width: 65%;
+            background: var(--diagnostic-black);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ohif-frame {
+            width: 100%;
+            flex-grow: 1;
+            border: none;
+        }
+
+        /* Typography & Components */
+        .section-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .impression-highlight {
+            background-color: #f0f7ff;
+            border-left: 4px solid var(--medical-blue);
+            padding: 15px;
+            border-radius: 4px;
+            color: #084298;
+            font-weight: 500;
+            margin-bottom: 25px;
+        }
+
+        .narrative-body {
+            line-height: 1.6;
+            color: #212529;
+            font-size: 14px;
+        }
+
+        .viewer-toolbar {
+            background: #1a1a1a;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .status-badge {
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border: 1px solid #28a745;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 font-weight-bold text-primary">@patientName</h4>
+            <div class="d-flex gap-3 text-muted small mt-1">
+                <span class="mr-3"><strong>Gender:</strong> @gender</span>
+                <span class="mr-3"><strong>DOB:</strong> @dob</span>
+                <span><strong>Age:</strong> @age Y</span>
+            </div>
+        </div>
+        <div class="text-right">
+            <span class="badge badge-success">FINALIZED REPORT</span>
+            <div class="small text-muted">Exam #@examRequestId</div>
+            <small class="text-muted">Verified: @(finalizedAt?.ToString("dd MMM yyyy HH:mm") ?? "-")</small>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <header class="review-header">
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color: #343a40;">Clinical Review</h4>
+                <span class="text-muted small">Accession/Request: <strong>#@examRequestId</strong></span>
+            </div>
+            
+        </header>
+
+        <div class="content-card">
+            
+            <section class="report-side">
+                <span class="section-label">Diagnostic Impression</span>
+                <div class="impression-highlight">
+                    @impression
+                </div>
+
+                <span class="section-label">Report Narrative</span>
+                <div class="narrative-body">
+                    @Html.Raw(reportHtml)
+                </div>
+                
+                <hr class="my-4" />
+                <div class="text-center">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                        <i class="bi bi-printer"></i> Print Report
+                    </button>
+                </div>
+            </section>
+
+            <section class="viewer-side">
+                <div class="viewer-toolbar">
+                    <span class="text-light small font-weight-bold">LIVE DIAGNOSTIC VIEWPORT</span>
+                    <div class="btn-group">
+                        <a href="@ohifUrl" target="_blank" class="btn btn-dark btn-sm border-secondary text-white-50" style="font-size: 11px;">
+                            FULLSCREEN
+                        </a>
+                    </div>
+                </div>
+                <iframe src="@ohifUrl" class="ohif-frame" allowfullscreen></iframe>
+            </section>
+
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+</body>
+</html>

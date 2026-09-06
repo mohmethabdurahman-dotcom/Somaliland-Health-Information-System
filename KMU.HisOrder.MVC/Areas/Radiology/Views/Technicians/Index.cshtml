@@ -1,0 +1,283 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Technician Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section head {
+    <style>
+        .room-card {
+            border-radius: 20px;
+            margin-bottom: 25px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            background: white;
+        }
+
+        .room-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
+        }
+
+        /* Top colored section - Icon only */
+        .room-card-header {
+            padding: 15px 10px 10px 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Modality-specific backgrounds for header (top section) */
+        .ct-scan .room-card-header {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        .xray .room-card-header {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+        }
+
+        .mri .room-card-header {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+
+        .ultrasound .room-card-header {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+
+        .default .room-card-header {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        }
+
+        /* Middle white section - Modality name and room number */
+        .room-card-middle {
+            background: white;
+            padding: 10px 15px;
+            text-align: center;
+        }
+
+        /* Icon badge */
+        .room-icon-badge {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .ct-scan .room-icon-badge {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+        }
+
+        .xray .room-icon-badge {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+        }
+
+        .mri .room-icon-badge {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+        }
+
+        .ultrasound .room-icon-badge {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        .default .room-icon-badge {
+            background: linear-gradient(135deg, #757575, #616161);
+        }
+
+        /* Modality title */
+        .modality-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        /* Room number */
+        .room-number {
+            font-size: 15px;
+            color: #7f8c8d;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
+        /* Bottom colored section - Same color as top */
+        .room-card-body {
+            padding: 25px 25px 30px 25px;
+            text-align: center;
+        }
+
+        /* Modality-specific backgrounds for body (bottom section) - same as header */
+        .ct-scan .room-card-body {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        .xray .room-card-body {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+        }
+
+        .mri .room-card-body {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+
+        .ultrasound .room-card-body {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+
+        .default .room-card-body {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        }
+
+        .waiting-label {
+            font-size: 15px;
+            color: #7f8c8d;
+            font-weight: 500;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .waiting-count {
+            font-size: 22px;
+            font-weight: 800;
+            color: #2c3e50;
+            line-height: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+    </style>
+}
+
+<div class="row page-header px-1 pt-1">
+    <div class="col-12">
+        <div class="row bg-white shadow-sm d-flex justify-content-between align-items-center p-3">
+            <div class="col-6">
+                <h4 style="color:black;">Radiology Technician</h4>
+                <p>Select Room to View Patient Queue</p>
+            </div>
+            <div class="header-badges col-6 text-right">
+        @*         <a href="@Url.Action("Monitor", "RisCallings", new { Area = "Radiology" })" 
+                   class="btn btn-info btn-sm mr-2" 
+                   target="_blank"
+                   title="Open Calling Monitor in new window">
+                    <i class="fa fa-tv"></i> 📺 Calling Monitor
+                </a> *@
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid py-3">
+
+    <div class="row">
+
+        @if (Model != null && Model.Any())
+        {
+            foreach (var room in Model)
+            {
+                var modality = room.modality.ToString().ToLower();
+                int queue = room.ScheduledCount;
+
+                // Determine card class based on modality
+                string cardClass = "default";
+                string iconClass = "fa fa-hospital";
+
+                if (modality.Contains("ct"))
+                {
+                    cardClass = "ct-scan";
+                    iconClass = "fa fa-procedures";
+                }
+                else if (modality.Contains("xray") || modality.Contains("x-ray"))
+                {
+                    cardClass = "xray";
+                    iconClass = "fa fa-x-ray";
+                }
+                else if (modality.Contains("mri"))
+                {
+                    cardClass = "mri";
+                    iconClass = "fa fa-notes-medical";
+                }
+                else if (modality.Contains("ultrasound") || modality.Contains("us"))
+                {
+                    cardClass = "ultrasound";
+                    iconClass = "fa fa-heartbeat";
+                }
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="room-card @cardClass" onclick="viewRoomQueue(@room.roomid)">
+                        
+                        <!-- Top Colored Section - Icon Only -->
+                        <div class="room-card-header">
+                            <div class="room-icon-badge">
+                                <i class="@iconClass"></i>
+                            </div>
+                        </div>
+
+                        <!-- Middle White Section - Modality & Room -->
+                        <div class="room-card-middle">
+                            <div class="modality-title">
+                                @room.modality
+                            </div>
+                            <div class="room-number">
+                                Room @room.room_number
+                            </div>
+                        </div>
+
+                        <!-- Bottom Colored Section - Waiting Patients -->
+                        <div class="room-card-body">
+                            <div class="waiting-label">
+                                Waiting Patients
+                            </div>
+                            <div class="waiting-count">
+                                @queue
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fa fa-door-open"></i>
+                    <h4>No Rooms Available</h4>
+                    <p>No active radiology rooms are configured in the system.</p>
+                </div>
+            </div>
+        }
+
+    </div>
+
+
+    @section Scripts{
+
+        <script>
+
+            function viewRoomQueue(roomId)
+            {
+                window.location.href = '@Url.Action("RoomQueue", "Technicians")?roomId=' + roomId;
+            }
+
+        </script>
+
+    }
+</div>
+
+}

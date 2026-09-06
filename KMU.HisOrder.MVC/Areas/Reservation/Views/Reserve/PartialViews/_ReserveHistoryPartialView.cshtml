@@ -1,0 +1,119 @@
+﻿@model KMU.HisOrder.MVC.Areas.Reservation.ViewModels.ReserveHistoryList
+@using KMU.HisOrder.MVC.Models;
+@using KMU.HisOrder.MVC.Areas.Reservation.ViewModels;
+@using KMU.HisOrder.MVC.Extesion;
+@{
+}
+<style>
+
+    .label{
+        background-color:inherit;
+    }
+
+    .DivContent_Red {
+        border-style: solid;
+        border-width: 0px;
+        border-color: gray;
+        border-top-color: #d60412;
+        border-top-width: 5px;
+        font-weight: bold;
+        font-style: normal;
+        font-variant: normal;
+        text-indent: .2em;
+        text-transform: none;
+        text-decoration: none;
+        vertical-align: middle
+    }
+
+    .inputStyle{
+        border-radius:0.25rem;
+        background-color:#fff;
+        border:1px solid #ced4da;
+    }
+</style>
+<div class="DivContent_Red">
+    <table class="table" id="hylist_tb" style="width:100%">
+        @if (Model.ReturnT != null && Model.ReturnT.isSuccess)
+        {
+            <thead>
+                <tr>
+                    <th class="font-weight-bold text-primary" style="width:50px">Cancel</th>
+                    <th class="font-weight-bold text-primary" style="width:80px">Print</th>
+                    <th class="font-weight-bold text-primary" style="width:150px">Medical Day</th>
+                    <th class="font-weight-bold text-primary" style="width:400px">Department/Doctor</th>
+                    <th class="font-weight-bold text-primary" style="width:80px">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.rhList != null && Model.rhList.Any())
+                {
+                    foreach (var rh in Model.rhList.OrderByDescending(c => c.REG_DATE))
+                    {
+                        //2023.06.15 判斷今日是否為掛號當日:true/false add by elain
+                        var currentDate = ((DateOnly)rh.REG_DATE == DateOnly.FromDateTime(DateTime.Now));
+
+                        <tr id="" style="cursor:pointer">
+                            <td class="font-weight-bold text-dark py-3">
+                                @if (rh.STATUSCODE != "C" && rh.STATUSCODE != "*" && rh.STATUSCODE != "T" && currentDate == true)   //2023.06.15 掛號當日才可取消 modify by elain
+                                {
+                                    <i class="fa-solid fa-rectangle-xmark fa-2xl" onclick="fn_CancelReserve('@rh.InHospID','@rh.PatientID')"></i>
+                                }
+                            </td>
+                            <td>
+                                @if (rh.STATUSCODE != "C" && currentDate == true)   //2023.06.15 掛號當日且非取消才可列印 modify by elain
+                                {
+                                    <a class="font-weight-bold btn btn-sm btn-info" onclick="fn_PrintReserveSheet('@rh.InHospID','@rh.PatientID')">Ticket</a>
+                                }
+                            </td>
+                            <td class="font-weight-bold text-info">@rh.REG_DATE.Value.ToShortDateString()</td>
+                            <td class="font-weight-bold text-info">@rh.REG_DEPT_NAME<br />@rh.DOCTOR_NAME</td>
+
+                            @if (rh.STATUSCODE == "*")
+                            {
+                                <td class="font-weight-bold text-success">@rh.STATUSDESC</td>
+                            }
+                            else if (rh.STATUSCODE == "C")
+                            {
+                                <td class="font-weight-bold text-danger">@rh.STATUSDESC</td>
+                            }
+                            else
+                            {
+                                <td class="font-weight-bold text-info">@rh.STATUSDESC</td>
+                            }
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td class="font-weight-bold text-danger" colspan="5">Not Reservation Has Found!!</td>
+                    </tr>
+                }
+
+            </tbody>
+        }
+        else
+        {
+            <tbody>
+                <tr>
+                    <td class="text-center font-weight-bold text-danger" style="width:100%">Empty Param! </td>
+                </tr>
+            </tbody>
+        }
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#hylist_tb").DataTable({
+            scrollX: true,
+            searching: false,
+            info: false,
+            order: false,
+            lengthMenu: [3],
+            dom: '<"top">rt<"bottom"p><"clear">',
+        });
+
+        $(".dataTables_scroll").css("max-width", "100%");
+    });
+</script>

@@ -1,0 +1,282 @@
+﻿@model KMU.HisOrder.MVC.Models.PhysicalSign
+
+
+@{
+    Layout = null;
+    var inhospId = TempData["inhospId"];
+}
+<div id="dhamaan">
+
+    <div class="row">
+        <p id="inhospId" hidden>@inhospId</p>
+    </div>
+    <div class="row">
+        <div class="row">
+            <div class="col-6">
+                <label class="form-label Mobility">Mobility</label>
+                <select class="form-control input_physical" id="Mobility" name="Physical_Mobility">
+                    <option></option>
+                    <option>Walking</option>
+                    <option>With help/limp</option>
+                    <option>Stretcher/immobile</option>
+                </select>
+            </div>
+
+            <div class="col-6">
+                <label class="form-label AVPU">AVPU</label>
+                <select class="form-control input_physical" id="AVPU" name="Physical_AVPU">
+                    <option></option>
+                    <option>Confused</option>
+                    <option>Alert</option>
+                    <option>Reacts to Voice</option>
+                    <option>React to Pain</option>
+                    <option>Unresponsive</option>
+                </select>
+            </div>
+        </div>
+        <hr />
+        <div class="col-5 mt-2">
+            <label class="form-label Trauma">Trauma</label>
+            <select class="form-control input_physical" id="Trauma" name="Physical_Trauma">
+                <option></option>
+                <option>No</option>
+                <option>Yes</option>
+            </select>
+        </div>
+    </div>
+    <hr />
+    <div class="row">
+        <div class="col-4">
+            <lable class="form-label RR">RR</lable>
+            <input id="RR" name="Physical_RR" class="form-control input_physical" type="number" />
+        </div>
+        <div class="col-4">
+            <lable class="form-label Oxygen">Oxygen</lable>
+            <input id="Oxygen" name="Physical_Oxygen" class="form-control input_physical" type="number" />
+        </div>
+        <div class="col-4">
+            <lable class="form-label HR">HR</lable>
+            <input id="HR" name="Physical_HR" class="form-control input_physical" type="number" />
+        </div>
+
+        <div class="col-4">
+            <lable class="form-label SystolicBP">Systolic BP</lable>
+            <input id="SystolicBP" name="Physical_Systolic_BP" class="form-control input_physical" type="number" />
+        </div>
+        <div class="col-4">
+            <lable class="form-label DiastolicBP">Diastolic BP</lable>
+            <input id="DiastolicBP" name="Physical_Diastolic_BP" class="form-control input_physical" type="number" />
+        </div>
+        <div class="col-4">
+            <lable class="form-label Temperature">Temperature</lable>
+            <input id="Temperature" name="Physical_Temp" class="form-control input_physical" type="number" />
+        </div>
+        <div class="col-4">
+            <lable class="form-label RBS">RBS (Glucose)</lable>
+            <input id="RBS" name="Physical_RBS_Glucose" class="form-control input_physical" type="number" />
+        </div>
+
+        <div class="col-8">
+            @*   <lable class="form-label">Triage Level</lable>
+            <input id="TriageNo" class="form-control"/>*@
+
+            <label class="border-0 font-weight-bold mb-0 px-0 ">Triage Level:</label>
+            <div class="d-flex align-items-center">
+                <input type="text" id="TriageNo" class="form-control col-6 font-weight-bold text-center d-inline" readonly />
+                <i class="fa-solid fa-circle fa-3x" id="TriageLight"></i>
+            </div>
+        </div>
+        <div class="col-4">
+            <lable class="form-label" hidden>Triage Score</lable>
+            <input id="TriageScoreNo" hidden class="form-control" />
+        </div>
+    </div>
+    <div class="col-4 mt-2">
+        <a id="ctriage" class="btn btn-primary">Create</a>
+
+    </div>
+    <div>
+        <script>
+            $(document).ready(function () {
+                $("#ctriage").on("click", function () {
+
+                    var inhospId = $("#inhospId").text();
+                    var triageLevel = $("#TriageNo").data("triage");
+                    var triageScore = $("#TriageScoreNo").val();
+
+                    var type = [];
+                    var value = [];
+                    var iska = [];
+
+                    var RRtype = $(".RR").text();
+                    var RRvalue = $("#RR").val();
+
+                    var Oxygentype = $(".Oxygen").text();
+                    var Oxygenvalue = $("#Oxygen").val();
+
+                    var HRtype = $(".HR").text();
+                    var HRvalue = $("#HR").val();
+
+                    var SystolicBPtype = $(".SystolicBP").text();
+                    var SystolicBPvalue = $("#SystolicBP").val();
+
+                    var DiastolicBPtype = $(".DiastolicBP").text();
+                    var DiastolicBPvalue = $("#DiastolicBP").val();
+
+                    var Temperaturetype = $(".Temperature").text();
+                    var Temperaturevalue = $("#Temperature").val();
+
+                    var RBStype = $(".RBS").text();
+                    var RBSvalue = $("#RBS").val();
+
+                    var Mobilitytype = $(".Mobility").text();
+                    var Mobilityvalue = $("#Mobility").val();
+
+                    var AVPUtype = $(".AVPU").text();
+                    var AVPUvalue = $("#AVPU").val();
+
+                    var Traumatype = $(".Trauma").text();
+                    var Traumavalue = $("#Trauma").val();
+
+
+
+                    type.push(Mobilitytype);
+                    type.push(AVPUtype);
+                    type.push(Traumatype);
+                    type.push(RRtype);
+                    type.push(Oxygentype);
+                    type.push(HRtype);
+                    type.push(SystolicBPtype);
+                    type.push(DiastolicBPtype);
+                    type.push(Temperaturetype);
+                    type.push(RBStype);
+
+                    value.push(Mobilityvalue);
+                    value.push(AVPUvalue);
+                    value.push(Traumavalue);
+                    value.push(RRvalue);
+                    value.push(Oxygenvalue);
+                    value.push(HRvalue);
+                    value.push(SystolicBPvalue);
+                    value.push(DiastolicBPvalue);
+                    value.push(Temperaturevalue);
+                    value.push(RBSvalue);
+
+
+                    if (inhospId == "" || inhospId == null) {
+                        $("#dhamaan").remove();
+                        layer.alert('this patient have phyiscal sign', {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        }, function (index) {
+                            layer.close(index);
+                        });
+                    }
+                    else if (triageLevel == "" || triageScore == "" || Mobilityvalue == "" || AVPUvalue == "" || Traumavalue == ""
+                        || RRvalue == "" || Oxygenvalue == "" || HRvalue == "" || SystolicBPvalue == "" || DiastolicBPvalue == "" || Temperaturevalue == "" || RBSvalue == ""
+                    ) {
+                        layer.alert('Please answer the physical sign of the patient!!', {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        }, function (index) {
+                            layer.close(index);
+                        });
+                    }
+                    else {
+                        $.ajax({
+                            type: "post",
+                            data: {
+                                id: inhospId,
+                                triageLeve: triageLevel,
+                                triageScore: triageScore
+                            },
+                            url: "/HisOrder/PhysicalSigns/savetriage",
+                            success: function (response) {
+                                //alert(response);
+                            }
+                        })//end ajax
+
+                        $.ajax({
+                            type: "post",
+                            url: "/HisOrder/PhysicalSigns/savephs",
+                            data: {
+                                inhospId: inhospId,
+                                type: type,
+                                value: value
+                            },
+                            success: function (response) {
+                                $("#dhamaan").remove();
+                                layer.msg('Created Successfully', { time: 2200, icon: 1 });
+                            }
+
+                        })//ajax end
+                    }
+
+                });//end  onlick
+
+                function calculateTriage() {
+
+                    var ItemList = [];
+                    $(".input_physical").each(function () {
+                        var InputType = this.type;
+
+                        var CND_CodeType = "";
+                        var CND_Value = "";
+
+                        CND_CodeType = this.name;
+
+                        CND_Value = this.value;
+
+                        if (this.value != "") {
+
+
+                            ItemList.push({
+                                CODETYPE: CND_CodeType,
+                                VALUE: CND_Value
+                            });
+
+                        }//if this end
+
+
+
+                    })//end input each
+
+                    $.ajax({
+                        type: "post",
+                        url: "/Maintenance/PhysicalSign/CaculateTriage",
+                        data: {
+                            strTriage: JSON.stringify(ItemList)
+                        },
+                        success: function (responseData) {
+                            var msg = JSON.parse(responseData);
+                            $("#TriageNo").data("triage", msg["TriageLevel"]);
+                            $("#TriageNo").val(msg["TriageLevel"] + "(" + msg["TriagePoint"] + ")");
+                            $("#TriageScoreNo").val(msg["TriagePoint"]);
+                            $("#TriageLight").css("color", msg["lightColor"])
+                        }
+                    })
+                }// end calculate function
+
+                $(".input_physical").on("change", function () {
+
+                    calculateTriage();
+                })
+            })//end document
+
+
+
+        </script>
+
+        @section Scripts {
+            @{
+                await Html.RenderPartialAsync("_ValidationScriptsPartial");
+            }
+        }

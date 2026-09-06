@@ -1,0 +1,431 @@
+﻿@model List<KMU.HisOrder.MVC.Areas.HisOrder.Models.hisordersoa_version>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context;
+@{
+    var sourcetype = ViewData["SourceType"].ToString();
+
+    var Patientdto = (KMU.HisOrder.MVC.Areas.HisOrder.Models.PatientDTO)ViewData["PatientDTO"];
+    var dptcode = ViewData["dptname"].ToString();
+    var physical = _context.PhysicalSigns.Where(e => e.Inhospid == Patientdto.Inhospid).ToList();
+    var physicalJson = System.Text.Json.JsonSerializer.Serialize(physical);
+    var dt = Convert.ToString(Patientdto.RegDate);
+    var dptParent = _context.KmuDepartments.SingleOrDefault(e => e.DptCode == dptcode).DptParent;
+
+    List<KmuCoderef> MG_INFO = (List<KMU.HisOrder.MVC.Models.KmuCoderef>)ViewData["MG_INFO"];
+}
+
+
+<div class="col-lg-12 pt-1 pl-0 pr-0 pb-0">
+
+    <div class=" col-lg-6 p-0 pr-2">
+        <div class="soap-section  card bd-callout bd-callout-master " style="height: calc(100vh - 355px); background-color: #eee ">
+            <div class="test1" style="height: 100%">
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label  ml-2 mr-2 text-dark">
+
+                        Patient Remarks:
+                    </label>
+
+                    <div class=" form-check form-check-inline mr-0" style="width:calc(45vw - 70px - 137px); ">
+
+                        @{
+                            if (string.IsNullOrWhiteSpace(Patientdto.remark))
+                            {
+                                <label style="cursor:pointer;" title="copy to clinic remarks 【None】" id="patient_remarks_label" class="form-check-label  ml-0 mr-2 text-danger   autoCut_label"><i class="fa-solid fa-copy"></i> None</label>
+                            }
+                            else
+                            {
+                                <label style="cursor:pointer;" title="copy to clinic remarks 【@Patientdto.remark】" id="patient_remarks_label" class="form-check-label  ml-0 mr-2 text-danger  autoCut_label"><i class="fa-solid fa-copy"></i> @Patientdto.remark</label>
+                            }
+                        }
+
+                        @{
+                            if (sourcetype == "EMG")
+                            {
+                                <a onclick="ShowModal('@Url.Action("Index","Registrations", new {id = Patientdto.RegPatientId},Context.Request.Scheme)',' Physical Sign')" class="float-end btn btn-sm  btn-primary sign">Physical Sign</a>
+
+                            }
+                            else if (sourcetype == "OPD")
+                            {
+                                if (dptParent == "3000" || dptParent == "6000")
+                                {
+                                    <a hidden onclick="ShowModal1('@Url.Action("VitalSign","Ncd", new {inhospitalId = Patientdto.Inhospid, healthId = Patientdto.RegPatientId,date = Patientdto.RegDate},Context.Request.Scheme)',' Vital Sign')" class="float-end btn btn-sm  btn-warning ml-4 sign text-dark" id="btntriage">Vital Sign</a>
+
+                                }
+
+                            }
+                            else if (sourcetype == "WARD")
+                            {
+                                <a onclick="ShowModal3('@Url.Action("WardVital","Registrations", new { id = Patientdto.Inhospid},Context.Request.Scheme)',' Physical Sign')" class="float-end btn btn-sm  btn-primary sign">Physical Sign</a>
+                                        <!-- Weekly Vitals -->
+                                <button type="button" class="btn btn-success btn-sm mx-2"
+                                        onclick="weakly('@Url.Action("WeeklyVitals", "Ward", new {area = "InPatient", healthid = Patientdto.RegPatientId, inhospid = Patientdto.Inhospid })', '7-Day Patient Vitals Overview')">
+                                    <i class="fa-solid fa-calendar-week me-1"></i> Weekly Vitals
+                                </button>
+
+                            }
+                        }
+
+
+
+                        @if (dptParent == "3000" || dptParent == "6000")
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-info dropdown-toggle btn-sm" type="button" data-toggle="dropdown">
+                                    Basic Info
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+
+                                    <li><button class="btn text-white form-control mt-2 rounded" style="font-size:12px; background-color:#006d92;" onclick="ShowModal1('@Url.Action("Index","Ncd", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt,NmType = "intake"},Context.Request.Scheme)','Noncommunicable diseases(NCD) - Intake Diagnosis ')">Intake Diagnosis</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color:#a881af;" onclick="ShowModal1('@Url.Action("Index","Ncd", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt,NmType = "Comor"},Context.Request.Scheme)','Noncommunicable diseases(NCD) - Comorbidities')">Comorbidities</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color:#4d3c77;" onclick="ShowModal1('@Url.Action("Index","Ncd", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "Hist"},Context.Request.Scheme)','Noncommunicable diseases(NCD) - History')">Life Style</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color:#008B8B;" onclick="ShowModal1('@Url.Action("Index","Ncd", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "Back"},Context.Request.Scheme)','Noncommunicable diseases(NCD) - Background')">Social Background</button></li>
+                                    @*<button onclick="ShowModal('@Url.Action("Details","Registrations", new {id = item.Inhospid},Context.Request.Scheme)',' Physical Sign')" class="float-end btn border-none">@item.physign_time</button>*@
+                                </ul>
+                            </div>
+                            <div class="dropdown mx-2">
+                                <button class="btn btn-primary dropdown-toggle btn-sm" type="button" data-toggle="dropdown">
+                                    Follow Up
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><button class="btn text-white mt-2 form-control rounded" style="font-size:12px; background-color: #5E716A;" onclick="ShowModal1('@Url.Action("Update","Ncd", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "Hyper"},Context.Request.Scheme)','Noncommunicable diseases(NCD) - Hypertension')">Hypertension</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color: #0E86D4;" onclick="ShowModal1('@Url.Action("Update","Ncd", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "Asthma"},Context.Request.Scheme)','Noncommunicable diseases(NCD) - Asthma/COPD')">Asthma/COPD</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color:#bb3e03;" onclick="ShowModal1('@Url.Action("Update","Ncd", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "Heart"},Context.Request.Scheme)','Noncommunicable diseases(NCD) - History')">Heart Failure</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color: #008B8B;" onclick="ShowModal1('@Url.Action("Update","Ncd", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "Diabetes"},Context.Request.Scheme)','Noncommunicable diseases(NCD) - Diabetes')">Diabetes</button></li>
+                                    @*<button onclick="ShowModal('@Url.Action("Details","Registrations", new {id = item.Inhospid},Context.Request.Scheme)',' Physical Sign')" class="float-end btn border-none">@item.physign_time</button>*@
+                                </ul>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-dark dropdown-toggle btn-sm" type="button" data-toggle="dropdown">
+                                    Record
+                                    <span class="caret"></span>
+                                </button>
+
+                                <ul class="dropdown-menu">
+                                    <li><button class="btn text-white form-control mt-2" style="font-size:12px; background-color:#4d3c77;" onclick="ShowModal('@Url.Action("Detail","Ncd", new {HealthId = Patientdto.RegPatientId, inhosp = Patientdto.Inhospid, NmType = "Record"},Context.Request.Scheme)','History')">Record</button></li>
+                                    <li><button class="btn text-white form-control" style="font-size:12px; background-color:#540909;" onclick="ShowModal('@Url.Action("Detail","Ncd", new {HealthId = Patientdto.RegPatientId, inhosp = Patientdto.Inhospid, NmType = "VitalSign"},Context.Request.Scheme)','Vital Sign')">Vital Sign</button></li>
+                                    <li><button class="btn text-white form-control" style="font-size:12px; background-color:#006d92;" onclick="ShowModal1('@Url.Action("statistic","Ncd", new {HealthId = Patientdto.RegPatientId, inhosp = Patientdto.Inhospid},Context.Request.Scheme)','Statistic')">Statistic</button></li>
+                                </ul>
+
+                            </div>
+
+                        }
+
+                        @if (dptParent == "4000")
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-info dropdown-toggle btn-sm" type="button" data-toggle="dropdown">
+                                    Basic Info
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+
+                                    <li><button class="btn text-white form-control mt-2 rounded" style="font-size:12px; background-color:#006d92;" onclick="ShowModal1('@Url.Action("Index","Mental", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt,NmType = "Biography"},Context.Request.Scheme)','Mental Department - Biography ')">Biography</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color:#a881af;" onclick="ShowModal1('@Url.Action("Index","Mental", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "Hist"},Context.Request.Scheme)','Mental Department - Life Style')">Life Style</button></li>
+                                </ul>
+                            </div>
+                            <div class="dropdown mx-2">
+                                <button class="btn btn-primary dropdown-toggle btn-sm" type="button" data-toggle="dropdown">
+                                    Exam & Indicators
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><button class="btn text-white mt-2  form-control rounded" style="font-size:12px; background-color: #a881af;" onclick="ShowModal1('@Url.Action("Update","Mental", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "DEV"},Context.Request.Scheme)','Mental Department - Development')">History</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color: #4d3c77;" onclick="ShowModal1('@Url.Action("Update","Mental", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "DC"},Context.Request.Scheme)','Mental Department - Duration Course')">Duration Course</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color: #5E716A;" onclick="ShowModal1('@Url.Action("Update","Mental", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "PSHX"},Context.Request.Scheme)','Mental Department - Personal & Social HX')">Personal & Social HX</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color:#0E86D4;" onclick="ShowModal1('@Url.Action("Update","Mental", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "AH"},Context.Request.Scheme)','Mental Department - Psychiatric')">Psychiatric</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color: #bb3e03;" onclick="ShowModal1('@Url.Action("Update","Mental", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "MSE"},Context.Request.Scheme)','Mental Department - Mental Status Exam')">Mental Status Exam</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color: #008B8B;" onclick="ShowModal1('@Url.Action("Update","Mental", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "GPE"},Context.Request.Scheme)','Mental Department - General Physical Exam')">General Physical Exam</button></li>
+                                    <li><button class="btn text-white form-control rounded" style="font-size:12px; background-color: #DD6E0F;" onclick=" ('@Url.Action("Update","Mental", new {inhospitalId = Patientdto.Inhospid, HealthId = Patientdto.RegPatientId, date = dt, NmType = "PI"},Context.Request.Scheme)','Mental Department - Plan & Investigations')">Plan & Investigations</button></li>
+                                    @*<button onclick="ShowModal('@Url.Action("Details","Registrations", new {id = item.Inhospid},Context.Request.Scheme)',' Physical Sign')" class="float-end btn border-none">@item.physign_time</button>*@
+                                </ul>
+                            </div>
+                            <div>
+                                <ul>
+                                    <li><button class="btn text-white form-control" style="font-size:12px; background-color:#4d3c77;" onclick="ShowModal('@Url.Action("Detail","Mental", new {HealthId = Patientdto.RegPatientId, inhosp = Patientdto.Inhospid},Context.Request.Scheme)','Record')">Record</button></li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="cke_chrome mb-1 p-0 pr-0 pl-0" style="height:35.5px;">
+                    <div class="row mt-1 mb-1">
+                        <div class="card-title ml-3 pt-1 pr-1 pl-1 w-100">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <div class="d-flex align-items-center">
+                                    <h6 class="mb-0">Clinic Remarks</h6>
+                                    <button type="button"
+                                            id="btnClinicalReview"
+                                            class="btn btn-sm btn-danger ml-2"
+                                            data-inhospid="@Patientdto.Inhospid"
+                                            data-patientid="@Patientdto.RegPatientId"
+                                            style="display:none;">
+                                        View Images & Report
+                                    </button>
+                                </div>
+                            <label style="cursor:pointer;" title="
+                                Example:
+                                -Personal History: Surgical 、Allergy、NCDs ....
+
+                                -Subjective/Chief complain:  fever for 3 days 、
+                                lower abdomen pain for 4 days 、poor appetite; weakness.....
+
+                                -Objective:  
+                                Physical examination: 
+                                Ultrasound:
+                                X-ray: 
+                                EKG: 
+                                CT/MRI report:
+
+                                - Assessment:
+                                sinusitis for 3 days under medications
+                                cervical cancer status post radical hysterectomy on __ under chemotherapy"
+                                   class="form-check-label  ml-0 mr-1 text-success">
+                                <i class="text-success  fa fa-info-circle"></i> Example
+                            </label>
+                            </div>
+                            @{
+                                if (sourcetype == "EMG")
+                                {
+                                    <span class="ml-2 d-inline-flex">
+
+                                        <span class="input-group mb-1">
+                                            <select class="version-select custom-select custom-select-sm">
+
+                                                @if (Model != null && Model.Count() > 0)
+                                                {
+                                                    int MaxVer = Model.Max(c => c.VersionCode);
+
+                                                    foreach (var obj in Model)
+                                                    {
+                                                        if (obj.VersionCode == MaxVer)
+                                                        {
+                                                            <option value="@obj.VersionCode" selected>@obj.Des</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@obj.VersionCode">@obj.Des</option>
+                                                        }
+                                                    }
+
+                                                }
+                                                else
+                                                {
+
+                                                }
+                                            </select>
+                                            <span class=" ml-1">
+
+                                                @if (Model != null && Model.Count() > 0)
+                                                {
+                                                    <button class="btn btn-sm btn-dark delete_soap"><i class="fa fas fas fa-trash"></i></button>
+                                                    <button class="btn btn-sm  btn-primary add_soap"><i class="fa fas fa-plus"></i></button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-sm btn-dark delete_soap" style="display:none;"><i class="fa fas fas fa-trash"></i></button>
+                                                    <button class="btn btn-sm  btn-primary add_soap" style="display:none;"><i class="fa fas fa-plus"></i></button>
+                                                }
+                                            </span>
+                                        </span>
+
+                                    </span>
+                                }
+                                if (sourcetype == "WARD")
+                                {
+                                    <span class="ml-2 d-inline-flex">
+
+                                        <span class="input-group mb-1">
+                                            <select class="version-select custom-select custom-select-sm">
+
+                                                @if (Model != null && Model.Count() > 0)
+                                                {
+                                                    int MaxVer = Model.Max(c => c.VersionCode);
+
+                                                    foreach (var obj in Model)
+                                                    {
+                                                        if (obj.VersionCode == MaxVer)
+                                                        {
+                                                            <option value="@obj.VersionCode" selected>@obj.Des </option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@obj.VersionCode">@obj.Des</option>
+                                                        }
+                                                    }
+
+                                                }
+                                                else
+                                                {
+
+                                                }
+                                            </select>
+                                            <span class=" ml-1">
+
+                                                @if (Model != null && Model.Count() > 0)
+                                                {
+                                                    <button class="btn btn-sm btn-dark delete_soap"><i class="fa fas fas fa-trash"></i></button>
+                                                    <button class="btn btn-sm  btn-primary add_soap"><i class="fa fas fa-plus"></i></button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-sm btn-dark delete_soap" style="display:none;"><i class="fa fas fas fa-trash"></i></button>
+                                                    <button class="btn btn-sm  btn-primary add_soap" style="display:none;"><i class="fa fas fa-plus"></i></button>
+                                                }
+                                            </span>
+                                        </span>
+
+                                    </span>
+                                }
+                            }
+                          
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="editor_clinic_remarks" data-soaid="" data-version-code=""></div>
+            </div>
+        </div>
+
+        <div class="card bd-callout bd-callout-master mt-0 " style="height: 150px; background-color: #eee; /*#DBFEF7;*/ ">
+            @{
+                Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_DiagnosisPartialView.cshtml");
+            }
+        </div>
+    </div>
+
+    <div class=" col-lg-6 p-0 pl-2">
+        <div class="soap-section  card bd-callout bd-callout-master  " style="height: calc(100vh - 195px); background-color: #eee ">
+            <div class="test2" style="height: 100%">
+                <div class="card-title pt-1 pr-1 pl-1">
+                    <h6>Management</h6>
+                    <label style="cursor:pointer;" title="
+
+
+Example:
+- medications (___) and OPD follow up in ___ weeks
+- arrange ___ examination on (date)
+- arrange ___ surgical treatment (date)
+- refer to ____ for further consultation and management 
+- keep current management
+- suggest low salt diet, or exercise, or Kegal exercise etc.
+
+"
+                           class="form-check-label  ml-0 mr-1 text-success">
+                        <i class="text-success  fa fa-info-circle"></i> Example
+                    </label>
+                </div>
+                <div class="cke_chrome mb-1 p-0 pr-0 pl-0">
+                    <div class="row m-0 mt-1">
+                        @*<div class="mx-1"><input type="radio" id="" class=" check form-check-input checkbox_transfer"><span class=" ml-2 align-text-top">Transfer</span></div>
+                        <div class="mx-1"><input type="radio" id="" class=" check form-check-input checkbox_transfer"><span class=" ml-2 align-text-top">Transfer</span></div>
+                        <div class="mx-1"><input type="radio" id="" class=" check form-check-input checkbox_transfer"><span class=" ml-2 align-text-top">Transfer</span></div>
+                        <div class="mx-1"><input type="radio" id="" class=" check form-check-input checkbox_transfer"><span class=" ml-2 align-text-top">Transfer</span></div>*@
+
+                        @{
+                            if (MG_INFO != null && MG_INFO.Count() > 0)
+                            {
+                                foreach (KmuCoderef info in MG_INFO)
+                                {
+                                    if (Patientdto != null && string.IsNullOrWhiteSpace(Patientdto.transfer_code))
+                                    {
+                                        if (info.RefName == "None")
+                                        {
+                                            <div class="mx-1 mb-1 form-check form-check-inline">
+                                                <input class="radio_transfer" type="radio" name="MG_INFO" id="MG_@info.RefName" data-trans-code="@info.RefName" checked="checked">
+                                                <label class=" mb-0 ml-1 mr-2 text-dark" for="MG_@info.RefName">@info.RefName</label>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="mx-1 mb-1 form-check form-check-inline">
+                                                <input class="radio_transfer" type="radio" name="MG_INFO" data-trans-code="@info.RefName" id="MG_@info.RefName">
+                                                <label class=" mb-0 ml-1 mr-2 text-dark" for="MG_@info.RefName">@info.RefName</label>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (info.RefName == Patientdto.transfer_code)
+                                        {
+                                            <div class="mx-1 mb-1 form-check form-check-inline">
+                                                <input class="radio_transfer" type="radio" name="MG_INFO" id="MG_@info.RefName" data-trans-code="@info.RefName" checked="checked">
+                                                <label class=" mb-0 ml-1 mr-2 text-dark" for="MG_@info.RefName">@info.RefName</label>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="mx-1 mb-1 form-check form-check-inline">
+                                                <input class="radio_transfer" type="radio" name="MG_INFO" data-trans-code="@info.RefName" id="MG_@info.RefName">
+                                                <label class=" mb-0 ml-1 mr-2 text-dark" for="MG_@info.RefName">@info.RefName</label>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+
+                    </div>
+
+
+                    @*<div class="form-check form-check-inline">
+                    <label class="form-check-label">
+
+                    @{
+                    if (Patientdto != null && !string.IsNullOrWhiteSpace(Patientdto.transfer_code))
+                    {
+                    <input type="checkbox" id="checkbox_transfer" checked="checked" class=" check form-check-input"><span class=" ml-2 align-text-top">Transfer</span>
+                    }
+                    else
+                    {
+                    <input type="checkbox" id="checkbox_transfer" class=" check form-check-input"><span class=" ml-2 align-text-top">Transfer</span>
+                    }
+                    }
+                    </label>
+                    </div>*@
+                    @*<div class="form-check form-check-inline mr-0" style="width: calc(100% - 107px)">
+                    @{
+                    if (Patientdto != null && !string.IsNullOrWhiteSpace(Patientdto.transfer_code))
+                    {
+                    <input type="text" id="transfer_des" class="form-control form-control-sm" placeholder="Description..." value=@Patientdto.transfer_des>
+                    }
+                    else
+                    {
+                    <input type="text" id="transfer_des" class="form-control form-control-sm" readonly="readonly" placeholder="Description..." value=@Patientdto.transfer_des>
+                    }
+                    }
+
+                    </div>*@
+                </div>
+                <div id="editor_managment" data-soaid="" data-version-code="">
+                </div>
+
+
+            </div>
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<script src="~/lib/jquery1.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+     $("#btntriage").trigger('click');
+    })
+</script>
+
+
+
+
+
+
+

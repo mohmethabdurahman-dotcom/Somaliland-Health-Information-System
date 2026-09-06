@@ -1,0 +1,156 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .titleLabel{
+        padding: 3px 3px 0px 0px;
+        text-align: right;
+        color: black;
+        font-weight: 700;
+    }
+
+    table, th, td {
+        border: 1px solid;
+        color: black;
+    }
+
+</style>
+@*<div class="form-group row border-bottom">*@
+<div style="width:100%">
+    <div class="col-lg-12">
+
+        <div class="form-group row mx-0 justify-content-center">
+            <label class="titleLabel"><font color="red">*</font>Year:</label>
+            <input type="text" id="SearchYear" class="form-control col-lg-2 font-weight-bold text-center rounded" style="font-size: 10px;" value="@DateTime.Now.Year" onkeyup="ChageTitle()" onkeypress="return enterFun(event)" /> &nbsp;
+
+            <label class="titleLabel"><font color="red">*</font>Month:</label>
+            <input type="text" id="SearchMonth" class="form-control col-lg-2 font-weight-bold text-center rounded" style="font-size: 10px;" value="@DateTime.Now.Month" onkeyup="ChageTitle()" onkeypress="return enterFun(event)" /> &nbsp;
+
+            <button type="button" class="btn btn-primary float-right" style="font-size: 10px;margin-left:5px;" onclick="GetTable()">Search</button>
+
+        </div>
+    </div>
+    <div id="DHIS2Div" class="" style="font-size: 10px;">
+        <table clas="table table-border table-striped" style="width:600px;text-align: center;margin: 0px auto;">
+            <thead style="background-color: #c3e6fa;">
+                <tr><td colspan="5"><span id="tableTitle">@DateTime.Now.Year/@DateTime.Now.Month DHIS2</span></td></tr>
+                <tr>
+                    <th rowspan="2">code</th>
+                    <th rowspan="2">DISEASES</th>
+                    <th colspan="3">SECTION:OUTPATIENT</th>
+                </tr>
+                <tr>
+                    <th>Under 5</th>
+                    <th>Over 5</th>
+                    <th>Total</th>
+                </tr>
+                <tr></tr>
+            </thead>
+            <tbody id="DhisTableBody">
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+@section scripts{
+    <script>
+        var APPLICATION_ROOT = '@Url.Content("~/Statistic/")';
+
+        function enterFun(e) {
+            //See notes about 'which' and 'key'
+            if (e.keyCode == 13) {
+                GetTable();
+                return false;
+            }
+        }
+
+        function ChageTitle(){
+            let eMsg = "";
+            if (isNaN($("#SearchYear").val())){
+                $("#SearchYear").val(new Date().getFullYear());
+                eMsg += "Year Must be number <br>"
+            }
+            if (isNaN($("#SearchMonth").val())) {
+                $("#SearchMonth").val(new Date().getMonth())
+                eMsg += "Month Must be number "
+            }
+            if (eMsg != "")
+                layer.msg(eMsg);
+            else
+                $("#tableTitle").text($("#SearchYear").val() + "/" + $("#SearchMonth").val() + " DHIS2");
+        }
+
+        function GetTable(){
+            if ($("#SearchYear").val().trim() != "" && $("#SearchYear").val().trim() != "SearchMonth") {
+                $.ajax({
+                    type: 'POST',
+                    url: APPLICATION_ROOT + "DHIS2/DHisTable",
+                    data: {
+                        year: $("#SearchYear").val().trim(),
+                        mon: $("#SearchMonth").val().trim()
+                    },
+                    async: false,
+                    dataType: 'json',
+                    success: function (_result) {
+                        //console.log(result[0])
+                        layer.msg('successfully', { time: 1000, icon: 1 });
+                        $("#DhisTableBody").empty();
+                        var table = document.getElementById("DhisTableBody");
+                        if (_result.length > 0) {
+                            for (let i = 0; i < _result.length; i++) {
+                                //console.log(_result[i])
+                                var tr = document.createElement('tr');
+
+                                if ((i % 2) != 0)
+                                    tr.setAttribute(
+                                        'style',
+                                        'background-color: #c3e6fa;',
+                                    );
+                                let cell1 = document.createElement('td');
+                                let cell2 = document.createElement('td');
+                                let cell3 = document.createElement('td');
+                                let cell4 = document.createElement('td');
+                                let cell5 = document.createElement('td');
+
+                                cell2.setAttribute(
+                                    'style',
+                                    'text-align: left;',
+                                );
+
+                                cell1.innerHTML = _result[i]["dhis2Code"];
+                                cell2.innerHTML = _result[i]["diseases"];
+                                cell3.innerHTML = _result[i]["underFive"];
+                                cell4.innerHTML = _result[i]["overFive"];
+                                cell5.innerHTML = _result[i]["total"];
+
+                                tr.appendChild(cell1);
+                                tr.appendChild(cell2);
+                                tr.appendChild(cell3);
+                                tr.appendChild(cell4);
+                                tr.appendChild(cell5);
+
+                                table.appendChild(tr);
+                            }
+                        }
+
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        if (xhr.status == "401") {
+                            alert('Unauthorized ' + thrownError + '！');
+                        }
+                        location.reload();
+                    },
+                    complete: function (XMLHttpRequest, textStatus) { }
+                });
+            }else{
+                layer.msg("You must give Year and Month a value");
+            }
+            
+        }
+        
+    </script>
+}

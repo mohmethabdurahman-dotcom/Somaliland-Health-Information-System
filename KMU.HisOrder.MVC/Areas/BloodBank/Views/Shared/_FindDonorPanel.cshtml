@@ -1,0 +1,64 @@
+@* MRFind-style donor search (embed) *@
+<h6 class="direction mx-2" style="margin-bottom:0;">Blood Bank → Find Donor</h6>
+<div class="form-group row mx-0 border-bottom" id="bbFindDonor">
+    <div class="col-lg-9 border-right">
+        <div class="form-group row mx-0 mb-0 align-self-end">
+            <label class="form-control col-lg-2 font-weight-bold border-0 px-0 pb-0 mb-0 align-self-end" style="background-color:inherit;font-size:12px">&nbsp;&nbsp;Donor ID Number:</label>
+            <label class="form-control col-lg-2 font-weight-bold border-0 px-0 pb-0 mb-0 align-self-end" style="background-color:inherit;font-size:12px">&nbsp;&nbsp;Mobile Phone:</label>
+            <label class="form-control col-lg-4 font-weight-bold border-0 px-0 pb-0 mb-0 align-self-end" style="background-color:inherit;font-size:12px">&nbsp;&nbsp;&nbsp;Donor Name:</label>
+        </div>
+        <div class="form-group row mx-0">
+            <input type="text" id="Txt_DonorID_Dash" class="form-control col-lg-2 font-weight-bold text-center rounded" /> &nbsp;
+            <input type="text" id="Txt_MobilePhone_Dash" class="form-control col-lg-2 font-weight-bold text-center rounded" />&nbsp;
+            <input type="text" id="Txt_DonorName_Dash" class="form-control col-lg-4 font-weight-bold text-center rounded" />&nbsp;
+            <button type="button" class="btn btn-primary float-right" onclick="fn_DonorSearchDash()">Search</button>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <button type="button" class="btn btn-primary float-right" onclick="location.href='@Url.Action("Create", "Donors", new { area = "BloodBank" })'">Register New Donor</button>
+    </div>
+</div>
+<div class="form-group row mx-0">
+    <div class="col-12">
+        <div id="DonorDataContentDash" class="collapse"></div>
+    </div>
+</div>
+<script src="~/js/Ajax.js"></script>
+<script>
+    var bbDonorSearchPath = '@Url.Action("DonorSearch", "Donors", new { area = "BloodBank" })';
+
+    function fn_DonorSearchDash() {
+        var DonorID = $('#Txt_DonorID_Dash').val();
+        var MobilePhone = $('#Txt_MobilePhone_Dash').val();
+        var DonorName = $('#Txt_DonorName_Dash').val();
+        if ((!DonorID) && (!MobilePhone) && (!DonorName)) {
+            if (typeof layer !== 'undefined') {
+                layer.alert('Please choose one of Condition to Search', {
+                    skin: 'layui-layer-lan', closebtn: 1, anim: 5, icon: 1, btn: ['OK'], title: 'Error Message'
+                }, function (i) { layer.close(i); });
+            }
+            return;
+        }
+        $('#DonorDataContentDash').html('').removeClass('show');
+        ajax(bbDonorSearchPath, { donorId: DonorID, phone: MobilePhone, name: DonorName }, function (html) {
+            $('#DonorDataContentDash').html(html).addClass('show');
+            if ($.fn.DataTable && $('#donorInfo_tb').length) {
+                if ($.fn.DataTable.isDataTable('#donorInfo_tb')) $('#donorInfo_tb').DataTable().destroy();
+                $('#donorInfo_tb').DataTable({ scrollX: true });
+            }
+        }, function () {
+            if (typeof layer !== 'undefined') {
+                layer.alert('Donor search failed. Please refresh the page and try again.', {
+                    skin: 'layui-layer-lan', closebtn: 1, anim: 5, icon: 2, btn: ['OK'], title: 'Search Error'
+                });
+            }
+        });
+    }
+    ['#Txt_DonorID_Dash', '#Txt_MobilePhone_Dash', '#Txt_DonorName_Dash'].forEach(function (s) {
+        $(s).keyup(function (e) { if (e.which === 13) fn_DonorSearchDash(); });
+    });
+    function fn_SelectRow(trRow) {
+        $('tr[id^="tr_donor_"]').removeClass('trHighlight');
+        $(trRow).addClass('trHighlight');
+    }
+</script>

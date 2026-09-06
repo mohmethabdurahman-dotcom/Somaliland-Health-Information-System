@@ -1,0 +1,159 @@
+@model ScreeningCertificateViewModel
+@using KMU.HisOrder.MVC.Models.BloodBank
+@{
+    Layout = "~/Areas/BloodBank/Views/Shared/_ScreeningPrintLayout.cshtml";
+    ViewData["Title"] = Model.IsPassed ? "Blood Bank → Screening Passed" : "Blood Bank → Screening Report";
+    var certNo = $"BB-SCR-{Model.ScreeningId:D6}";
+    var bagSerial = !string.IsNullOrWhiteSpace(Model.BagSerialNumber) ? Model.BagSerialNumber : Model.SerialNumber;
+    var typeClass = Model.DonationType == DonationTypes.Directed ? "bb-print-type--directed" : "bb-print-type--volunteer";
+    var rows = new List<(string Name, string Result)>
+    {
+        ("HIV", Model.HivResult),
+        ("Hepatitis B", Model.HepBResult),
+        ("Hepatitis C", Model.HepCResult),
+        ("Syphilis", Model.SyphilisResult)
+    };
+    if (!string.IsNullOrWhiteSpace(Model.MalariaResult) && Model.MalariaResult != "N/A")
+        rows.Add(("Malaria", Model.MalariaResult));
+}
+@section head {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+    <partial name="~/Areas/BloodBank/Views/Screening/_ScreeningPrintStyles.cshtml" />
+}
+
+<div class="bb-print-sheet bb-print-sheet--thermal">
+    <article class="bb-print-ticket">
+        <header class="bb-print-head">
+            <div class="bb-print-head__banner">
+                <span class="bb-print-head__banner-icon"><i class="fa-solid fa-stethoscope"></i></span>
+                <span>Blood bank screening certificate</span>
+            </div>
+            <img src="@Url.Content("~/images/MoHDLogo.png")"
+                 alt="Ministry of Health"
+                 class="bb-print-head__mohd"
+                 onerror="this.style.display='none'" />
+            <div class="bb-print-head__row">
+                <img src="@Url.Content("~/images/somaliland_his_logo.png")"
+                     alt="HIS"
+                     class="bb-print-head__his" />
+                <span class="bb-print-head__divider" aria-hidden="true"></span>
+                <img src="@Url.Content("~/images/HospLogo.png")"
+                     alt="Hospital"
+                     class="bb-print-head__hosp"
+                     onerror="this.style.display='none'" />
+            </div>
+            <h1 class="bb-print-head__title">@Model.FacilityName</h1>
+            <p class="bb-print-head__meta">
+                <span class="bb-print-cert-id">@certNo</span><br />
+                @Model.ScreeningDateTime.ToString("dd/MM/yyyy HH:mm")
+            </p>
+        </header>
+
+        <div class="bb-print-verdict @(Model.IsPassed ? "is-pass" : "is-fail")" role="status">
+            <span class="bb-print-verdict__label">Overall result</span>
+            <strong class="bb-print-verdict__title">@(Model.IsPassed ? "PASSED" : "FAILED")</strong>
+            <span class="bb-print-verdict__sub">
+                @(Model.IsPassed
+                    ? "Cleared for bag label & inventory"
+                    : "Not for transfusion — quarantine")
+            </span>
+        </div>
+
+        @if (Model.IsPassed)
+        {
+            <div class="bb-print-bag-block">
+                <p class="bb-print-section-title bb-print-section-title--bag"><i class="fa-solid fa-tag"></i> Bag serial</p>
+                @if (!string.IsNullOrWhiteSpace(bagSerial))
+                {
+                    <p class="bb-print-bag-serial bb-mono">@bagSerial</p>
+                }
+                else
+                {
+                    <span class="bb-print-bag-line" aria-hidden="true"></span>
+                    <p class="bb-print-bag-hint">Write assigned serial on bag label</p>
+                }
+            </div>
+        }
+
+        <p class="bb-print-section-title"><i class="fa-solid fa-user"></i> Donor</p>
+        <table class="bb-print-kv">
+            <tr><th>Name</th><td>@Model.DonorName</td></tr>
+            <tr><th>Donor ID</th><td class="bb-mono">@Model.BloodBankDonorId</td></tr>
+            <tr><th>Blood</th><td><span class="bb-print-blood">@Model.BloodType</span></td></tr>
+            <tr><th>Type</th><td><span class="bb-print-type-pill @typeClass">@Model.DonationType</span></td></tr>
+            @if (!string.IsNullOrWhiteSpace(Model.PatientId))
+            {
+                <tr><th>Patient</th><td class="bb-mono">@Model.PatientId</td></tr>
+            }
+        </table>
+
+        <p class="bb-print-section-title"><i class="fa-solid fa-flask"></i> Infectious disease panel</p>
+        <table class="bb-print-tests">
+            <thead>
+                <tr>
+                    <th>Test</th>
+                    <th class="bb-print-tests__result">Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in rows)
+                {
+                    var pass = row.Result == "Pass";
+                    <tr class="@(pass ? "bb-print-test--pass" : "bb-print-test--fail")">
+                        <td>@row.Name</td>
+                        <td class="bb-print-tests__result">@(pass ? "PASS" : "FAIL")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Notes))
+        {
+            <div class="bb-print-notes-block">
+                <p class="bb-print-section-title"><i class="fa-solid fa-note-sticky"></i> Notes</p>
+                <p class="bb-print-notes">@Model.Notes</p>
+            </div>
+        }
+
+        <footer class="bb-print-footer">
+            <div class="bb-print-sign">
+                <div class="bb-print-sign__line"></div>
+                <strong>Screening by</strong><br />@Model.StaffName
+            </div>
+            <div class="bb-print-sign">
+                <div class="bb-print-sign__line"></div>
+                <strong>Supervisor</strong>
+            </div>
+            <p class="bb-print-disclaimer">
+                Hospital blood bank · HIS generated slip · internal use only
+            </p>
+            <p class="bb-print-printer-tag">Epson TM-T20 · 80mm thermal</p>
+        </footer>
+    </article>
+
+    <div class="bb-print-actions no-print">
+        <p class="bb-print-hint">
+            Layout for <strong>Epson TM-T20</strong> (80mm). Choose <strong>80mm roll</strong> and turn off browser headers/footers. Colors print when supported.
+        </p>
+        <button type="button" class="bb-btn bb-btn-primary" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Print certificate
+        </button>
+        <a asp-action="Index" class="bb-btn bb-btn-ghost">Back to screening queue</a>
+        @if (Model.IsPassed)
+        {
+            <a asp-controller="BagAssignment" asp-action="Index" class="bb-btn bb-btn-ghost">Bag assignment queue</a>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        (function () {
+            var auto = @(ViewBag.AutoPrint == true ? "true" : "false");
+            if (!auto) return;
+            window.addEventListener('load', function () {
+                setTimeout(function () { window.print(); }, 500);
+            });
+        })();
+    </script>
+}

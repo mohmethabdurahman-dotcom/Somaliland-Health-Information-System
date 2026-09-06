@@ -1,0 +1,221 @@
+
+@page {
+    size: A5 portrait;
+    margin: 0; /* Chrome print option set default no margin */
+    /*width: 148mm;*/
+    /*height: 210mm;*/
+    /* width = 559.37px */
+    /* height = 793.7px */
+}
+
+@media print {
+    body {
+        visibility: visible !important;
+    }
+}
+
+body {
+    visibility: hidden; /* Hide preview print */
+}
+
+pre {
+    font-size: 16px;
+    font-family: Roboto, sans-serif;
+    margin: 0px;
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+    pre div {
+        display: unset;
+    }
+
+    pre ul {
+        line-height: 0.5;
+        margin: 0px;
+    }
+
+    pre blockquote {
+        font-style: italic;
+        font-family: Georgia, Times, "Times New Roman", serif;
+        border-style: solid;
+        border-color: #ccc;
+        border-width: 0;
+        border-left-width: 5px;
+        padding: 2px 0;
+        padding-right: 8px;
+        padding-left: 20px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+
+h2, h3, h4 {
+    font-weight: bold;
+    margin: 5px 0px;
+}
+
+.page {
+    page-break-inside: avoid; /* Avoid break page block */
+    page-break-after: always; /* Break page after */
+}
+
+    .page:last-of-type {
+        page-break-after: avoid; /* last page don't break */
+    }
+
+.page-border {
+    border: 0px solid #777;
+    width: 105mm;
+    height: 50%;
+    position: absolute;
+    top: 0;
+    /*margin: 5mm;*/ /* the same .page margin */
+    margin-left: 7mm;
+    margin-top: 5mm;
+    margin-bottom: 5mm;
+    margin-right: 14mm;
+}
+
+.header {
+    position: fixed;
+    width: 195mm;
+    top: 0;
+    font-size: 1rem;
+    margin-top: 8mm;
+    margin-left: 10mm;
+    z-index: 1000;
+}
+
+.header, .header-space {
+    height: 140px; /* Increased header height to accommodate ReservationId spacing */
+    margin: 5mm 10mm;
+}
+
+.footer {
+    position: fixed;
+    width: 97mm;
+    bottom: 0;
+    font-size: 1rem;
+    margin: 0mm 5mm 0mm 10mm; /* the same .page margin */
+}
+
+.footer, .footer-space {
+    height: 105px; /* Main footer height maintenance */
+}
+
+.PageContainerTable {
+    width: 560px;
+}
+
+.PageFormTitleTd {
+    text-align: left;
+    padding: 10px 87px;
+}
+
+.PageFormTitle {
+    text-decoration: underline;
+    margin-top: 30px; /* Increased margin for better separation from ReservationId */
+    margin-bottom: 15px; /* Added bottom margin for better spacing */
+    display: block; /* Ensure it's on its own line */
+    clear: both; /* Clear any floating elements */
+    /* If the position is modified, you need to adjust the following as a whole */
+    /* 1. the header and header-space height and margin */
+    /* 2. javascript DynamicChangeHeight() */
+}
+
+.PageContent {
+    margin: 0px 35px;
+    margin-top: 150px; /* Increased top margin to prevent overlap with header and ReservationId */
+    padding-top: 10px; /* Additional padding for separation */
+}
+
+.DetailContentTable {
+    width: 80%;
+    text-align: left;
+}
+
+#MedDetailTable > tbody > tr > td,
+#LabDetailTable > tbody > tr > td {
+    text-overflow: ellipsis;
+    text-align: left;
+    white-space: initial;
+}
+
+
+/**/
+
+.PageContentPsl {
+    margin: 10px 35px;
+}
+
+
+.PageContentRSheet {
+    margin: 10px 0px;
+}
+
+/* Blood print — center the paper content on the page */
+.blood-print-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 0 10mm;
+}
+
+.blood-print-table {
+    width: 100%;
+    max-width: 190mm;
+    margin: 0 auto;
+}
+
+.blood-print-content {
+    width: 100% !important;
+    max-width: 170mm;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: 140px;
+    text-align: left;
+}
+
+.blood-print-detail {
+    width: 100% !important;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.blood-print-footer {
+    width: 100%;
+    max-width: 170mm;
+    margin: 12px auto 0;
+}
+
+@media print {
+    .blood-print-page {
+        min-height: auto;
+        height: 257mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding-top: 0;
+    }
+
+    .blood-print-content {
+        margin-top: 100px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    .blood-print-table {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .blood-print-footer {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+

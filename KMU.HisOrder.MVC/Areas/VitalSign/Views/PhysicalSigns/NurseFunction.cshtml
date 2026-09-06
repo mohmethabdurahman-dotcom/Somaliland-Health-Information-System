@@ -1,0 +1,1385 @@
+﻿@inject KMU.HisOrder.MVC.Models.KMUContext _context
+@model KMU.HisOrder.MVC.Models.PhysicalSign
+@using KMU.HisOrder.MVC.Models;
+@using KMU.HisOrder.MVC.Extesion;
+@addTagHelper *,Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var Title = ViewData["Title"].ToString();
+    var reserveType = ViewData["reserveType"].ToString();
+    var ncd_info = _context.KmuCoderefs.Where(e => e.RefCodetype == "NCD_INFO").ToList();
+}
+
+<style>
+    .searchCard {
+        border: 1px solid black;
+    }
+
+    .infoCard {
+        width: 73%;
+        border-style: solid;
+        border-width: 5px;
+        border-color: black;
+    }
+
+    .input-box {
+        display: flex;
+        align-items: center;
+        max-width: 300px;
+        background: #fff;
+        border: 1px solid #a0a0a0;
+        border-radius: 4px;
+        padding-left: 4px;
+        overflow: hidden;
+    }
+
+        .input-box .prefix {
+            font-weight: 300;
+            font-size: 14px;
+            color: #999;
+            margin-right: 5px;
+        }
+
+        .input-box input {
+            flex-grow: 1;
+            background: #fff;
+            border: none;
+            outline: none;
+            padding: 0px;
+        }
+
+    .disabledDiv {
+        pointer-events: none;
+        opacity: 0.4;
+        filter: blur(1px);
+    }
+
+    .fw {
+        font-size: 14px;
+    }
+
+    .kas {
+        width: 100px;
+    }
+</style>
+
+<h6 class="direction mx-2" style="">@Title</h6>
+<div class="row m-4 " id="all" style="height: 100vh;">
+    <div class="bg-white rounded border shadow border-dark shadow h-75 w-25 p-2 ml-2" id="searchCard">
+        <div class="d-flex flex-column justify-content-center p-1">
+            <div class="mx-auto " style="margin-top: 70px;">
+                <img src="~/images/vitalIcon.png" height="180px" />
+            </div>
+           
+            @if (reserveType == "NR")
+            {
+                <div class="form-group">
+                    <label><span class="text-danger">*</span> Health ID:</label>
+                    <input class="form-control" value="HG" id="patID" />
+                </div>
+                <div>
+                    <button class="btn btn-primary btn-sm form-control mt-2" id="find"><i class="fa fa-search"></i> Search</button>
+                </div>
+            }
+            else if (reserveType == "ENR")
+            {
+                <div class="form-group">
+                    <label><span class="text-danger">*</span> Reservation ID:</label>
+                    <input class="form-control" id="inhospID" />
+                </div>
+                <div>
+                    <button class="btn btn-primary btn-sm form-control mt-2" id="getErPatient"><i class="fa fa-search"></i> Search</button>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="bg-white rounded shadow h-75 infoCard p-2 ml-3" id="inbadan">
+        <div id="patCard">
+            <div>
+                <div class="d-flex align-items-center justify-content-between ">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-1 position-relative d-flex justify-content-end align-items-end">
+                            <img src="~/images/avatar.png"
+                                 class="avatar-xl rounded-circle border-width-4 border-white"
+                                 alt=""
+                                 style="width: 66px; height:66px;" />
+
+                        </div>
+                        <div class="ml-2">
+                            <div class="mt-2 d-block">
+                                <h5 class="d-inline-block" id="patientName"><strong>Patient Full Name</strong></h5>
+                                <div class="d-inline-block  ml-2 ">
+                                    <label class="badge rounded-pill badge-danger" hidden>Waiting</label>
+                                    <label class="badge rounded-pill badge-warning "><i class="fa far fa-star"></i></label>
+                                </div>
+                            </div>
+
+                            <div class="text-dark ">
+
+
+                                <h6 class="d-inline-block mr-3 pt-bl-color">
+                                    <a href="#" title="Patient ID">
+                                        <i class="fa-solid fa-id-card mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a> <span id="patientID">HealthID</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-3 ">
+                                    <a href="#" title="Birthday / Age">
+                                        <i class="fa-solid fa-b mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a><span id="brithdate">Brith Date</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-3">
+                                    <a href="#" title="Sex">
+                                        <i class="fa-solid  fas fa-venus-mars mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a>
+                                    <span id="sex">Sex</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-2 ">
+                                    <a href="#" title="Mobile">
+                                        <i class="fa fa-phone mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a> <span id="phoneNumber">Mobile Number</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-2 pt-br-color">
+                                    <a href="#" title="Address">
+                                        <i class="fa far fas fa-location-dot mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="address"></i>
+                                    </a> <span id="address">Address</span>
+                                </h6>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <hr />
+
+            @if (reserveType == "NR")
+            {
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-2">
+                                <lable class="form-label Height">Height</lable>
+                                <div class="input-box">
+                                    <input id="Height" maxlength="3" name="vital_height" class="form-control input-box input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                                    <span class="prefix cm">Cm</span>
+                                </div>
+                            </div>
+
+                            <div class="col-2">
+                                <lable class="form-label Weight">Weight</lable>
+                                <div class="input-box">
+                                    <input id="Weight" maxlength="3" name="vital_Weight" class="form-control input-box input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                                    <span class="prefix kg">Kg</span>
+                                </div>
+                            </div>
+
+                            <div class="col-2">
+                                <lable class="form-label Temp">Temp</lable>
+                                <div class="input-box">
+                                    <input id="Temp" maxlength="3" name="vital_Temp" class="form-control input-box input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                                    <span class="prefix c">C°</span>
+                                </div>
+                            </div>
+
+                            <div class="BmiList col-2">
+                                <lable class="form-label BMI">BMI</lable>
+                                <select id="BMI" class="form-control input_physical" disabled>
+                                    <option></option>
+                                    <option value="19 underweight"> 19 underweight</option>
+                                    <option value="19-24.9: Normal">19-24.9: Normal</option>
+                                    <option value="Over Weight">Over Weight</option>
+                                    <option value="25+ : Obesity">25+ : Obesity</option>
+                                </select>
+                            </div>
+
+                            <div class="col-2">
+                                <lable class="form-label SpO2">SpO2</lable>
+                                <input id="SpO2" maxlength="3" name="vital_Spo2" class="form-control input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
+
+                            @*    <div class="col-2">
+                        <lable class="form-label BP">BP</lable>
+                        <input id="BP" maxlength="3" name="vital_BP" class="form-control input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                        </div> *@
+
+                            <div class="col-2">
+                                <lable class="form-label SP">Systolic (Sys)</lable>
+                                <input id="SP" maxlength="3" name="vital_SP" class="form-control input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-2">
+                                <lable class="form-label PR">Diastolic (Dias)</lable>
+                                <input id="PR" maxlength="3" name="vital_PR" class="form-control input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
+
+                            <div class="col-2">
+                                <lable class="form-label HR">HR</lable>
+                                <input id="HR" maxlength="4" name="vital_HR" class="form-control input_physical" type="text" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
+
+                            <div class="col-2">
+                                <lable class="form-label RBS">RBS</lable>
+                                <input id="RBS" maxlength="4" name="vital_RBS" class="form-control input_physical" type="text" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
+
+                            <div class="col-2">
+                                <lable class="form-label FBS">FBS</lable>
+                                <input id="FBS" maxlength="4" name="vital_FBS" class="form-control input_physical" type="text" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
+
+                            <div class="col-2">
+                                <lable class="form-label Pulse">Pulse</lable>
+                                <input id="Pulse" maxlength="3" name="vital_Pulse" class="form-control input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
+
+                            <div class="col-2">
+                                <lable class="form-label MUAC">MUAC</lable>
+                                <input id="MUAC" maxlength="3" name="vital_MUAC" class="form-control input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-2">
+                                <lable class="form-label HBA1C">HBA1C</lable>
+                                <input id="HBA1C" maxlength="3" name="vital_HBA1C" class="form-control input_physical" type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==3) return false;" />
+                            </div>
+                        </div>
+                        <hr />
+
+                        @* NCD INFO *@
+                        <div id="ncd_info" class="m-0 p-0">
+                            <div class="col-12">
+                                <div class="row">
+                                    @foreach (var item in ncd_info)
+                                    {
+                                        <div id="NCD_INFO" class="pl-2">
+                                            <input id="NCDINFO_VALUE" name="a" type="checkbox" value="@item.RefName" />
+                                            <label id="NCD_LABEL" for="@item.RefName">@item.RefName</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <hr class="m-0 p-0" />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <label>Note:</label>
+                                <textarea class="form-control" rows="2" cols="12"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2 p-1">
+                            <div class="col-md-7">
+                                <a id="save" class="btn form-control btn-primary btn-sm"> <i class="fa fa-save"></i> Save</a>
+                                <a id="update" class="btn form-control btn-success btn-sm"> <i class="fa fa-pen"></i> Update</a>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn form-control btn-warning" data-toggle="modal" data-target=".bd-example-modal-lg"><i class="fa fa-home"> </i> Home Management</button>
+                            </div>
+                            <div class="col-md-2">
+                                <a id="clear" class="btn form-control btn-outline-secondary btn-sm"> <i class="fa fa-arrow-left"> </i> Back</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (reserveType == "ENR")
+            {
+
+                <div class="row">
+                    <p id="healthID" hidden></p>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label Mobility">Mobility</label>
+                        <select class="form-control input_physical" id="Mobility" name="Physical_Mobility">
+                            <option></option>
+                            <option>Walking</option>
+                            <option>With help/limp</option>
+                            <option>Stretcher/immobile</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label AVPU">AVPU</label>
+                        <select class="form-control input_physical" id="AVPU" name="Physical_AVPU">
+                            <option></option>
+                            <option>Confused</option>
+                            <option>Alert</option>
+                            <option>Reacts to Voice</option>
+                            <option>React to Pain</option>
+                            <option>Unresponsive</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label Trauma">Trauma</label>
+                        <select class="form-control input_physical" id="Trauma" name="Physical_Trauma">
+                            <option></option>
+                            <option>No</option>
+                            <option>Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <hr />
+
+                <div class="row">
+                    <div class="col-4">
+                        <lable class="form-label RR">RR</lable>
+                        <input id="RR" name="Physical_RR" class="form-control input_physical" type="number" />
+                    </div>
+                    <div class="col-4">
+                        <lable class="form-label Oxygen">Oxygen</lable>
+                        <input id="Oxygen" name="Physical_Oxygen" class="form-control input_physical" type="number" />
+                    </div>
+                    <div class="col-4">
+                        <lable class="form-label PhysicalHR">Physical HR</lable>
+                        <input id="PhysicalHR" name="Physical_HR" class="form-control input_physical" type="number" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4">
+                        <lable class="form-label SystolicBP">Systolic BP</lable>
+                        <input id="SystolicBP" name="Physical_Systolic_BP" class="form-control input_physical" type="number" />
+                    </div>
+                    <div class="col-4">
+                        <lable class="form-label DiastolicBP">Diastolic BP</lable>
+                        <input id="DiastolicBP" name="Physical_Diastolic_BP" class="form-control input_physical" type="number" />
+                    </div>
+                    <div class="col-4">
+                        <lable class="form-label Temperature">Temperature</lable>
+                        <input id="Temperature" name="Physical_Temp" class="form-control input_physical" type="number" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4">
+                        <lable class="form-label PhysicalRBS">Physical RBS (Glucose)</lable>
+                        <input id="PhysicalRBS" name="Physical_RBS_Glucose" class="form-control input_physical" type="number" />
+                    </div>
+
+                    <div class="col-4">
+                        @*   <lable class="form-label">Triage Level</lable>
+                    <input id="TriageNo" class="form-control"/>*@
+
+                        <label class="border-0 font-weight-bold mb-0 px-0 ">Triage Level:</label>
+                        <div class="d-flex align-items-center">
+                            <input type="text" id="TriageNo" class="form-control col-6 font-weight-bold text-center d-inline" readonly />
+                            <i class="fa-solid fa-circle fa-3x" id="TriageLight"></i>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <lable class="form-label" hidden>Triage Score</lable>
+                        <input id="TriageScoreNo" hidden class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mt-2">
+                        <a id="ctriage" class="btn btn-primary form-control">Create</a>
+                    </div>
+                </div>
+            }
+
+            @* Home Management vitalSign *@
+
+            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Home Management Vital Sign</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            @* Model body *@
+
+                            @* Nav tabs - diabetes vitalSign & Hypertension vitalSign *@
+
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Diabetes VitalSign</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Hypertension VitalSign</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" id="myTabContent">
+                                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                                    @* Diabetes vitalSign *@
+
+                                    <table id="homeManagement" class="table table-bordered border-dark mt-2">
+                                        <thead>
+                                            <tr class="fw">
+                                                <th>Date</th>
+                                                <th>Before BreakFast</th>
+                                                <th>After BreakFast</th>
+                                                <th>Before Dinner</th>
+                                                <th>After Dinner</th>
+                                                <th>
+                                                    <button id="AddDiabRow" class="btn btn-primary btn-sm m-0"><i class="fa fa-plus"> </i></button>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input id="date" name="vital_HM_Date" class="form-control date" type="date" /></td>
+                                                <td><input id="before_breakfast" name="vital_HM_before_breakfas" class="form-control kas" type="number" /></td>
+                                                <td><input id="after_breakfast" name="vital_HM_after_breakfas" class="form-control kas" type="number" /></td>
+                                                <td><input id="before_dinner" name="vital_HM_before_breakfas" class="form-control kas" type="number" /></td>
+                                                <td><input id="after_dinner" name="vital_HM_after_dinner" class="form-control kas" type="number" /></td>
+                                                <td><a id="close" class="btn btn-danger"> <i class="fa fa-close"> </i></a> </td>
+
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <button class="btn btn-primary form-control mt-2" id="hmVital_save"> <i class="fa fa-list"></i> Save Data</button>
+                                </div>
+
+                                <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                    @* Hypertension vitalSign *@
+
+                                    <table id="hypertensionVital" class="table table-bordered border-dark mt-2">
+                                        <thead>
+                                            <tr class="fw">
+                                                <th>Date</th>
+                                                <th colspan="2">Morning Systolic & Diastolic</th>
+                                                <th colspan="2">Evening Systolic & Diastolic</th>
+                                                <th>
+                                                    <button id="AddHyperRow" class="btn btn-primary btn-sm m-0"><i class="fa fa-plus"> </i></button>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input id="date" name="vital_HM_Date" class="form-control date" type="date" /></td>
+                                                <td><input id="morning_systolic" class="form-control kas" type="number" /></td>
+                                                <td><input id="morning_diastolic" class="form-control kas" type="number" /></td>
+                                                <td><input id="evening_systolic" class="form-control kas" type="number" /></td>
+                                                <td><input id="evening_diastolic" class="form-control kas" type="number" /></td>
+                                                <td><a id="close" class="btn btn-danger"> <i class="fa fa-close"> </i></a> </td>
+
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <button class="btn btn-primary form-control mt-2" id="hyper_save"> <i class="fa fa-list"></i> Save Data</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        $("#update").hide();
+
+        $("#patCard").attr("disabled", "disabled").off('click');
+        var x1 = $("#patCard").hasClass("disabledDiv");
+        (x1 == true) ? $("#patCard").removeClass("disabledDiv") : $("#patCard").addClass("disabledDiv");
+        // sah1(document.getElementById("inbadan"));
+
+        $("#find").on("click", function () {
+
+            var id = $("#patID").val();
+            if (id.length < 10) {
+                layer.alert('Enter correct patient healthId.', {
+                    skin: 'layui-layer-lan',
+                    closebtn: 1,
+                    anim: 5,
+                    icon: 2,
+                    btn: ['OK'],
+                    title: 'Error Message'
+                }, function (index) {
+                    layer.close(index);
+                });
+            } else {
+                var stdId = $("#patID").val();
+
+                $.ajax({
+                    type: "post",
+                    url: "/VitalSign/PhysicalSigns/NR",
+                    data: {
+                        PatientID: stdId
+                    },
+                    success: function (response) {
+
+                        $("#patientName").text(response.chrPatientFirstname + " " + response.chrPatientMidname + " " + response.chrPatientLastname);
+                        $("#patientID").text(response.chrHealthId);
+                        $("#brithdate").text(response.chrEmgContact);
+                        $("#sex").text(response.chrSex);
+                        $("#phoneNumber").text(response.chrMobilePhone);
+                        $("#address").text(response.chrAddress);
+
+                        $('#healthID').text(response.chrHealthId);
+
+                        function sah() {
+                            $("#searchCard").attr("disabled", "disabled").off('click');
+                            var x1 = $("#searchCard").hasClass("disabledDiv");
+
+                            $("#searchCard").addClass("disabledDiv");
+                        }
+                        sah();
+
+                        function sah1() {
+                            // $("#patCard").attr("disabled", "disabled").off('click');
+                            $("#patCard").prop('disabled', false);
+
+                            var x1 = $("#patCard").hasClass("disabledDiv");
+                            $("#patCard").removeClass("disabledDiv");
+                        }
+                        sah1();
+                    },
+                    error: function (xhr, status, error) {
+                        layer.alert(xhr.responseJSON.responseText, {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        }, function (index) {
+                            layer.close(index);
+                        });
+                    }
+                })//ajax end
+
+                if (stdId != null) {
+                    $.ajax({
+                        type: "post",
+                        url: "/VitalSign/PhysicalSigns/getData",
+                        data: {
+                            PatientID: stdId
+                        },
+                        success: function (response) {
+
+                            if (response != null) {
+                                $.each(response, function (key, value) {
+
+                                    var kan = value.phyValue;
+                                    if (kan != null) {
+                                        // Normal  Over Weight
+                                        if (kan.includes('underweight') || kan.includes('Normal') || kan.includes('Over Weight')) {
+                                            $('#BMI').val(value.phyValue);
+                                            $('.BMI').text(value.phyType);
+                                        }
+                                    }
+
+                                    if (value.phyType == "Height") {
+                                        let height = value.phyValue.replace('Cm', '');
+                                        $("#Height").val(height);
+
+                                    } else if (value.phyType == "Weight") {
+                                        let weight = value.phyValue.replace('Kg', '');
+                                        $("#Weight").val(weight);
+
+                                    } else if (value.phyType == "Temp") {
+                                        let temp = value.phyValue.replace('C°', '');
+                                        $("#Temp").val(temp);
+
+                                    } else if (value.phyType == "SpO2") {
+                                        $("#SpO2").val(value.phyValue);
+
+                                    } else if (value.phyType == "Systolic (Sys)") {
+                                        $("#SP").val(value.phyValue);
+
+                                    } else if (value.phyType == "Diastolic (Dias)") {
+                                        $("#PR").val(value.phyValue);
+
+                                    } else if (value.phyType == "HR") {
+                                        $("#HR").val(value.phyValue);
+
+                                    } else if (value.phyType == "RBS") {
+                                        $("#RBS").val(value.phyValue);
+
+                                    } else if (value.phyType == "FBS") {
+                                        $("#FBS").val(value.phyValue);
+
+                                    } else if (value.phyType == "Pulse") {
+                                        $("#Pulse").val(value.phyValue);
+
+                                    } else if (value.phyType == "MUAC") {
+                                        $("#MUAC").val(value.phyValue);
+
+                                    } else if (value.phyType == "HBA1C") {
+                                        $("#HBA1C").val(value.phyValue);
+                                    }
+
+
+                                    $("#ncd_info").hide();
+                                    $("#save").hide();
+                                    $("#update").show();
+                                })
+                            }
+                        }
+                    })//ajax end
+                }
+            }
+        });
+
+        $("#getErPatient").on("click", function () {
+
+            var id = $("#inhospID").val();
+            if (id.length < 1) {
+                layer.alert('Enter correct patient healthId.', {
+                    skin: 'layui-layer-lan',
+                    closebtn: 1,
+                    anim: 5,
+                    icon: 2,
+                    btn: ['OK'],
+                    title: 'Error Message'
+                }, function (index) {
+                    layer.close(index);
+                });
+            } else {
+                var stdId = $("#inhospID").val();
+
+                $.ajax({
+                    type: "post",
+                    url: "/VitalSign/PhysicalSigns/getPatient",
+                    data: {
+                        InhospID: stdId
+                    },
+                    success: function (response) {
+                        console.log(response);
+
+                        if (response == "This patient does'nt exits.") {
+                            layer.alert(response, {
+                                skin: 'layui-layer-lan',
+                                closebtn: 1,
+                                anim: 5,
+                                icon: 2,
+                                btn: ['OK'],
+                                title: 'Error Message'
+                            }, function (index) {
+                                layer.close(index);
+                            });
+                        } else if (response == "This patient does'nt have appointment for today.") {
+                            layer.alert(response, {
+                                skin: 'layui-layer-lan',
+                                closebtn: 1,
+                                anim: 5,
+                                icon: 2,
+                                btn: ['OK'],
+                                title: 'Error Message'
+                            }, function (index) {
+                                layer.close(index);
+                            });
+                        }
+                        else {
+
+                            $("#patientName").text(response.chrPatientFirstname + " " + response.chrPatientMidname + " " + response.chrPatientLastname);
+                            $("#patientID").text(response.chrHealthId);
+                            $("#brithdate").text(response.chrEmgContact);
+                            $("#sex").text(response.chrSex);
+                            $("#phoneNumber").text(response.chrMobilePhone);
+                            $("#address").text(response.chrAddress);
+
+                            $('#healthID').text(response.chrHealthId);
+
+                            function sah() {
+                                $("#searchCard").attr("disabled", "disabled").off('click');
+                                var x1 = $("#searchCard").hasClass("disabledDiv");
+
+                                $("#searchCard").addClass("disabledDiv");
+                            }
+                            sah();
+
+                            function sah1() {
+                                // $("#patCard").attr("disabled", "disabled").off('click');
+                                $("#patCard").prop('disabled', false);
+
+                                var x1 = $("#patCard").hasClass("disabledDiv");
+                                $("#patCard").removeClass("disabledDiv");
+                            }
+                            sah1();
+                        }
+                    }
+                })//ajax end
+
+            }
+        });
+
+        $("#clear").on("click", function () {
+            $("#patientName").text("Patient Full Name");
+            $("#patientID").text("HealthID");
+            $("#sex").text("Sex");
+            $("#phoneNumber").text("Mobile Number");
+            $("#address").text("Address");
+            $("#brithdate").text("Brith Date");
+            $("#update").hide();
+            $("#save").show();
+
+
+            $("#Height").val("");
+            $("#Weight").val("");
+            $("#Temp").val("");
+            $('#BMI').val("");
+            $("#SpO2").val("");
+            // $("#BP").val("");
+            $("#SP").val("");
+            $("#PR").val("");
+            $("#HR").val("");
+            $("#RBS").val("");
+            $("#FBS").val("");
+            $("#Pulse").val("");
+            $("#MUAC").val("");
+            $("#HBA1C").val("");
+
+            $("#patCard").attr("disabled", "disabled").off('click');
+            var x1 = $("#patCard").hasClass("disabledDiv");
+            (x1 == true) ? $("#patCard").removeClass("disabledDiv") : $("#patCard").addClass("disabledDiv");
+
+            function sah1() {
+                // $("#patCard").attr("disabled", "disabled").off('click');
+                $("#searchCard").prop('disabled', false);
+
+                var x2 = $("#searchCard").hasClass("disabledDiv");
+                $("#searchCard").removeClass("disabledDiv");
+            }
+            sah1();
+
+        })
+
+        $("input").keyup(function () {
+            var Heightvalue = $("#Height").val();
+            var Weightvalue = $("#Weight").val();
+
+            var cal = parseInt(Weightvalue) / parseInt(Heightvalue) / parseInt(Heightvalue) * 10000;
+            if (Heightvalue != "" && Weightvalue != "") {
+                $(".BMI").text("BMI: " + cal.toFixed(1));
+            }
+
+            if (Heightvalue != "" && Weightvalue != "") {
+                if (cal < 19) {
+                    $("div.BmiList select").val("19 underweight").change();
+                } else if (cal >= 19 && cal <= 24.9) {
+                    $("div.BmiList select").val("19-24.9: Normal").change();
+                } else if (cal >= 25 < 30) {
+                    $("div.BmiList select").val("Over Weight").change();
+                } else if (cal > 30) {
+                    $("div.BmiList select").val("25+ : Obesity").change();
+                }
+            }
+        });
+
+        function inputClear() {
+            $("#patCard").attr("disabled", "disabled").off('click');
+            var x1 = $("#patCard").hasClass("disabledDiv");
+            (x1 == true) ? $("#patCard").removeClass("disabledDiv") : $("#patCard").addClass("disabledDiv");
+
+            function sah1() {
+                // $("#patCard").attr("disabled", "disabled").off('click');
+                $("#searchCard").prop('disabled', false);
+
+                var x2 = $("#searchCard").hasClass("disabledDiv");
+                $("#searchCard").removeClass("disabledDiv");
+            }
+            sah1();
+
+            $("#Height").val("");
+            $("#Weight").val("");
+            $("#Temp").val("");
+            $('#BMI').val("");
+            $("#SpO2").val("");
+            // $("#BP").val("");
+            $("#SP").val("");
+            $("#PR").val("");
+            $("#HR").val("");
+            $("#RBS").val("");
+            $("#FBS").val("");
+            $("#Pulse").val("");
+            $("#MUAC").val("");
+            $("#HBA1C").val("");
+
+            $("#patientName").text("Patient Full Name");
+            $("#patientID").text("HealthID");
+            $("#sex").text("Sex");
+            $("#phoneNumber").text("Mobile Number");
+            $("#address").text("Address");
+            $("#brithdate").text("Brith Date");
+
+
+
+            $("#RR").val("");
+            $("#Oxygen").val("");
+            $("#PhysicalHR").val("");
+            $("#SystolicBP").val("");
+            $("#DiastolicBP").val("");
+            $("#Temperature").val("");
+            $("#PhysicalRBS").val("");
+            $("#Mobility").val("");
+            $("#AVPU").val("");
+            $("#Trauma").val("");
+
+
+            $("#TriageNo").val("");
+            $("#TriageScoreNo").val("");
+            $("#TriageLight").css("color", "#FFFFFF");
+        }
+
+        $("#save").on("click", function () {
+
+            var healthId = $("#patientID").text();
+
+            var type = [];
+            var value = [];
+
+            var cm = $(".cm").text();
+            var Height = $(".Height").text();
+            var Heightvalue = $("#Height").val() + cm;
+
+            var kg = $(".kg").text();
+            var Weight = $(".Weight").text();
+            var Weightvalue = $("#Weight").val() + kg;
+
+            var c = $(".c").text();
+            var Temp = $(".Temp").text();
+            var Tempvalue = $("#Temp").val() + c;
+
+            var BMI = $(".BMI").text();
+            var BMIvalue = $('#BMI').find(":selected").val();
+
+            var SpO2 = $(".SpO2").text();
+            var SpO2value = $("#SpO2").val();
+
+            var NCDINFO_VALUES = [];
+
+            $("#NCD_INFO #NCDINFO_VALUE:checked").each(function (i, ob) {
+                NCDINFO_VALUES.push($(ob).val());
+            });
+
+            // var selected = [];
+            // $('#NCDINFO_VALUE input:checked').each(function () {
+            //     selected.push($(this).val());
+            //     alert($(this));
+            // });
+
+            var SP = $(".SP").text();
+            var SPvalue = $("#SP").val();
+
+            var PR = $(".PR").text();
+            var PRvalue = $("#PR").val();
+
+            var HR = $(".HR").text();
+            var HRvalue = $("#HR").val();
+
+            var RBS = $(".RBS").text();
+            var RBSvalue = $("#RBS").val();
+
+            var FBS = $(".FBS").text();
+            var FBSvalue = $("#FBS").val();
+
+            var Pulse = $(".Pulse").text();
+            var Pulsevalue = $("#Pulse").val();
+
+            var MUAC = $(".MUAC").text();
+            var MUACvalue = $("#MUAC").val();
+
+            var HBA1C = $(".HBA1C").text();
+            var HBA1Cvalue = $("#HBA1C").val();
+
+            if (Heightvalue.length === 2 && Weightvalue.length === 2 && Tempvalue.length === 2 && SpO2value.length === 0 && SPvalue.length === 0 && SPvalue.length === 0 && PRvalue.length === 0 && HRvalue.length === 0 && RBSvalue.length === 0 && FBSvalue.length === 0 && Pulsevalue.length === 0 && MUACvalue.length === 0 && HBA1Cvalue.length === 0) {
+                layer.alert("Write at least one of the vital sign.", {
+                    skin: 'layui-layer-lan',
+                    closebtn: 1,
+                    anim: 5,
+                    icon: 2,
+                    btn: ['OK'],
+                    title: 'Error Message'
+                }, function (index) {
+                    layer.close(index);
+                });
+            } else {
+
+
+
+                value.push(Heightvalue);
+                value.push(Weightvalue);
+                value.push(Tempvalue);
+                value.push(BMIvalue);
+                value.push(SpO2value);
+
+                value.push(SPvalue);
+                value.push(PRvalue);
+                value.push(HRvalue);
+                value.push(RBSvalue);
+                value.push(FBSvalue);
+                value.push(Pulsevalue);
+                value.push(MUACvalue);
+                value.push(HBA1Cvalue);
+
+
+                type.push(Height);
+                type.push(Weight);
+                type.push(Temp);
+                type.push(BMI);
+                type.push(SpO2);
+
+                type.push(SP);
+                type.push(PR);
+                type.push(HR);
+                type.push(RBS);
+                type.push(FBS);
+                type.push(Pulse);
+                type.push(MUAC);
+                type.push(HBA1C);
+
+
+                $(NCDINFO_VALUES).each(function (i, ob) {
+                    value.push(ob);
+                    type.push(ob);
+                });
+
+                $.ajax({
+                    type: "post",
+                    url: "/VitalSign/PhysicalSigns/vitalSign",
+                    data: {
+                        healthId: healthId,
+                        type: type,
+                        value: value
+                    },
+                    success: function (response) {
+                        inputClear();
+                        layer.msg('Created Successfully', { time: 1200, icon: 1 });
+                    },
+                    error: function (xhr, status, error) {
+                        layer.alert(xhr.responseJSON.responseText, {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        }, function (index) {
+                            layer.close(index);
+                        });
+                    }
+                })//ajax end
+
+            }
+
+        });//end  onlick
+
+        $("#hmVital_save").on("click", function () {
+            var healthId = $("#patientID").text();
+            var type = "Diab";
+
+            $("#homeManagement tbody tr").each(function (row, tr) {
+
+                if ($(tr).find('td input:eq(0)').val() != undefined) {
+
+                    data = {
+                        date: $(tr).find('td input:eq(0)').val(),
+                        before_breakfast: $(tr).find('td input:eq(1)').val(),
+                        after_breakfast: $(tr).find('td input:eq(2)').val(),
+                        before_dinner: $(tr).find('td input:eq(3)').val(),
+                        after_dinner: $(tr).find('td input:eq(4)').val(),
+                    };
+
+                    if (Object.values(data)[0] == "" || (Object.values(data)[1] == "" && Object.values(data)[2] == "" && Object.values(data)[3] == "" && Object.values(data)[4] == "")) {
+                        layer.alert('Fill the blank spaces.', {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        }, function (index) {
+                            layer.close(index);
+                        });
+                    } else {
+                        $.ajax({
+                            type: 'POST',
+                            url: "/VitalSign/PhysicalSigns/HomeVitalSign",
+                            data: {
+                                healthId: healthId,
+                                data: data,
+                                type: type
+                            },
+                            success: function (response) {
+                                layer.msg('Created Successfully', { time: 1200, icon: 1 });
+
+                                $(tr).find('td input:eq(0)').val("");
+                                $(tr).find('td input:eq(1)').val("");
+                                $(tr).find('td input:eq(2)').val("");
+                                $(tr).find('td input:eq(3)').val("");
+                                $(tr).find('td input:eq(4)').val("");
+
+                                $("#homeManagement tbody tr").remove();
+                                $('.modal').modal('hide');
+
+                            }
+
+                        });//ajax end
+                    }
+                }
+            });
+        });
+
+        $("#hyper_save").on("click", function () {
+            var healthId = $("#patientID").text();
+            var type = "Hyper";
+
+            $("#hypertensionVital tbody tr").each(function (row, tr) {
+
+
+                if ($(tr).find('td input:eq(0)').val() != undefined) {
+
+                    data = {
+                        date: $(tr).find('td input:eq(0)').val(),
+                        morning_systolic: $(tr).find('td input:eq(1)').val(),
+                        morning_diastolic: $(tr).find('td input:eq(2)').val(),
+                        evining_systolic: $(tr).find('td input:eq(3)').val(),
+                        evining_diastolic: $(tr).find('td input:eq(4)').val(),
+                    };
+                    if (Object.values(data)[0] == "" || (Object.values(data)[1] == "" && Object.values(data)[2] == "" && Object.values(data)[3] == "" && Object.values(data)[4] == "")) {
+                        layer.alert('Fill the blank spaces.', {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        }, function (index) {
+                            layer.close(index);
+                        });
+                    } else {
+                        $.ajax({
+                            type: 'POST',
+                            url: "/VitalSign/PhysicalSigns/HomeVitalSign",
+                            data: {
+                                healthId: healthId,
+                                data: data,
+                                type: type
+                            },
+                            success: function (response) {
+                                layer.msg('Created Successfully', { time: 1200, icon: 1 });
+
+                                $(tr).find('td input:eq(0)').val("");
+                                $(tr).find('td input:eq(1)').val("");
+                                $(tr).find('td input:eq(2)').val("");
+                                $(tr).find('td input:eq(3)').val("");
+                                $(tr).find('td input:eq(4)').val("");
+
+                                $("#hypertensionVital tbody tr").remove();
+                                $('.modal').modal('hide');
+
+                            }
+
+                        });//ajax end
+                    }
+
+                }
+            });
+        });
+
+        $("#update").on("click", function () {
+            var healthId = $("#patientID").text();
+
+            var type = [];
+            var value = [];
+
+            var cm = $(".cm").text();
+            var Height = $(".Height").text();
+            var Heightvalue = $("#Height").val() + cm;
+
+            var kg = $(".kg").text();
+            var Weight = $(".Weight").text();
+            var Weightvalue = $("#Weight").val() + kg;
+
+            var c = $(".c").text();
+            var Temp = $(".Temp").text();
+            var Tempvalue = $("#Temp").val() + c;
+
+            var BMI = $(".BMI").text();
+            var BMIvalue = $('#BMI').find(":selected").val();
+
+            var SpO2 = $(".SpO2").text();
+            var SpO2value = $("#SpO2").val();
+
+
+            var SP = $(".SP").text();
+            var SPvalue = $("#SP").val();
+
+            var PR = $(".PR").text();
+            var PRvalue = $("#PR").val();
+
+            var HR = $(".HR").text();
+            var HRvalue = $("#HR").val();
+
+            var RBS = $(".RBS").text();
+            var RBSvalue = $("#RBS").val();
+
+            var FBS = $(".FBS").text();
+            var FBSvalue = $("#FBS").val();
+
+            var Pulse = $(".Pulse").text();
+            var Pulsevalue = $("#Pulse").val();
+
+            var MUAC = $(".MUAC").text();
+            var MUACvalue = $("#MUAC").val();
+
+            var HBA1C = $(".HBA1C").text();
+            var HBA1Cvalue = $("#HBA1C").val();
+
+            if (Heightvalue.length === 2 && Weightvalue.length === 2 && Tempvalue.length === 2 && SpO2value.length === 0 && SPvalue.length === 0 && SPvalue.length === 0 && PRvalue.length === 0 && HRvalue.length === 0 && RBSvalue.length === 0 && FBSvalue.length === 0 && Pulsevalue.length === 0 && MUACvalue.length === 0 && HBA1Cvalue.length === 0) {
+                layer.alert("Write at least one of the vital sign.", {
+                    skin: 'layui-layer-lan',
+                    closebtn: 1,
+                    anim: 5,
+                    icon: 2,
+                    btn: ['OK'],
+                    title: 'Error Message'
+                }, function (index) {
+                    layer.close(index);
+                });
+            } else {
+                value.push(Heightvalue);
+                value.push(Weightvalue);
+                value.push(Tempvalue);
+                value.push(BMIvalue);
+                value.push(SpO2value);
+
+                value.push(SPvalue);
+                value.push(PRvalue);
+                value.push(HRvalue);
+                value.push(RBSvalue);
+                value.push(FBSvalue);
+                value.push(Pulsevalue);
+                value.push(MUACvalue);
+                value.push(HBA1Cvalue);
+
+
+                type.push(Height);
+                type.push(Weight);
+                type.push(Temp);
+                type.push(BMI);
+                type.push(SpO2);
+
+                type.push(SP);
+                type.push(PR);
+                type.push(HR);
+                type.push(RBS);
+                type.push(FBS);
+                type.push(Pulse);
+                type.push(MUAC);
+                type.push(HBA1C);
+
+                $.ajax({
+                    type: "post",
+                    url: "/VitalSign/PhysicalSigns/update",
+                    data: {
+                        healthId: healthId,
+                        type: type,
+                        value: value
+                    },
+                    success: function (response) {
+                        if (response == "This patient have a vital sign.") {
+                            layer.alert(response, {
+                                skin: 'layui-layer-lan',
+                                closebtn: 1,
+                                anim: 5,
+                                icon: 2,
+                                btn: ['OK'],
+                                title: 'Error Message'
+                            }, function (index) {
+                                layer.close(index);
+                            });
+                        } else {
+                            inputClear();
+                            layer.msg('Updated Successfully', { time: 1200, icon: 1 });
+                        }
+                    }
+
+                })//ajax end
+
+            }
+
+        });//end  onlick
+
+        $("#homeManagement tbody").on("click", "#close", function () {
+            // Removing the current row.
+            $(this).closest("tr").remove();
+        });
+
+        $("#hypertensionVital tbody").on("click", "#close", function () {
+            // Removing the current row.
+            $(this).closest("tr").remove();
+        });
+
+        $("#AddDiabRow").on("click", function () {
+
+            $("#homeManagement tbody").append("<tr> <td><input id='date' name = 'vital_HM_Date' class='form-control date' type = 'date' /> </td> <td><input id='before_breakfast' name='vital_HM_before_breakfas' class='form-control kas' type='number' /></td><td><input id='after_breakfast' name='vital_HM_after_breakfas' class='form-control kas' type='number' /></td><td><input id='before_breakfast' name='vital_HM_before_breakfas' class='form-control kas' type='number' /></td><td><input id='after_dinner' name='vital_HM_after_dinner' class='form-control kas' type='number' /></td> <td><a id='close' class='btn btn-danger'> <i class='fa fa-close'> </i></a> </td></tr>");
+
+        });
+
+        $("#AddHyperRow").on("click", function () {
+
+            $("#hypertensionVital tbody").append("<tr> <td><input id='date' class='form-control date' type = 'date' /> </td> <td><input id='morning_systolic' class='form-control kas' type='number' /></td> <td><input id='morning_diastolic' class='form-control kas' type='number' /></td> <td><input id='evening_systolic'  class='form-control kas' type='number' /></td><td><input id='evening_diastolic' class='form-control kas' type='number' /></td> <td><a id='close' class='btn btn-danger'> <i class='fa fa-close'> </i></a> </td></tr>");
+
+        });
+
+        // File: /js/patientPhysicalSigns.js
+        $("#ctriage").on("click", function () {
+            const InhospID = $("#inhospID").val().trim();
+            const triageLevel = $("#TriageNo").data("triage");
+            const triageScore = $("#TriageScoreNo").val();
+
+            const metrics = [
+                { type: $(".Mobility").text(), value: $("#Mobility").val() },
+                { type: $(".AVPU").text(), value: $("#AVPU").val() },
+                { type: $(".Trauma").text(), value: $("#Trauma").val() },
+                { type: $(".RR").text(), value: $("#RR").val() },
+                { type: $(".Oxygen").text(), value: $("#Oxygen").val() },
+                { type: $(".PhysicalHR").text(), value: $("#PhysicalHR").val() },
+                { type: $(".SystolicBP").text(), value: $("#SystolicBP").val() },
+                { type: $(".DiastolicBP").text(), value: $("#DiastolicBP").val() },
+                { type: $(".Temperature").text(), value: $("#Temperature").val() },
+                { type: $(".PhysicalRBS").text(), value: $("#PhysicalRBS").val() }
+            ];
+
+            const type = metrics.map(m => m.type);
+            const value = metrics.map(m => m.value);
+
+            if (!InhospID) {
+                showError("This patient has no physical signs");
+                return;
+            }
+
+            if (!triageLevel || !triageScore || metrics.some(m => !m.value.trim())) {
+                showError("Please answer all physical signs of the patient!!");
+                return;
+            }
+
+            $.ajax({
+                type: "post",
+                url: "/VitalSign/PhysicalSigns/savephs",
+                data: { inhospID: InhospID, type, value },
+                success: function () {
+                    layer.msg('Created Successfully', { time: 2200, icon: 1 });
+                    inputClear();
+                },
+                error: function (xhr) {
+                    showError(xhr.responseJSON.responseText);
+                }
+            });
+
+            $.ajax({
+                type: "post",
+                url: "/VitalSign/PhysicalSigns/savetriage",
+                data: { id: InhospID, triageLevel: triageLevel, triageScore: triageScore },
+                success: function () {
+                    console.log('Triage saved successfully');
+                },
+                error: function (xhr) {
+                    showError(xhr.responseJSON?.responseText || "Error saving triage data");
+                }
+            });
+        });
+
+        // Utility function to show error messages
+        function showError(message) {
+            layer.alert(message, {
+                skin: 'layui-layer-lan',
+                closebtn: 1,
+                anim: 5,
+                icon: 2,
+                btn: ['OK'],
+                title: 'Error Message'
+            }, function (index) {
+                layer.close(index);
+            });
+        }
+
+        // Ensure this is implemented elsewhere
+        function inputClear() {
+            $("input").val(""); 
+        }
+
+
+        function calculateTriage() {
+
+            var ItemList = [];
+            $(".input_physical").each(function () {
+                var InputType = this.type;
+
+                var CND_CodeType = "";
+                var CND_Value = "";
+
+                CND_CodeType = this.name;
+
+                CND_Value = this.value;
+
+                if (this.value != "") {
+
+
+                    ItemList.push({
+                        CODETYPE: CND_CodeType,
+                        VALUE: CND_Value
+                    });
+
+                }//if this end
+
+
+
+            })//end input each
+
+            $.ajax({
+                type: "post",
+                url: "/Maintenance/PhysicalSign/CaculateTriage",
+                data: {
+                    strTriage: JSON.stringify(ItemList)
+                },
+                success: function (responseData) {
+                    var msg = JSON.parse(responseData);
+                    $("#TriageNo").data("triage", msg["TriageLevel"]);
+                    $("#TriageNo").val(msg["TriageLevel"] + "(" + msg["TriagePoint"] + ")");
+                    $("#TriageScoreNo").val(msg["TriagePoint"]);
+                    $("#TriageLight").css("color", msg["lightColor"])
+                }
+            })
+        }// end calculate function
+
+        $(".input_physical").on("change", function () {
+
+            calculateTriage();
+        })
+
+    })
+</script>

@@ -1,0 +1,666 @@
+@model UnitHistoryViewModel
+
+@using KMU.HisOrder.MVC.Models.BloodBank
+
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    ViewData["Title"] = "Blood Bank → Unit " + Model.BloodBankUnitId;
+
+    var u = Model.Unit;
+
+    var d = Model.Donor;
+
+    var statusBadge = u.Status == UnitStatuses.Available ? "bb-badge-available"
+
+        : u.Status == UnitStatuses.Dispensed ? "bb-badge-fulfilled"
+
+        : u.Status == UnitStatuses.Expired ? "bb-badge-failed"
+
+        : u.Status == UnitStatuses.Quarantined ? "bb-badge-rejected"
+
+        : "bb-badge-pending";
+
+    var screenBadge = u.ScreeningResult == ScreeningResults.Passed ? "bb-badge-passed"
+
+        : u.ScreeningResult == ScreeningResults.Failed ? "bb-badge-failed"
+
+        : "bb-badge-pending";
+
+    var expiring = u.Status == UnitStatuses.Available && u.ExpiryDate <= DateTime.Now.AddDays(7) && u.ExpiryDate > DateTime.Now;
+
+    var expired = u.ExpiryDate <= DateTime.Now;
+
+    var daysLeft = (int)(u.ExpiryDate.Date - DateTime.Now.Date).TotalDays;
+
+    var btClass = d != null ? "bb-bt-" + d.BloodType.Replace("+", "\\+") : "";
+
+}
+
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+
+<div class="bb-his-shell bb-page bb-unit-history-page">
+
+    <section class="bb-unit-history-hero" aria-labelledby="unitHistoryTitle">
+
+        <div class="bb-unit-history-hero__inner">
+
+            <div class="bb-unit-history-hero__row">
+
+                <div>
+
+                    <h6 id="unitHistoryTitle" class="direction mb-0">
+
+                        <i class="fa-solid fa-clock-rotate-left"></i> Unit history · <span class="bb-mono">@u.SerialNumber</span>
+
+                    </h6>
+
+                    <p class="bb-unit-history-hero__meta">
+
+                        <span class="bb-unit-history-id-chip">@Model.BloodBankUnitId</span>
+
+                        · <span class="bb-badge bb-badge-blood">@u.BloodType</span>
+
+                        · @u.ComponentType
+
+                    </p>
+
+                </div>
+
+                <div class="bb-unit-history-hero__chips">
+
+                    <span class="bb-badge @statusBadge">@u.Status</span>
+
+                    <span class="bb-badge @screenBadge">@u.ScreeningResult</span>
+
+                    @if (expiring) { <span class="bb-badge bb-badge-pending">Expires @daysLeft d</span> }
+
+                    @if (expired) { <span class="bb-badge bb-badge-failed">Expired</span> }
+
+                </div>
+
+            </div>
+
+            <div class="bb-unit-history-hero__actions">
+
+                <a asp-action="Index" class="bb-btn bb-btn-ghost bb-btn-sm"><i class="fa-solid fa-arrow-left"></i> Inventory</a>
+
+                @if (d != null)
+
+                {
+
+                    <a asp-controller="Donors" asp-action="Profile" asp-route-donorId="@d.DonorId" class="bb-btn bb-btn-primary bb-btn-sm">
+
+                        <i class="fa-solid fa-clock-rotate-left"></i> Donor history (@Model.DonorLifetimeVisits visits)
+
+                    </a>
+
+                }
+
+                @if (Model.Dispense == null && u.Status == UnitStatuses.Available && !expired)
+
+                {
+
+                    <a asp-action="Dispense" asp-route-id="@u.UnitId" class="bb-btn bb-btn-success bb-btn-sm">Dispense</a>
+
+                }
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <div class="bb-unit-history-stats">
+
+        <div class="bb-request-detail-stat">
+
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--blood" aria-hidden="true"><i class="fa-solid fa-barcode"></i></span>
+
+            <div>
+
+                <p class="bb-request-detail-stat__label">Bag serial</p>
+
+                <p class="bb-request-detail-stat__value bb-mono" style="font-size:0.95rem;">@u.SerialNumber</p>
+
+            </div>
+
+        </div>
+
+        <div class="bb-request-detail-stat">
+
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--time" aria-hidden="true"><i class="fa-solid fa-calendar"></i></span>
+
+            <div>
+
+                <p class="bb-request-detail-stat__label">Donation / expiry</p>
+
+                <p class="bb-request-detail-stat__value">@u.DonationDate.ToString("dd MMM yyyy")</p>
+
+                <p class="bb-page-subtitle" style="margin:0;font-size:0.8rem;">Exp @u.ExpiryDate.ToString("dd/MM/yyyy")</p>
+
+            </div>
+
+        </div>
+
+        <div class="bb-request-detail-stat">
+
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--units" aria-hidden="true"><i class="fa-solid fa-flask"></i></span>
+
+            <div>
+
+                <p class="bb-request-detail-stat__label">Volume</p>
+
+                <p class="bb-request-detail-stat__value">@(u.VolumeMl?.ToString() ?? "—") ml</p>
+
+            </div>
+
+        </div>
+
+        <div class="bb-request-detail-stat bb-unit-history-stat--his">
+
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--component" aria-hidden="true"><i class="fa-solid fa-hospital"></i></span>
+
+            <div>
+
+                <p class="bb-request-detail-stat__label">HIS patient ID</p>
+
+                <p class="bb-request-detail-stat__value bb-mono" style="font-size:0.9rem;">@(Model.HisPatientId ?? "—")</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="bb-unit-history-ids-card">
+
+        <h4 class="bb-unit-history-ids-card__title"><i class="fa-solid fa-link"></i> Blood Bank &amp; HIS identifiers</h4>
+
+        <div class="bb-unit-history-ids-grid">
+
+            <div class="bb-unit-history-id-row">
+
+                <span class="bb-unit-history-id-row__label">Blood Bank unit</span>
+
+                <code class="bb-unit-history-id-row__value">@Model.BloodBankUnitId</code>
+
+                <span class="bb-unit-history-id-row__hint">Inventory record · compare in HIS notes</span>
+
+            </div>
+
+            <div class="bb-unit-history-id-row">
+
+                <span class="bb-unit-history-id-row__label">Bag label serial</span>
+
+                <code class="bb-unit-history-id-row__value">@u.SerialNumber</code>
+
+            </div>
+
+            @if (d != null)
+
+            {
+
+                <div class="bb-unit-history-id-row">
+
+                    <span class="bb-unit-history-id-row__label">Blood Bank donor</span>
+
+                    <code class="bb-unit-history-id-row__value">@Model.BloodBankDonorId</code>
+
+                    <a asp-controller="Donors" asp-action="Profile" asp-route-donorId="@d.DonorId" class="bb-btn bb-btn-sm bb-btn-ghost">Open donor</a>
+
+                </div>
+
+                <div class="bb-unit-history-id-row">
+
+                    <span class="bb-unit-history-id-row__label">Donor phone</span>
+
+                    <code class="bb-unit-history-id-row__value">@d.Phone</code>
+
+                    <a asp-controller="Donors" asp-action="History" asp-route-q="@d.Phone" class="bb-btn bb-btn-sm bb-btn-ghost">Search visits</a>
+
+                </div>
+
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.HisPatientId))
+
+            {
+
+                <div class="bb-unit-history-id-row bb-unit-history-id-row--his">
+
+                    <span class="bb-unit-history-id-row__label">HIS health ID</span>
+
+                    <code class="bb-unit-history-id-row__value bb-unit-history-id-row__value--his">@Model.HisPatientId</code>
+
+                    @if (Model.HisPatientMatchesDirectedDonor)
+
+                    {
+
+                        <span class="bb-unit-history-match"><i class="fa-solid fa-circle-check"></i> Matches directed donor</span>
+
+                    }
+
+                </div>
+
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.HisInhospid))
+
+            {
+
+                <div class="bb-unit-history-id-row">
+
+                    <span class="bb-unit-history-id-row__label">HIS inpatient ID</span>
+
+                    <code class="bb-unit-history-id-row__value">@Model.HisInhospid</code>
+
+                </div>
+
+            }
+
+            @if (Model.HisRequestId.HasValue)
+
+            {
+
+                <div class="bb-unit-history-id-row">
+
+                    <span class="bb-unit-history-id-row__label">Blood Bank request</span>
+
+                    <code class="bb-unit-history-id-row__value">@Model.BloodBankRequestId</code>
+
+                    <a asp-controller="Requests" asp-action="Details" asp-route-id="@Model.HisRequestId" class="bb-btn bb-btn-sm bb-btn-ghost">HIS request</a>
+
+                </div>
+
+            }
+
+            @if (Model.HisOrderplanid.HasValue)
+
+            {
+
+                <div class="bb-unit-history-id-row">
+
+                    <span class="bb-unit-history-id-row__label">HIS order plan</span>
+
+                    <code class="bb-unit-history-id-row__value">#@Model.HisOrderplanid</code>
+
+                </div>
+
+            }
+
+        </div>
+
+    </div>
+
+
+
+    <div class="bb-request-details-grid bb-mt-4">
+
+        @if (d != null)
+
+        {
+
+            <div class="bb-card bb-unit-history-donor-card">
+
+                <div class="bb-card__header">
+
+                    <h4><i class="fa-solid fa-user"></i> Donor — lifetime at this hospital</h4>
+
+                </div>
+
+                <div class="bb-card__body">
+
+                    <div class="bb-unit-history-donor-row">
+
+                        @if (!string.IsNullOrEmpty(btClass))
+
+                        {
+
+                            <div class="bb-donor-card__bt-circle @btClass" aria-hidden="true">@d.BloodType</div>
+
+                        }
+
+                        <div class="bb-unit-history-donor-row__info">
+
+                            <strong style="font-size:1.15rem;">@d.FirstName @d.LastName</strong>
+
+                            <p class="bb-mono" style="margin:0.35rem 0;font-size:1rem;font-weight:700;"><i class="fa-solid fa-phone"></i> @d.Phone</p>
+
+                            <p class="bb-page-subtitle" style="margin:0.25rem 0 0;">
+
+                                @Model.BloodBankDonorId · @d.Gender · @d.DonationType
+
+                            </p>
+
+                        </div>
+
+                        <div class="bb-unit-history-donor-metrics">
+
+                            <div class="bb-unit-history-donor-metric">
+
+                                <span class="bb-unit-history-donor-metric__val">@Model.DonorLifetimeVisits</span>
+
+                                <span class="bb-unit-history-donor-metric__lbl">Times came</span>
+
+                            </div>
+
+                            <div class="bb-unit-history-donor-metric bb-unit-history-donor-metric--ok">
+
+                                <span class="bb-unit-history-donor-metric__val">@Model.DonorSuccessfulDonations</span>
+
+                                <span class="bb-unit-history-donor-metric__lbl">Successful</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <p class="bb-unit-history-donor-note">
+
+                        When this donor returns, search by phone <span class="bb-mono">@d.Phone</span> or ID <span class="bb-mono">@Model.BloodBankDonorId</span> in <strong>Donor History</strong>.
+
+                    </p>
+
+                    <a asp-controller="Donors" asp-action="Profile" asp-route-donorId="@d.DonorId" class="bb-btn bb-btn-primary">
+
+                        <i class="fa-solid fa-clock-rotate-left"></i> Full donor timeline
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        }
+
+
+
+        <div class="bb-card">
+
+            <div class="bb-card__header">
+
+                <h4><i class="fa-solid fa-user-injured"></i> HIS recipient context</h4>
+
+            </div>
+
+            <div class="bb-card__body">
+
+                @if (Model.HisPatientPanel != null && !string.IsNullOrEmpty(Model.HisPatientPanel.PatientId))
+
+                {
+
+                    <partial name="~/Areas/BloodBank/Views/Shared/_PatientPanel.cshtml" model="Model.HisPatientPanel" />
+
+                }
+
+                else if (!string.IsNullOrWhiteSpace(Model.HisPatientId))
+
+                {
+
+                    <div class="bb-request-detail-specs">
+
+                        <div class="bb-request-detail-spec">
+
+                            <span class="bb-request-detail-spec__icon"><i class="fa-solid fa-id-card"></i></span>
+
+                            <div>
+
+                                <p class="bb-request-detail-spec__label">HIS patient ID</p>
+
+                                <p class="bb-request-detail-spec__value bb-mono">@Model.HisPatientId</p>
+
+                            </div>
+
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.HisInhospid))
+
+                        {
+
+                            <div class="bb-request-detail-spec">
+
+                                <span class="bb-request-detail-spec__icon"><i class="fa-solid fa-bed"></i></span>
+
+                                <div>
+
+                                    <p class="bb-request-detail-spec__label">Inpatient ID</p>
+
+                                    <p class="bb-request-detail-spec__value bb-mono">@Model.HisInhospid</p>
+
+                                </div>
+
+                            </div>
+
+                        }
+
+                    </div>
+
+                }
+
+                else
+
+                {
+
+                    <p class="bb-page-subtitle">No HIS patient linked yet (volunteer unit or not dispensed).</p>
+
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="bb-card bb-mt-4">
+
+        <div class="bb-card__header">
+
+            <h4><i class="fa-solid fa-route"></i> Unit lifecycle timeline</h4>
+
+        </div>
+
+        <div class="bb-unit-history-timeline">
+
+            @foreach (var ev in Model.Timeline)
+
+            {
+
+                var stepClass = ev.IsFailed ? "is-fail" : ev.IsComplete ? "is-done" : "";
+
+                var icon = ev.Kind switch
+
+                {
+
+                    "donor" => "fa-user-plus",
+
+                    "screening" => "fa-vial",
+
+                    "his-request" => "fa-file-medical",
+
+                    "dispense" => "fa-truck-medical",
+
+                    "status" => "fa-box",
+
+                    _ => "fa-droplet"
+
+                };
+
+                <article class="bb-unit-history-timeline-item @stepClass">
+
+                    <div class="bb-unit-history-timeline-item__icon" aria-hidden="true">
+
+                        <i class="fa-solid @icon"></i>
+
+                    </div>
+
+                    <div class="bb-unit-history-timeline-item__body">
+
+                        <time datetime="@ev.When.ToString("o")" class="bb-unit-history-timeline-item__when">
+
+                            @ev.When.ToString("dd MMM yyyy · HH:mm")
+
+                        </time>
+
+                        <strong class="bb-unit-history-timeline-item__title">@ev.Title</strong>
+
+                        <p class="bb-unit-history-timeline-item__sub">@ev.Subtitle</p>
+
+                        @if (!string.IsNullOrWhiteSpace(ev.ReferenceId))
+
+                        {
+
+                            <code class="bb-unit-history-timeline-item__ref">@ev.ReferenceId</code>
+
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(ev.HisReference))
+
+                        {
+
+                            <span class="bb-unit-history-timeline-item__his"><i class="fa-solid fa-hospital"></i> @ev.HisReference</span>
+
+                        }
+
+                    </div>
+
+                </article>
+
+            }
+
+        </div>
+
+    </div>
+
+
+
+    @if (Model.Screenings.Any())
+
+    {
+
+        <div class="bb-card bb-mt-4">
+
+            <div class="bb-card__header"><h4><i class="fa-solid fa-microscope"></i> Screening records</h4></div>
+
+            <div class="bb-table-wrap">
+
+                <table class="bb-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>BB screening ID</th>
+
+                            <th>Date</th>
+
+                            <th>Staff</th>
+
+                            <th>Result</th>
+
+                            <th></th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    @foreach (var s in Model.Screenings)
+
+                    {
+
+                        var sBadge = s.OverallResult == ScreeningResults.Passed ? "bb-badge-passed" : "bb-badge-failed";
+
+                        <tr>
+
+                            <td class="bb-mono">@BloodBankIds.FormatScreening(s.ScreeningId)</td>
+
+                            <td>@s.ScreeningDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+
+                            <td>@s.StaffName</td>
+
+                            <td><span class="bb-badge @sBadge">@s.OverallResult</span></td>
+
+                            <td>
+
+                                @if (s.OverallResult == ScreeningResults.Passed)
+
+                                {
+
+                                    <a asp-controller="Screening" asp-action="Print" asp-route-id="@s.ScreeningId" class="bb-btn bb-btn-sm bb-btn-ghost" target="_blank">Certificate</a>
+
+                                }
+
+                            </td>
+
+                        </tr>
+
+                    }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    }
+
+
+
+    @if (Model.Dispense != null)
+
+    {
+
+        var disp = Model.Dispense;
+
+        <div class="bb-card bb-mt-4">
+
+            <div class="bb-card__header"><h4><i class="fa-solid fa-truck-medical"></i> Dispense record</h4></div>
+
+            <div class="bb-card__body">
+
+                <div class="bb-request-detail-dispense-item">
+
+                    <div class="bb-request-detail-dispense-item__when">
+
+                        <span class="bb-request-detail-dispense-item__date">@disp.DispenseDateTime.ToString("dd MMM yyyy")</span>
+
+                        <span class="bb-request-detail-dispense-item__time">@disp.DispenseDateTime.ToString("HH:mm")</span>
+
+                    </div>
+
+                    <div class="bb-request-detail-dispense-item__meta">
+
+                        <strong>@disp.PatientName</strong><br />
+
+                        HIS <span class="bb-mono">@disp.PatientId</span> · @disp.WardDestination<br />
+
+                        Collector: @disp.CollectorName · Staff: @disp.DispensingStaffName
+
+                    </div>
+
+                    <div class="bb-request-detail-dispense-item__serials bb-mono">@disp.SerialNumbers</div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    }
+
+</div>
+
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+

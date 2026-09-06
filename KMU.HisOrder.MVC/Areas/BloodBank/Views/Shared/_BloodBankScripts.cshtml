@@ -1,0 +1,598 @@
+<script>
+(function () {
+  'use strict';
+
+  /* ── TempData toasts ── */
+  function bbInitToasts() {
+    var container = document.querySelector('.bb-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'bb-toast-container';
+      document.body.appendChild(container);
+    }
+    document.querySelectorAll('[data-bb-toast]').forEach(function (el) {
+      var type = el.getAttribute('data-bb-toast-type') || 'success';
+      var toast = document.createElement('div');
+      toast.className = 'bb-toast bb-toast--' + type;
+      var icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-xmark' : 'fa-circle-info';
+      toast.innerHTML = '<i class="fa-solid ' + icon + '"></i><span>' + el.textContent.trim() + '</span>';
+      container.appendChild(toast);
+      setTimeout(function () {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(24px)';
+        toast.style.transition = 'opacity 200ms, transform 200ms';
+        setTimeout(function () { toast.remove(); }, 220);
+      }, 5000);
+    });
+  }
+
+  window.bbShowToast = function (message, type) {
+    type = type || 'success';
+    var container = document.querySelector('.bb-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'bb-toast-container';
+      document.body.appendChild(container);
+    }
+    var toast = document.createElement('div');
+    toast.className = 'bb-toast bb-toast--' + type;
+    var icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-xmark' : 'fa-circle-info';
+    toast.innerHTML = '<i class="fa-solid ' + icon + '"></i><span>' + message + '</span>';
+    container.appendChild(toast);
+    setTimeout(function () {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(24px)';
+      toast.style.transition = 'opacity 200ms, transform 200ms';
+      setTimeout(function () { toast.remove(); }, 220);
+    }, 5000);
+  };
+
+  /* ── Wizard ── */
+  window.bbGoStep = function (n) {
+    document.querySelectorAll('.bb-wizard-step').forEach(function (s) {
+      s.classList.remove('active');
+    });
+    var step = document.querySelector('.bb-wizard-step[data-step="' + n + '"]');
+    if (step) step.classList.add('active');
+    document.querySelectorAll('.bb-wizard-nav__item').forEach(function (item) {
+      var sn = parseInt(item.getAttribute('data-step'), 10);
+      item.classList.remove('is-active', 'is-complete');
+      if (sn < n) item.classList.add('is-complete');
+      if (sn === n) item.classList.add('is-active');
+    });
+    if (n === 3 && typeof window.bbUpdateReview === 'function') window.bbUpdateReview();
+  };
+
+  window.bbInitDonorWizard = function () {
+    var form = document.getElementById('donorWizardForm');
+    if (!form) return;
+
+    var bloodSelect = document.getElementById('BloodType') || form.querySelector('[name="BloodType"]');
+    var picker = document.querySelector('.bb-blood-type-picker');
+    if (picker && bloodSelect) {
+      picker.querySelectorAll('button[data-bt]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          picker.querySelectorAll('button').forEach(function (b) { b.classList.remove('selected'); });
+          btn.classList.add('selected');
+          bloodSelect.value = btn.getAttribute('data-bt');
+          if (bloodSelect.tagName === 'SELECT') bloodSelect.dispatchEvent(new Event('change'));
+        });
+        if (btn.getAttribute('data-bt') === bloodSelect.value) btn.classList.add('selected');
+      });
+    }
+
+    var donationSelect = document.getElementById('donationType');
+    var directedPanel = document.getElementById('directedPanel');
+    function syncDonationCards() {
+      if (!donationSelect) return;
+      var val = donationSelect.value;
+      document.querySelectorAll('.bb-donation-option').forEach(function (card) {
+        card.classList.toggle('selected', card.getAttribute('data-type') === val);
+      });
+      if (directedPanel) directedPanel.classList.toggle('is-open', val === 'Directed');
+    }
+    document.querySelectorAll('.bb-donation-option').forEach(function (card) {
+      card.addEventListener('click', function () {
+        if (donationSelect) {
+          donationSelect.value = card.getAttribute('data-type');
+          donationSelect.dispatchEvent(new Event('change'));
+        }
+        syncDonationCards();
+      });
+    });
+    if (donationSelect) {
+      donationSelect.addEventListener('change', syncDonationCards);
+      syncDonationCards();
+    }
+
+    window.bbUpdateReview = function () {
+      var review = document.getElementById('bbReviewSummary');
+      if (!review) return;
+      var get = function (name) {
+        var el = form.querySelector('[name="' + name + '"]');
+        return el ? el.value : '—';
+      };
+      review.querySelector('[data-r="FirstName"]').textContent = get('FirstName');
+      review.querySelector('[data-r="LastName"]').textContent = get('LastName');
+      review.querySelector('[data-r="Gender"]').textContent = get('Gender');
+      review.querySelector('[data-r="Phone"]').textContent = get('Phone');
+      review.querySelector('[data-r="BloodType"]').textContent = get('BloodType');
+      review.querySelector('[data-r="DonationType"]').textContent = get('DonationType');
+    };
+
+    form.querySelectorAll('[required]').forEach(function (field) {
+      function validateField() {
+        var wrap = field.closest('.bb-field-wrap');
+        if (!wrap) return;
+        wrap.classList.remove('bb-field-valid', 'bb-field-invalid');
+        if (field.value.trim()) wrap.classList.add('bb-field-valid');
+        else if (field.dataset.touched) wrap.classList.add('bb-field-invalid');
+      }
+      field.addEventListener('blur', function () { field.dataset.touched = '1'; validateField(); });
+      field.addEventListener('input', validateField);
+    });
+  };
+
+  /* ── Screening toggles ── */
+  window.bbInitScreeningForm = function () {
+    var form = document.getElementById('screeningForm');
+    if (!form) return;
+
+    function syncCardState(prop, value) {
+      var card = form.querySelector('.bb-assay-card[data-test-row="' + prop + '"]');
+      if (!card) return;
+      card.classList.toggle('is-pass', value === 'Pass');
+      card.classList.toggle('is-fail', value === 'Fail');
+    }
+
+    function syncGroup(group, value) {
+      group.querySelectorAll('button[data-val]').forEach(function (btn) {
+        var val = btn.getAttribute('data-val');
+        btn.classList.toggle('selected', val === value);
+      });
+      var prop = group.getAttribute('data-test');
+      if (prop) syncCardState(prop, value);
+    }
+
+    function updateOverall() {
+      var failCount = 0;
+      var total = 0;
+      form.querySelectorAll('.bb-toggle-test[data-test]').forEach(function (group) {
+        var prop = group.getAttribute('data-test');
+        var inp = document.getElementById(prop);
+        if (!inp) return;
+        total += 1;
+        if (inp.value === 'Fail') failCount += 1;
+      });
+      var passCount = total - failCount;
+      var fail = failCount > 0;
+      var badge = document.getElementById('overallBadge');
+      var hidden = document.getElementById('overallResult');
+      var banner = document.getElementById('resultBanner');
+      var meter = document.getElementById('assayPassCount');
+      var hero = document.getElementById('screeningHero');
+      if (meter) meter.textContent = passCount + '/' + total;
+      if (hero) hero.classList.toggle('is-fail', fail);
+      if (badge) {
+        badge.textContent = fail ? 'Failed' : 'Passed';
+        badge.className = 'bb-badge bb-id-panel__overall ' + (fail ? 'bb-badge-failed' : 'bb-badge-passed');
+      }
+      if (hidden) hidden.value = fail ? 'Failed' : 'Passed';
+      if (banner) {
+        banner.textContent = fail
+          ? 'Reactive assay — this unit will be quarantined.'
+          : 'All assays non-reactive — unit proceeds to bag assignment.';
+        banner.classList.toggle('is-fail', fail);
+        banner.classList.toggle('is-pass', !fail);
+      }
+    }
+
+    form.addEventListener('click', function (e) {
+      var btn = e.target.closest('.bb-toggle-test button[data-val]');
+      if (!btn || !form.contains(btn)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var group = btn.closest('.bb-toggle-test[data-test]');
+      if (!group) return;
+      var prop = group.getAttribute('data-test');
+      var inp = document.getElementById(prop);
+      if (!inp) return;
+      var val = btn.getAttribute('data-val');
+      inp.value = val;
+      syncGroup(group, val);
+      updateOverall();
+    });
+
+    form.querySelectorAll('.bb-toggle-test[data-test]').forEach(function (group) {
+      var prop = group.getAttribute('data-test');
+      var inp = document.getElementById(prop);
+      syncGroup(group, (inp && inp.value) ? inp.value : 'Pass');
+    });
+    updateOverall();
+
+    function setAllResults(val) {
+      form.querySelectorAll('.bb-toggle-test[data-test]').forEach(function (group) {
+        var prop = group.getAttribute('data-test');
+        var inp = document.getElementById(prop);
+        if (inp) inp.value = val;
+        syncGroup(group, val);
+      });
+      updateOverall();
+    }
+
+    document.getElementById('btnMarkAllPass')?.addEventListener('click', function () { setAllResults('Pass'); });
+    document.getElementById('btnResetPanel')?.addEventListener('click', function () { setAllResults('Pass'); });
+  };
+
+  window.bbInitScreeningQueue = function () {
+    var table = document.getElementById('screeningQueueTable');
+    if (!table) return;
+    var rows = Array.prototype.slice.call(table.querySelectorAll('[data-screening-row]'));
+    var searchInput = document.getElementById('screeningQueueFilter');
+    var bloodSelect = document.getElementById('screeningBloodFilter');
+    var emptyMsg = document.getElementById('screeningFilterEmpty');
+    var kindFilter = 'all';
+    var chips = document.querySelectorAll('[data-screening-filter]');
+
+    function applyFilters() {
+      var term = (searchInput && searchInput.value || '').trim().toLowerCase();
+      var blood = (bloodSelect && bloodSelect.value || '').trim();
+      var visible = 0;
+      rows.forEach(function (row) {
+        var kind = row.getAttribute('data-kind') || 'standard';
+        var matchKind = kindFilter === 'all' || kindFilter === kind;
+        var matchBlood = !blood || (row.getAttribute('data-blood') || '') === blood;
+        var hay = row.getAttribute('data-search') || '';
+        var matchTerm = !term || hay.indexOf(term) >= 0;
+        var show = matchKind && matchBlood && matchTerm;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      if (emptyMsg) emptyMsg.hidden = visible > 0;
+    }
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        kindFilter = chip.getAttribute('data-screening-filter') || 'all';
+        chips.forEach(function (c) { c.classList.toggle('is-active', c === chip); });
+        applyFilters();
+      });
+    });
+    searchInput?.addEventListener('input', applyFilters);
+    bloodSelect?.addEventListener('change', applyFilters);
+    applyFilters();
+  };
+
+  /* ── Dispense panel ── */
+  window.bbInitDispense = function (required) {
+    var modeInput = document.getElementById('sourceMode');
+    var statusHint = document.getElementById('dispenseStatusHint');
+    function syncConfirmUi(mode) {
+      var confirmed = document.getElementById('confirmed');
+      var label = document.getElementById('btnConfirmLabel');
+      if (mode === 'Directed' && confirmed) confirmed.checked = true;
+      if (label) label.textContent = mode === 'Directed' ? 'Done' : 'Dispense';
+    }
+    function selectDirectedDonor(radio) {
+      if (!radio || radio.disabled) return;
+      radio.checked = true;
+      setSource('Directed');
+      syncConfirmUi('Directed');
+      updateCount();
+    }
+    function setSource(mode) {
+      if (modeInput) modeInput.value = mode;
+      var directed = document.getElementById('directedSection');
+      var volunteer = document.getElementById('volunteerSection');
+      if (directed) {
+        directed.style.display = mode === 'Directed' ? 'block' : 'none';
+        directed.hidden = mode !== 'Directed';
+      }
+      if (volunteer) {
+        volunteer.style.display = mode === 'Volunteer' ? 'block' : 'none';
+        volunteer.hidden = mode !== 'Volunteer';
+      }
+      document.querySelectorAll('.bb-source-mode-picker .bb-source-mode-btn, .bb-source-toggle .bb-btn').forEach(function (btn) {
+        var isActive = btn.getAttribute('data-mode') === mode;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      var form = document.getElementById('dispenseForm');
+      if (form) form.setAttribute('data-source-mode', mode);
+      syncConfirmUi(mode);
+      updateCount();
+    }
+    window.setSource = setSource;
+
+    function updateCount() {
+      var mode = modeInput ? modeInput.value : 'Volunteer';
+      var n = mode === 'Directed'
+        ? (document.querySelector('input[name=SelectedDirectedDonorId]:checked') ? 1 : 0)
+        : document.querySelectorAll('.unit-chk:checked').length;
+      var countEl = document.getElementById('selectedCount');
+      if (countEl) countEl.textContent = n;
+      var bar = document.getElementById('fillBar');
+      if (bar) {
+        var pct = required ? Math.min(100, (n / required) * 100) : 0;
+        bar.style.width = pct + '%';
+        bar.classList.remove('is-partial', 'is-over', 'is-complete');
+        if (n > required) bar.classList.add('is-over');
+        else if (n < required) bar.classList.add('is-partial');
+        else if (n === required && required > 0) bar.classList.add('is-complete');
+      }
+      var confirmed = document.getElementById('confirmed');
+      var collector = document.querySelector('[name=CollectorName]');
+      var hasCollector = collector && collector.value.trim();
+      var ok = n === required && hasCollector;
+      var hintMsg = '';
+      if (!hasCollector) hintMsg = 'Collector name is missing from your login.';
+      else if (n === 0) hintMsg = mode === 'Directed' ? 'Select a directed donor with an available unit.' : 'Select a compatible unit from inventory.';
+      else if (n < required) hintMsg = 'Select ' + (required - n) + ' more unit(s).';
+      else if (n > required) hintMsg = 'Too many units selected — deselect ' + (n - required) + '.';
+      if (n === required && hasCollector) {
+        if (confirmed) confirmed.checked = true;
+      } else if (confirmed) {
+        confirmed.checked = false;
+      }
+      if (statusHint) {
+        statusHint.textContent = ok
+          ? (mode === 'Directed' ? 'Directed donor ready — press Done below.' : 'Unit selected — press Dispense below.')
+          : hintMsg;
+        statusHint.classList.toggle('is-ready', ok);
+      }
+      var btn = document.getElementById('btnConfirm');
+      if (btn) {
+        btn.disabled = !ok;
+        btn.classList.toggle('is-ready', ok);
+      }
+    }
+    window.bbUpdateDispenseCount = updateCount;
+
+    document.querySelectorAll('.bb-unit-card').forEach(function (card) {
+      var chk = card.querySelector('.unit-chk');
+      if (!chk || card.classList.contains('expired')) return;
+      function sync() {
+        card.classList.toggle('selected', chk.checked);
+        updateCount();
+      }
+      card.addEventListener('click', function (e) {
+        if (e.target.tagName === 'A' || e.target.tagName === 'INPUT') return;
+        if (chk.checked && required === 1) {
+          chk.checked = false;
+        } else if (!chk.checked) {
+          if (required === 1) {
+            document.querySelectorAll('.unit-chk').forEach(function (c) {
+              c.checked = false;
+              c.closest('.bb-unit-card')?.classList.remove('selected');
+            });
+          }
+          chk.checked = true;
+        }
+        sync();
+      });
+      chk.addEventListener('change', sync);
+    });
+
+    document.querySelectorAll('.bb-directed-card').forEach(function (card) {
+      if (card.classList.contains('bb-directed-donor-card--unavailable')) return;
+      card.addEventListener('click', function (e) {
+        if (e.target.tagName === 'INPUT') return;
+        selectDirectedDonor(card.querySelector('input[type=radio]'));
+      });
+    });
+
+    document.querySelectorAll('.unit-chk, #confirmed, [name=CollectorName]').forEach(function (el) {
+      el.addEventListener('change', updateCount);
+      el.addEventListener('input', updateCount);
+    });
+    document.querySelectorAll('input[name=SelectedDirectedDonorId]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        if (el.checked) selectDirectedDonor(el);
+        else updateCount();
+      });
+    });
+
+    var unitSearch = document.getElementById('unitSearch');
+    if (unitSearch) {
+      unitSearch.addEventListener('input', function () {
+        var q = unitSearch.value.trim().toLowerCase();
+        document.querySelectorAll('#volunteerUnitGrid .bb-unit-card').forEach(function (card) {
+          var text = card.getAttribute('data-search') || '';
+          card.style.display = !q || text.indexOf(q) >= 0 ? '' : 'none';
+        });
+      });
+    }
+
+    var quickBtn = document.getElementById('btnQuickSelect');
+    if (quickBtn) {
+      quickBtn.addEventListener('click', function () {
+        var best = document.querySelector('.unit-chk[data-recommended="true"]')
+          || document.querySelector('.bb-unit-card.recommended .unit-chk')
+          || document.querySelector('.unit-chk');
+        if (!best) return;
+        document.querySelectorAll('.unit-chk').forEach(function (c) {
+          c.checked = false;
+          c.closest('.bb-unit-card')?.classList.remove('selected');
+        });
+        best.checked = true;
+        best.closest('.bb-unit-card')?.classList.add('selected');
+        updateCount();
+      });
+    }
+
+    var form = document.getElementById('dispenseForm');
+    if (form) {
+      form.addEventListener('submit', function () {
+        var mode = modeInput ? modeInput.value : 'Volunteer';
+        document.querySelectorAll('.unit-chk').forEach(function (c) { c.disabled = mode === 'Directed'; });
+        document.querySelectorAll('input[name=SelectedDirectedDonorId]').forEach(function (r) { r.disabled = mode === 'Volunteer'; });
+      });
+    }
+
+    var startMode = (window.bbDispenseDefaultMode || (modeInput && modeInput.value) || 'Volunteer');
+    setSource(startMode);
+
+    if (startMode === 'Volunteer' && required === 1) {
+      var autoUnit = document.querySelector('.unit-chk[data-recommended="true"]');
+      if (autoUnit && document.querySelectorAll('.unit-chk').length === 1) {
+        autoUnit.checked = true;
+        autoUnit.closest('.bb-unit-card')?.classList.add('selected');
+        updateCount();
+      }
+    }
+  };
+
+  /* ── Reject inline expand ── */
+  window.bbInitRequestReject = function () {
+    document.querySelectorAll('[data-bb-reject-toggle]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var card = btn.closest('.bb-request-card');
+        var panel = card && card.querySelector('.bb-reject-expand');
+        if (panel) panel.classList.toggle('is-open');
+      });
+    });
+  };
+
+  /* ── Bag assignment serial toggle ── */
+  window.bbInitBagAssignment = function () {
+    var useGen = document.getElementById('useGenerated');
+    var serial = document.getElementById('serialNumber');
+    if (useGen && serial) {
+      useGen.addEventListener('change', function () {
+        serial.disabled = this.checked;
+      });
+    }
+  };
+
+  window.bbInitPendingRequestSearch = function () {
+    var searchInput = document.getElementById('pendingRequestSearch');
+    var results = document.getElementById('patientSearchResults');
+    var summary = document.getElementById('linkedRequestSummary');
+    if (!searchInput || !results) return;
+
+    var form = document.getElementById('donorWizardForm');
+    var searchUrl = form && form.getAttribute('data-pending-search-url');
+    if (!searchUrl) return;
+
+    function urgencyClass(u) {
+      if (u === 'Emergency') return 'bb-badge-emergency';
+      if (u === 'Urgent') return 'bb-badge-urgent';
+      return 'bb-badge-routine';
+    }
+
+    function selectItem(item) {
+      document.getElementById('patientId').value = item.patientId || '';
+      document.getElementById('inhospid').value = item.inhospid || '';
+      document.getElementById('requestId').value = item.requestId || '';
+      if (summary) {
+        summary.hidden = false;
+        document.getElementById('linkPatientName').textContent = item.patientName || '—';
+        document.getElementById('linkPatientId').textContent = item.patientId || '—';
+        document.getElementById('linkDoctor').textContent = item.requestingDoctorName || '—';
+        var ward = item.ward || '—';
+        var bed = item.bedLocation || '—';
+        document.getElementById('linkWardBed').textContent = ward + ' / ' + bed;
+        document.getElementById('linkComponent').textContent = item.componentType || '—';
+        document.getElementById('linkBloodType').textContent = item.bloodType || '—';
+        var urgEl = document.getElementById('linkUrgency');
+        urgEl.textContent = item.urgencyLevel || '—';
+        urgEl.className = 'bb-badge ' + urgencyClass(item.urgencyLevel);
+      }
+      var bloodSelect = document.getElementById('BloodType');
+      if (bloodSelect && item.bloodType) {
+        bloodSelect.value = item.bloodType;
+        bloodSelect.dispatchEvent(new Event('change'));
+        document.querySelectorAll('.bb-blood-type-picker button').forEach(function (btn) {
+          btn.classList.toggle('selected', btn.getAttribute('data-bt') === item.bloodType);
+        });
+      }
+      results.querySelectorAll('tr').forEach(function (tr) {
+        tr.classList.toggle('is-selected', tr.getAttribute('data-request-id') === String(item.requestId));
+      });
+    }
+
+    function renderTable(items) {
+      if (!items || !items.length) {
+        results.innerHTML = '<p class="bb-page-subtitle">No pending HIS blood requests match your search.</p>';
+        return;
+      }
+      var html = '<table class="bb-table bb-table-compact"><thead><tr><th></th><th>Patient</th><th>ID</th><th>Ward</th><th>Doctor</th><th>Type</th><th>Component</th><th>Units</th><th>Urgency</th></tr></thead><tbody>';
+      items.forEach(function (item) {
+        html += '<tr data-request-id="' + item.requestId + '" tabindex="0" role="button">' +
+          '<td><button type="button" class="bb-btn bb-btn-sm bb-btn-primary btn-select-request">Select</button></td>' +
+          '<td><strong>' + (item.patientName || '') + '</strong></td>' +
+          '<td class="bb-mono">' + (item.patientId || '') + '</td>' +
+          '<td>' + (item.ward || '—') + '</td>' +
+          '<td>' + (item.requestingDoctorName || '') + '</td>' +
+          '<td><span class="bb-badge bb-badge-blood">' + (item.bloodType || '') + '</span></td>' +
+          '<td>' + (item.componentType || '') + '</td>' +
+          '<td>' + (item.unitsRequested || '') + '</td>' +
+          '<td><span class="bb-badge ' + urgencyClass(item.urgencyLevel) + '">' + (item.urgencyLevel || '') + '</span></td></tr>';
+      });
+      html += '</tbody></table>';
+      results.innerHTML = html;
+      results.querySelectorAll('.btn-select-request, tbody tr').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
+          var tr = el.closest('tr');
+          if (!tr) return;
+          var id = tr.getAttribute('data-request-id');
+          var item = items.find(function (x) { return String(x.requestId) === id; });
+          if (item) selectItem(item);
+        });
+      });
+    }
+
+    function runSearch() {
+      var term = searchInput.value.trim();
+      results.innerHTML = '<p class="bb-page-subtitle">Loading…</p>';
+      fetch(searchUrl + '?term=' + encodeURIComponent(term))
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.success) { results.innerHTML = '<p class="bb-page-subtitle">Search failed.</p>'; return; }
+          renderTable(d.items);
+        });
+    }
+
+    document.getElementById('btnSearchPending')?.addEventListener('click', runSearch);
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); runSearch(); }
+    });
+
+    var existingRequest = document.getElementById('requestId')?.value;
+    if (existingRequest) runSearch();
+    else runSearch();
+  };
+
+  function bbInitDeferredDashboardToast() {
+    try {
+      var p = new URLSearchParams(window.location.search);
+      if (p.get('deferred') !== '1') return;
+      var container = document.querySelector('.bb-toast-container') || (function () {
+        var c = document.createElement('div');
+        c.className = 'bb-toast-container';
+        document.body.appendChild(c);
+        return c;
+      })();
+      var toast = document.createElement('div');
+      toast.className = 'bb-toast bb-toast--info';
+      toast.innerHTML = '<i class="fa-solid fa-circle-info"></i><span>Donor deferred at pre-donation screening and logged for compliance.</span>';
+      container.appendChild(toast);
+    } catch (e) { /* ignore */ }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    bbInitToasts();
+    bbInitDeferredDashboardToast();
+    if (!document.getElementById('donorWizardForm')) {
+      bbInitDonorWizard();
+      bbInitPendingRequestSearch();
+    }
+    bbInitScreeningForm();
+    bbInitScreeningQueue();
+    bbInitRequestReject();
+    bbInitBagAssignment();
+    if (window.bbDispenseRequired) bbInitDispense(window.bbDispenseRequired);
+  });
+})();
+</script>

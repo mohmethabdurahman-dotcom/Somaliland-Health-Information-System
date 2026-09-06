@@ -1,0 +1,142 @@
+﻿@model KMU.HisOrder.MVC.Models.KmuNonMedicine
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Edit";
+    IEnumerable<KmuCoderef> GroupCodeData = ViewData["GroupCodeData"] as IEnumerable<KmuCoderef>;
+}
+<link href="~/css/style.css" rel="stylesheet" />
+
+<div style="padding:10px;">
+    <h4>Modify NonMedicine Information.</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <font color="red">*</font>
+                            ID
+                            <input asp-for="ItemId" class="form-control" maxlength="10" readonly="readonly" />
+                            <span asp-validation-for="ItemId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <font color="red">*</font>
+                            Name
+                            <input asp-for="ItemName" class="form-control" maxlength="140" />
+                            <span asp-validation-for="ItemName" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <font color="red">*</font>
+                            Type
+                            <select asp-for="ItemType" class="form-control" required="">
+                                <option value=""></option>
+                                <option value="5">5. Laboratory</option>
+                                <option value="6">6. Radiology</option>
+                                <option value="7">7. Pathology</option>
+                                <option value="8">8. Material</option>
+                            </select>
+                            <span asp-validation-for="ItemType" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            Spec
+                            <input asp-for="ItemSpec" class="form-control" maxlength="20" />
+                            <span asp-validation-for="ItemSpec" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="StartDate" class="control-label"></label>
+                            <input asp-for="StartDate" class="form-control" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="EndDate" class="control-label"></label>
+                            <input asp-for="EndDate" class="form-control" />
+                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @*<label asp-for="Status" class="control-label"></label>*@
+                            <font color="red">*</font>
+                            @Html.Label("Off/On")
+                            <select asp-for="Status" class="form-control" required="">
+                                <option value="1">True</option>
+                                <option value="2">False</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @*<label asp-for="CreateUser" class="control-label"></label>*@
+                            Created by
+                            <input asp-for="CreateUser" class="form-control" readonly="readonly" />
+                            <span asp-validation-for="CreateUser" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    @*<label asp-for="CreateDate" class="control-label"></label>*@
+                    Created Date
+                    <input asp-for="CreateDate" class="form-control" readonly="readonly" />
+                    <span asp-validation-for="CreateDate" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    @*<label asp-for="Remark" class="control-label"></label>*@
+                    Remarks
+                    <input asp-for="Remark" class="form-control" maxlength="450" />
+                    <span asp-validation-for="Remark" class="text-danger"></span>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="ShowSeq" class="control-label"></label>
+                            <input asp-for="ShowSeq" class="form-control" maxlength="7" />
+                            <span asp-validation-for="ShowSeq" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="GroupCode" class="control-label"></label>
+                            @* <input asp-for="MedType" class="form-control" />*@
+                            <select asp-for="GroupCode" class="form-control">
+                                <option value=""></option>
+                                @foreach (KmuCoderef item in GroupCodeData)
+                                {
+                                    <option value="@item.RefCode">@item.RefCode. @item.RefName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="GroupCode" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary" style="width:140px; margin-right:10px;" value="Save" />
+                    <a class="btn btn-default" asp-action="Index" style="width:140px; float:right;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}

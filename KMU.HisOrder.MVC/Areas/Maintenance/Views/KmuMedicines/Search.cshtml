@@ -1,0 +1,142 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.KmuMedicine>
+
+<div class="row" style="height: 79vh; width: 100%; overflow: auto;">
+    <div class="col-md-12">
+        <table id="MedSearchTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.MedType)
+                    </th>
+                    <th style="width:300px;">
+                        @Html.DisplayNameFor(model => model.GenericName)
+                    </th>
+                    <th style="width:200px;">
+                        @Html.DisplayNameFor(model => model.BrandName)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.UnitSpec)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.PackSpec)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.DefaultFreq)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.RefDuration)
+                    </th>
+                    <th>
+                        Remarks
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.StartDate)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.EndDate)
+                    </th>
+                    <th>
+                        Off/On
+                    </th>
+                    <th style="white-space:nowrap;">
+                        Created by
+                    </th>
+                    <th style="white-space:nowrap;">
+                        Created Date
+                    </th>
+                    <th style="white-space:nowrap;">
+                        Modified by
+                    </th>
+                    <th style="white-space:nowrap;">
+                        Modified Date
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td style="white-space:nowrap;">
+                            &nbsp&nbsp<a asp-action="Edit" asp-route-id="@item.MedId" class="fa-solid fa-pencil"></a>
+                            &nbsp&nbsp<a asp-action="Delete" asp-route-id="@item.MedId" class="fa-solid fa-trash"></a>
+                        </td>
+                        @*          <td class="editModal">
+                    <a href="javascript:void(0)"><span class="badge badge-primary "><i class="fa fa-pencil"></i></span></a>
+                    </td>
+                    <td>
+                    @Html.DisplayFor(modelItem => item.MedId)
+                    </td>*@
+                        <td>
+                            @if (item.MedType == "1")
+                            {
+                                @Html.Label("Oral")
+                            }
+                            else if (item.MedType == "2")
+                            {
+                                @Html.Label("Injection")
+                            }
+                            else if (item.MedType == "3")
+                            {
+                                @Html.Label("External")
+                            }
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.GenericName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.BrandName)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.UnitSpec)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.PackSpec)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.DefaultFreq)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.RefDuration)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Remarks)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StartDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EndDate)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @*@if (item.Status == '1')
+                        {
+                        @Html.Label("True")
+                        }
+                        else
+                        {
+                        @Html.Label("False")
+                        }*@
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="@item.MedId" name="@item.MedId" @(item.Status == '1' ?" checked":"") onclick="fn_Status('@item.MedId')">
+                                <label for="@item.MedId" class="custom-control-label"></label>
+                            </div>
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.CreateUser)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CreateDate)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.ModifyUser)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ModifyDate)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

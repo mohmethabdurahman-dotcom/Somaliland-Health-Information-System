@@ -1,0 +1,170 @@
+@model KMU.HisOrder.MVC.Areas.Radiology.Models.TicketViewModel
+@{
+    Layout = "/Views/Shared/_PrintLayout.cshtml";
+}
+
+<style>
+
+    .ticket-container {
+        font-family: 'Courier New', monospace;
+        width: 80mm;
+        margin: 0 auto;
+        border: 2px dashed #333;
+        padding: 15px;
+        background: white;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .ticket-header {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+        .ticket-header .hospital-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .ticket-header .country {
+            font-size: 12px;
+            margin: 2px 0;
+        }
+
+        .ticket-header .ministry {
+            font-size: 11px;
+            margin: 2px 0;
+        }
+
+    .divider {
+        text-align: center;
+        font-size: 10px;
+        letter-spacing: -1px;
+        line-height: 1;
+        margin: 8px 0;
+        color: #666;
+    }
+
+    .patient-info {
+        margin: 10px 0;
+    }
+
+        .patient-info div {
+            margin: 5px 0;
+        }
+
+    .label {
+        font-weight: bold;
+    }
+
+    .exams-section {
+        margin: 10px 0;
+    }
+
+    .bottom-section {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+        .bottom-section > div {
+            flex: 1;
+        }
+
+    .bottom-label {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .bottom-number {
+        font-size: 36px;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    .print-button {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+    }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+</style>
+
+<div class="ticket-container">
+    <div class="ticket-header">
+        <div class="hospital-name">HARGEISA GROUP HOSPITAL</div>
+        <div class="country">REPUBLIC OF SOMALILAND</div>
+        <div class="ministry">Ministry of Health Development</div>
+    </div>
+
+    <div class="divider">____________________________________</div>
+
+    <div class="patient-info">
+        <div>
+            <span class="label">ID:</span> @Model.PatientId
+            <span class="label" style="margin-left: 10px;">Sex:</span> @Model.PatientSex
+            <span class="label" style="margin-left: 10px;">Age:</span> @Model.PatientAge
+        </div>
+        <div>
+            <span class="label">Name:</span> @Model.PatientName
+        </div>
+        <div>
+            <span class="label">Order ID:</span> @Model.OrderId
+            <span class="label" style="margin-left: 10px;">Printed:</span>@Model.PrintDate
+        </div>
+    </div>
+
+    <div class="divider">____________________________________</div>
+
+    <div class="exams-section">
+        <div><span class="label">Exams:</span> @Model.BodyPart</div>
+    </div>
+
+    <div class="divider">____________________________________</div>
+
+    <div class="bottom-section">
+        <div>
+            <div class="bottom-label">Room</div>
+            <div class="bottom-number">@Model.RoomNumber</div>
+        </div>
+        <div>
+            <div class="bottom-label">Ticket No</div>
+            <div class="bottom-number">@Model.TicketNumber</div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // window.print();
+            // hubinlabaad
+            setTimeout(function () { window.print(); }, 400);
+
+            // Print done close window.
+            window.addEventListener('afterprint', function () {
+                setTimeout(function () { window.close(); }, 10);
+            })
+        });
+    </script>
+}
+

@@ -1,0 +1,32 @@
+﻿body {
+    background-color: #00A681;
+}
+.card {
+    background-color: #FFFDE8;
+}
+.dept-style {
+    color: #00A681;
+}
+.dr-style {
+    color: #C01285;
+}
+.room-style {
+    background-color: #DAEDDD;
+    color: #009B42;
+}
+.no-style-bg, .no-style-action {
+    color: #C01285;
+    border: solid;
+    border-width: 2px;
+    border-color: #00A681;
+}
+.no-style-bg {
+    background-color: #FFFFFF;  
+}
+.no-style-action {
+    background-color: #FFF462;
+}
+.card-clock {
+    background-color: #007740;
+    color: #E9F3E1;
+}

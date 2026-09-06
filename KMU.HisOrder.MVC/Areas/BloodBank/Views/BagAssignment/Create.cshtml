@@ -1,0 +1,86 @@
+@model BagAssignmentFormViewModel
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Blood Bank → Assign Bag"; var components = ViewBag.Components as string[]; var suggested = ViewBag.SuggestedSerial as string; }
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell bb-page">
+    <h6 class="direction mx-2">@ViewData["Title"]</h6>
+    <div class="form-group row mx-0 mb-2">
+        <div class="col-12 text-right">
+            <a asp-action="Index" class="btn btn-secondary btn-sm">← Queue</a>
+        </div>
+    </div>
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="DonorId" />
+        <input type="hidden" asp-for="DonorName" />
+        <input type="hidden" asp-for="DonorPhone" />
+        <input type="hidden" asp-for="BloodType" />
+        <input type="hidden" asp-for="DonationType" />
+        <div class="bb-bag-layout">
+            <div class="bb-card bb-unit-history-donor-card">
+                <div class="bb-card__header"><h4><i class="fa-solid fa-user"></i> Donor</h4></div>
+                <div class="bb-card__body">
+                    <p class="bb-mono" style="font-size:0.85rem;margin-bottom:0.5rem;">@Model.BloodBankDonorId</p>
+                    <p><strong style="font-size:1.15rem;">@Model.DonorName</strong></p>
+                    <p class="bb-mono" style="font-size:1rem;"><i class="fa-solid fa-phone"></i> @Model.DonorPhone</p>
+                    <p class="bb-mt-2"><span class="bb-badge bb-badge-blood">@Model.BloodType</span> · @Model.DonationType</p>
+                    @if (!string.IsNullOrEmpty(Model.PatientId)) { <p class="bb-mono bb-page-subtitle">HIS patient @Model.PatientId</p> }
+                    <a asp-controller="Donors" asp-action="Profile" asp-route-donorId="@Model.DonorId" class="bb-btn bb-btn-sm bb-btn-ghost bb-mt-3">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Donor history
+                    </a>
+                </div>
+            </div>
+            <div class="bb-card">
+                <div class="bb-card__header"><h4><i class="fa-solid fa-barcode"></i> Bag details</h4></div>
+                <div class="bb-card__body">
+                    <div class="bb-form-grid-2">
+                        <div>
+                            <label class="bb-label">Bag serial</label>
+                            <input asp-for="SerialNumber" class="form-control bb-mono" id="serialNumber" placeholder="@suggested" />
+                            <label class="bb-mt-4"><input type="checkbox" asp-for="UseGeneratedSerial" id="useGenerated" /> Use system serial (@suggested)</label>
+                        </div>
+                        <div>
+                            <label class="bb-label">Component</label>
+                            <select asp-for="ComponentType" class="form-control" id="componentType">@foreach(var c in components){<option>@c</option>}</select>
+                        </div>
+                        <div>
+                            <label class="bb-label">Volume (ml)</label>
+                            <input asp-for="VolumeMl" type="number" class="form-control" />
+                        </div>
+                        <div>
+                            <label class="bb-label">Collection date</label>
+                            <input asp-for="CollectionDate" type="datetime-local" class="form-control" id="collectionDate" />
+                            <span class="bb-expiry-chip bb-mt-4" id="expiryChip" aria-live="polite"></span>
+                        </div>
+                        <div>
+                            <label class="bb-label">Storage location</label>
+                            <input asp-for="StorageLocation" class="form-control" placeholder="Fridge / shelf / rack" />
+                        </div>
+                    </div>
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <button type="submit" class="bb-btn bb-btn-success bb-btn-block bb-btn-lg bb-mt-4">Enter inventory</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+<script>
+document.getElementById('useGenerated')?.addEventListener('change', function(){
+    document.getElementById('serialNumber').disabled = this.checked;
+});
+function refreshExpiry(){
+    var comp = document.getElementById('componentType').value;
+    var col = document.getElementById('collectionDate').value;
+    if (!col) return;
+    fetch('@Url.Action("CalcExpiry")?componentType='+encodeURIComponent(comp)+'&collectionDate='+encodeURIComponent(col))
+        .then(r=>r.json()).then(d=>{
+            if(d.expiryDate){
+                var chip = document.getElementById('expiryChip');
+                if (chip) chip.textContent = 'Expires ' + new Date(d.expiryDate).toLocaleDateString();
+            }
+        });
+}
+document.getElementById('componentType').addEventListener('change', refreshExpiry);
+document.getElementById('collectionDate').addEventListener('change', refreshExpiry);
+refreshExpiry();
+</script>

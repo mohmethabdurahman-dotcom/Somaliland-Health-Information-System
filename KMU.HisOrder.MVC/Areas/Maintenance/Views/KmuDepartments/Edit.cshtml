@@ -1,0 +1,87 @@
+﻿@model KMU.HisOrder.MVC.Models.KmuDepartment
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Edit";
+}
+
+
+<div class="px-3">
+
+    <h5>Edit</h5>
+
+</div>
+<hr />
+<div class="row px-3">
+    <div class="col-md-12">
+        <form>
+            <input id="id" type="hidden" asp-for="DptCode" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="col-6">
+                <div class="form-group">
+                    <label class="control-label">Name</label>
+                    <input id="name" asp-for="DptName" class="form-control" />
+                    <span asp-validation-for="DptName" class="text-danger"></span>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <a class="btn btn-danger" asp-action="Index">Back to List</a>
+                    </div>
+
+                    <div class="form-group col-6">
+                        <input id="save" type="submit" value="Edit" class="btn btn-primary form-control" />
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script src="~/lib/jquery1.min.js"></script>
+<script>
+    $("#save").on("click", function(){
+       var id= $("#id").val();
+        var name = $("#name").val();
+      $.ajax({
+          type:"post",
+            url: "/Maintenance/KmuDepartments/Editt?id=" + id + "&name=" + name,
+          success:function(response){
+              //alert("success");
+          }
+      })
+    })
+    
+    var department = $("#dptCategory option:selected").val();
+    $("#dptCategory").on("change", function () {
+        
+        var cDpName = $("#dptCategory").val();
+
+        var items = '<option disabled selected>--Select Name--</option>';
+        $.ajax({
+            type: "post",
+            url: "/Maintenance/KmuDepartments/Department?CDpName=" + cDpName,
+            success: function (response) {
+                $.each(response, function (key, value) {
+
+                    items += "<option value=" + value.dptCode + ">" + value.dptName + "</option>";
+
+                    console.log(value.dptName);
+                })
+                $("#DptName").html(items);
+
+
+            }
+        })
+
+    })
+
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }

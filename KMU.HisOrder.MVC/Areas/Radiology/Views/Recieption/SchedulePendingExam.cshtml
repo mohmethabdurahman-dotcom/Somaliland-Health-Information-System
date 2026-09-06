@@ -1,0 +1,321 @@
+@model dynamic
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+
+    <style>
+
+        .patient-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .patient-card h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+
+        .patient-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .exams-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .exams-card h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .exam-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .exam-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .exam-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .room-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .room-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+        }
+
+        .btn-cancel:hover {
+            background: #7f8c8d;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-spinner {
+            color: white;
+            font-size: 24px;
+        }
+    </style>
+
+
+<div class="schedule-container">
+    <div class="patient-card">
+        <h3>👤 Patient Information</h3>
+        <div class="patient-info">
+            <div class="info-item">
+                <span class="info-label">Inhosp ID</span>
+                <span class="info-value">@Model.InhospId</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Patient ID</span>
+                <span class="info-value">@Model.PatientId</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Patient Name</span>
+                <span class="info-value">@Model.PatientName</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Modality</span>
+                <span class="info-value"><span class="badge badge-info">@Model.Modality</span></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Status</span>
+                <span class="info-value"><span class="badge badge-warning">PENDING</span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="exams-card">
+        <h3>🏥 Assign Rooms to Examinations</h3>
+        
+        @foreach (var exam in Model.Exams)
+        {
+            <div class="exam-item">
+                <div class="exam-header">
+                    <span class="exam-name">@exam.BodyPart</span>
+                    <span class="exam-badge">Doctor Ordered</span>
+                </div>
+                <div>
+                    <label class="info-label">Select Room / Modality:</label>
+                    <select class="room-select" data-request-id="@exam.RequestId" data-body-part="@exam.BodyPart">
+                        <option value="">-- Select Room --</option>
+                    </select>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn-submit" onclick="submitScheduling()">
+            <i class="fa fa-check"></i> Schedule Exams & Generate Tickets
+        </button>
+        <a href="@Url.Action("Index", "Recieption")" class="btn-cancel">
+            <i class="fa fa-times"></i> Cancel
+        </a>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <i class="fa fa-spinner fa-spin"></i> Scheduling exams...
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+        var availableRooms = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AvailableRooms));
+
+        $(document).ready(function() {
+            loadRooms();
+        });
+
+        function loadRooms() {
+            $('.room-select').each(function() {
+                var select = $(this);
+                select.find('option:not(:first)').remove();
+                
+                availableRooms.forEach(function(room) {
+                    select.append(
+                        $('<option></option>')
+                            .val(room.roomid)
+                            .text(room.modality + ' - Room ' + room.room_number)
+                    );
+                });
+            });
+        }
+
+        function submitScheduling() {
+            var assignments = [];
+            var hasError = false;
+
+            $('.room-select').each(function() {
+                var select = $(this);
+                var requestId = select.data('request-id');
+                var roomId = select.val();
+
+                if (!roomId) {
+                    toastr.error('Please select a room for: ' + select.data('body-part'));
+                    hasError = true;
+                    return false;
+                }
+
+                assignments.push({
+                    requestId: parseInt(requestId),
+                    roomId: parseInt(roomId)
+                });
+            });
+
+            if (hasError) return;
+
+            var data = {
+                inhospId: '@Model.InhospId',
+                modality: '@Model.Modality',
+                roomAssignments: assignments
+            };
+
+            $('#loadingOverlay').css('display', 'flex');
+
+            $.ajax({
+                url: '@Url.Action("ProcessScheduling", "Recieption")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    $('#loadingOverlay').hide();
+                    
+                    if (response.success) {
+                    console.log("waakanaa" + response.orderId);
+                        // Directly open print page
+                        if (response.orderId) {
+                            window.open('@Url.Action("PrintTicketByOrderId", "Recieption")?orderId=' + response.orderId, '_blank');
+                        }
+                        
+                        // Show brief success message and redirect
+                        toastr.success('Tickets generated successfully! Opening print window...');
+                        
+                        // Redirect to Index after a short delay
+                        setTimeout(function() {
+                            window.location.href = '@Url.Action("Index", "Recieption")';
+                        }, 1500);
+                    } else {
+                        toastr.error(response.message || 'Failed to schedule exams');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#loadingOverlay').hide();
+                    toastr.error('Error scheduling exams: ' + error);
+                }
+            });
+        }
+    </script>

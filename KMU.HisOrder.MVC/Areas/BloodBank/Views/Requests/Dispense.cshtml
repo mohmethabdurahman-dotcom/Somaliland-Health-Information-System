@@ -1,0 +1,217 @@
+@model DispensePanelViewModel
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Blood Bank → Dispense Request"; var required = Model.LockedUnitsRequested > 0 ? Model.LockedUnitsRequested : Model.Request.UnitsRequested; var urgBadge = Model.Request.UrgencyLevel == "Emergency" ? "emergency" : Model.Request.UrgencyLevel == "Urgent" ? "urgent" : "routine"; var defaultMode = Model.SourceMode ?? "Volunteer"; }
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell bb-dispense-page bb-dispense-page--request">
+    <div class="bb-dispense-request-hero">
+        <div class="bb-dispense-request-hero__nav">
+            <a asp-action="Index" class="bb-dispense-back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dr Requests</a>
+            <a asp-action="Details" asp-route-id="@Model.RequestId" class="bb-dispense-back-btn bb-dispense-back-btn--secondary">View request</a>
+        </div>
+        <div class="bb-dispense-request-hero__row">
+            <div>
+                <h6 class="direction mb-0"><i class="fa-solid fa-droplet"></i> Dispense — Dr Request #@Model.RequestId</h6>
+                <span class="bb-dispense-request-hero__meta">@Model.LockedPatientName · @Model.Request.BloodType · @required unit@(required == 1 ? "" : "s") required</span>
+            </div>
+            <div class="bb-dispense-request-hero__badges">
+                <span class="bb-badge bb-badge-@urgBadge">@Model.Request.UrgencyLevel</span>
+                <span class="bb-badge bb-badge-blood">@Model.Request.BloodType</span>
+                <span class="bb-badge bb-badge-routine">@Model.Request.ComponentType</span>
+            </div>
+        </div>
+    </div>
+        <form asp-action="Dispense" method="post" id="dispenseForm" class="bb-dispense-form" data-source-mode="@defaultMode">
+            @Html.AntiForgeryToken()
+            @if (TempData["Error"] != null) { <div class="bb-alert bb-alert--error bb-dispense-form-alert">@TempData["Error"]</div> }
+            <div asp-validation-summary="ModelOnly" class="text-danger bb-dispense-form-alert"></div>
+            <input type="hidden" asp-for="RequestId" />
+            <input type="hidden" asp-for="DispensingStaffName" />
+            <input type="hidden" asp-for="WardDestination" />
+            <input type="hidden" asp-for="SourceMode" id="sourceMode" value="@defaultMode" />
+            <div class="bb-dispense-body">
+                <div class="bb-dispense-left bb-his-context">
+                    <div class="bb-his-request-card">
+                        <div class="bb-his-request-card__header">
+                            <div class="bb-his-request-card__header-top">
+                                <span class="bb-his-request-card__lock"><i class="fa-solid fa-lock"></i> HIS request · read-only</span>
+                                <span class="bb-badge bb-badge-@urgBadge">@Model.Request.UrgencyLevel</span>
+                            </div>
+                            <h4 class="bb-his-request-card__title">Patient &amp; order details</h4>
+                            <p class="bb-his-request-card__subtitle">Request #@Model.RequestId · @Model.Request.BloodType · @Model.Request.ComponentType</p>
+                        </div>
+                        <div class="bb-his-request-card__body">
+                            <div class="bb-his-request-grid">
+                                <div class="bb-his-request-item bb-his-request-item--primary">
+                                    <span class="bb-his-request-item__icon"><i class="fa-solid fa-user-injured"></i></span>
+                                    <div class="bb-his-request-item__content">
+                                        <span class="bb-his-request-item__label">Patient name</span>
+                                        <span class="bb-his-request-item__value">@Model.LockedPatientName</span>
+                                    </div>
+                                </div>
+                                <div class="bb-his-request-id-strip">
+                                    <span class="bb-his-request-id-strip__label"><i class="fa-solid fa-id-card"></i> Patient ID</span>
+                                    <span class="bb-his-request-id-strip__value bb-mono">@Model.Request.PatientId</span>
+                                </div>
+                                <div class="bb-his-request-item bb-his-request-item--accent">
+                                    <span class="bb-his-request-item__icon"><i class="fa-solid fa-droplet"></i></span>
+                                    <div class="bb-his-request-item__content">
+                                        <span class="bb-his-request-item__label">Units requested</span>
+                                        <span class="bb-his-request-item__value bb-his-request-item__value--lg">@required</span>
+                                    </div>
+                                </div>
+                                <div class="bb-his-request-item bb-his-request-item--wide">
+                                    <span class="bb-his-request-item__icon"><i class="fa-solid fa-user-doctor"></i></span>
+                                    <div class="bb-his-request-item__content">
+                                        <span class="bb-his-request-item__label">Requesting doctor</span>
+                                        <span class="bb-his-request-item__value">@Model.Request.RequestingDoctorName</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bb-dispense-right">
+                    <div class="bb-dispense-inventory-head">
+                        <h4 class="bb-section-title"><i class="fa-solid fa-layer-group"></i> Choose blood source</h4>
+                        <div class="bb-inventory-stats">
+                            <span class="bb-inventory-stat bb-inventory-stat--directed" id="statDirected"><i class="fa-solid fa-hospital-user"></i> @Model.AvailableDirectedCount directed ready</span>
+                            <span class="bb-inventory-stat bb-inventory-stat--volunteer" id="statVolunteer"><i class="fa-solid fa-warehouse"></i> @Model.AvailableVolunteerCount volunteer units</span>
+                        </div>
+                    </div>
+                    <div class="bb-source-mode-picker" role="tablist" aria-label="Blood source">
+                        <button type="button" class="bb-source-mode-btn bb-source-mode-btn--directed @(defaultMode == "Directed" ? "is-active" : "")" data-mode="Directed" onclick="setSource('Directed')" role="tab" aria-selected="@(defaultMode == "Directed" ? "true" : "false")">
+                            <span class="bb-source-mode-btn__icon"><i class="fa-solid fa-hospital-user"></i></span>
+                            <span class="bb-source-mode-btn__text">
+                                <strong>Directed Donor</strong>
+                                <small>For this patient specifically</small>
+                            </span>
+                            <span class="bb-source-count">@Model.AvailableDirectedCount</span>
+                        </button>
+                        <button type="button" class="bb-source-mode-btn bb-source-mode-btn--volunteer @(defaultMode == "Volunteer" ? "is-active" : "")" data-mode="Volunteer" onclick="setSource('Volunteer')" role="tab" aria-selected="@(defaultMode == "Volunteer" ? "true" : "false")">
+                            <span class="bb-source-mode-btn__icon"><i class="fa-solid fa-heart"></i></span>
+                            <span class="bb-source-mode-btn__text">
+                                <strong>Volunteer Pool</strong>
+                                <small>General inventory units</small>
+                            </span>
+                            <span class="bb-source-count">@Model.AvailableVolunteerCount</span>
+                        </button>
+                    </div>
+                    <div id="directedSection" class="bb-source-panel bb-source-panel--directed" hidden="@(defaultMode != "Directed")" style="display:@(defaultMode == "Directed" ? "block" : "none")">
+                        @foreach (var d in Model.DirectedDonors) {
+                            var cardClass = d.IsAvailable ? "bb-directed-donor-card" : "bb-directed-donor-card bb-directed-donor-card--unavailable";
+                            <label class="@cardClass bb-directed-card">
+                                @if (d.IsAvailable) {
+                                    <input type="radio" name="SelectedDirectedDonorId" value="@d.DonorId" class="bb-directed-donor-card__radio" />
+                                }
+                                <div class="bb-directed-donor-card__body">
+                                    @if (d.IsVerifiedPatientLinkage) {
+                                        <div class="bb-directed-donor-card__verified">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                            <span>Verified directed donation for this patient</span>
+                                        </div>
+                                    }
+                                    <div class="bb-directed-donor-card__top">
+                                        <div class="bb-directed-donor-card__identity">
+                                            <span class="bb-directed-donor-card__name">@d.FullName</span>
+                                            <span class="bb-badge bb-badge-blood">@d.BloodType</span>
+                                            @if (d.IsAvailable && d.IsExactBloodTypeMatch) { <span class="bb-badge bb-badge-passed">Exact match</span> }
+                                            else if (d.IsAvailable) { <span class="bb-badge bb-badge-pending">Compatible</span> }
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(d.SerialNumber)) {
+                                            <span class="bb-directed-donor-card__unit bb-mono">@d.SerialNumber</span>
+                                        }
+                                    </div>
+                                    <div class="bb-directed-donor-card__details">
+                                        <div class="bb-directed-donor-card__detail">
+                                            <span class="bb-directed-donor-card__detail-label"><i class="fa-solid fa-phone"></i> Phone</span>
+                                            <span class="bb-directed-donor-card__detail-value">@d.Phone</span>
+                                        </div>
+                                        <div class="bb-directed-donor-card__detail">
+                                            <span class="bb-directed-donor-card__detail-label"><i class="fa-solid fa-vial-circle-check"></i> Screened</span>
+                                            <span class="bb-directed-donor-card__detail-value">@(d.ScreeningDate?.ToString("dd/MM/yyyy") ?? "—")</span>
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(d.ComponentType)) {
+                                            <div class="bb-directed-donor-card__detail">
+                                                <span class="bb-directed-donor-card__detail-label"><i class="fa-solid fa-flask"></i> Component</span>
+                                                <span class="bb-directed-donor-card__detail-value">@d.ComponentType</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    @if (!d.IsAvailable && !string.IsNullOrWhiteSpace(d.UnavailableReason)) {
+                                        <div class="bb-directed-donor-card__unavailable">
+                                            <i class="fa-solid fa-triangle-exclamation"></i> @d.UnavailableReason
+                                        </div>
+                                    }
+                                </div>
+                            </label>
+                        }
+                        @if (!Model.DirectedDonors.Any()) {
+                            <div class="bb-empty-inventory">
+                                <i class="fa-solid fa-user-plus"></i>
+                                <p>No directed donors registered for this patient.</p>
+                                <a asp-controller="Donors" asp-action="Create" asp-route-requestId="@Model.RequestId" class="bb-btn bb-btn-primary bb-btn-sm">Register directed donor</a>
+                            </div>
+                        }
+                    </div>
+                    <div id="volunteerSection" class="bb-source-panel bb-source-panel--volunteer" hidden="@(defaultMode != "Volunteer")" style="display:@(defaultMode == "Volunteer" ? "block" : "none")">
+                        @if (Model.VolunteerUnits.Any()) {
+                            <div class="bb-volunteer-toolbar">
+                                <input type="search" id="unitSearch" class="form-control" placeholder="Search unit ID, blood type, location…" />
+                                @if (Model.VolunteerUnits.Count(u => u.IsRecommended) == 1 && required == 1) {
+                                    <button type="button" class="bb-btn bb-btn-primary bb-btn-sm" id="btnQuickSelect">Select best match</button>
+                                }
+                            </div>
+                        }
+                        <div class="bb-unit-grid" id="volunteerUnitGrid">
+                            @foreach (var u in Model.VolunteerUnits) {
+                                var expired = u.ExpiryDate < DateTime.Now;
+                                <label class="bb-unit-card @(u.ExpiringSoon && !expired ? "expiring" : "") @(expired ? "expired" : "") @(u.IsRecommended ? "recommended" : "")"
+                                       data-search="@($"{u.SerialNumber} {u.BloodType} {u.ComponentType} {u.StorageLocation}".ToLowerInvariant())">
+                                    <input type="checkbox" name="SelectedUnitIds" value="@u.UnitId" class="unit-chk" data-recommended="@(u.IsRecommended ? "true" : "false")" />
+                                    @if (u.IsRecommended) { <span class="bb-unit-card__recommended"><i class="fa-solid fa-star"></i> Best match</span> }
+                                    @if (u.IsDirectedForRequestPatient) {
+                                        <span class="bb-verification-badge bb-verification-badge--compact"><i class="fa-solid fa-link"></i> Directed for patient</span>
+                                    }
+                                    <span class="bb-mono">@u.SerialNumber</span>
+                                    <span class="bb-badge bb-badge-blood">@u.BloodType</span>
+                                    @if (u.IsExactBloodTypeMatch) { <span class="bb-badge bb-badge-passed">Exact</span> }
+                                    else { <span class="bb-badge bb-badge-pending">@u.CompatibilityLabel</span> }
+                                    <span>@u.ComponentType</span>
+                                    <br />@(u.VolumeMl) ml &middot; Exp @u.ExpiryDate.ToString("dd/MM/yyyy")
+                                    @if (!string.IsNullOrWhiteSpace(u.StorageLocation)) { <br /><small class="text-muted"><i class="fa-solid fa-location-dot"></i> @u.StorageLocation</small> }
+                                    @if (u.ExpiringSoon && !expired) { <span class="bb-badge bb-badge-pending">@u.DaysUntilExpiry d left</span> }
+                                    @if (expired) { <span class="bb-unit-card__expired-overlay"><span class="bb-badge bb-badge-failed">Expired</span></span> }
+                                </label>
+                            }
+                        </div>
+                        @if (!Model.VolunteerUnits.Any()) {
+                            <div class="bb-empty-inventory">
+                                <i class="fa-solid fa-box-open"></i>
+                                <p>No compatible @Model.Request.ComponentType units in volunteer inventory for @Model.Request.BloodType.</p>
+                            </div>
+                        }
+                    </div>
+                    <hr/>
+                    <h4 class="bb-section-title bb-section-title--confirm"><i class="fa-solid fa-circle-check"></i> Confirmation</h4>
+                    <div class="bb-dispense-confirm-simple">
+                        <label class="bb-label">Collector name</label>
+                        <input asp-for="CollectorName" class="form-control bb-readonly-field" readonly tabindex="-1" />
+                    </div>
+                    <p class="bb-progress-label">Selected: <strong id="selectedCount">0</strong> of @required units</p>
+                    <div class="bb-fill-bar"><span id="fillBar"></span></div>
+                    <input type="checkbox" asp-for="Confirmed" id="confirmed" class="bb-sr-only" tabindex="-1" aria-hidden="true" />
+                </div>
+            </div>
+            <div class="bb-dispense-footer bb-dispense-footer--actions">
+                <a asp-action="Index" class="bb-btn bb-btn-ghost bb-dispense-footer-back"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                <div class="bb-dispense-footer__center">
+                    <p id="dispenseStatusHint" class="bb-dispense-status-hint">Select a unit to dispense.</p>
+                </div>
+                <button type="submit" class="bb-btn bb-btn-success bb-btn-lg bb-dispense-submit" id="btnConfirm" disabled>
+                    <i class="fa-solid fa-droplet"></i>
+                    <span id="btnConfirmLabel">Dispense</span>
+                </button>
+            </div>
+        </form>
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+<script>window.bbDispenseRequired = @required; window.bbDispenseDefaultMode = '@defaultMode';</script>

@@ -1,0 +1,277 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var reportId = (int)ViewData["ReportId"];
+    var examRequestId = (int)ViewData["ExamRequestId"];
+    var studyUid = (string)ViewData["StudyInstanceUid"];
+    var patientName = (string)ViewData["PatientName"] ?? "Unknown Patient";
+    var gender = (string)ViewData["Gender"] ?? "U";
+    var dob = (string)ViewData["BirthDate"] ?? "N/A";
+    var age = ViewData["PatientAge"]?.ToString() ?? "--";
+    var patientSex = (string)ViewData["PatientSex"] ?? gender;
+    var ohifUrl = $"http://localhost:8042/ohif/viewer?StudyInstanceUIDs={studyUid}";
+}
+
+<style>
+    /* 1. Global Layout - Maintaining the 75/25 Split */
+    .medical-workstation {
+        background: #f8f9fa; /* Light background for the overall app */
+        height: 100vh;
+        overflow: hidden;
+        font-family: "Inter", "Segoe UI", sans-serif;
+    }
+
+    /* 2. Diagnostic Viewport (OHIF) - MUST STAY BLACK */
+    .diagnostic-shell {
+        background: #000000;
+        height: 100vh;
+    }
+
+    .ohif-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* 3. White Reporting Shell - Professional & Clean */
+    .report-shell {
+        background: #ffffff;
+        color: #1a1f26; /* Dark text for high legibility */
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid #dee2e6;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+    }
+
+    .report-scroll-area {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 24px;
+    }
+
+    /* 4. Professional "Paper" Styling */
+    .quiet-label {
+        color: #6c757d;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .medical-input {
+        background: #ffffff;
+        border: 1px solid #ced4da;
+        color: #212529;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+        .medical-input:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.05);
+        }
+
+    /* 5. Smart Findings Chips (Light Mode) */
+    .chip-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+
+    .finding-chip {
+        border: 1px solid #dee2e6;
+        color: #495057;
+        background: #f8f9fa;
+        border-radius: 6px;
+        font-size: 12px;
+        padding: 6px 12px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+        .finding-chip:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .finding-chip.active {
+            background: #e7f1ff;
+            border-color: #0d6efd;
+            color: #084298;
+        }
+
+    /* 6. Action Footer (Pinned) */
+    .action-footer {
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 20px;
+    }
+
+    /* Adjust CKEditor to look clean on white */
+    .cke_chrome {
+        border: 1px solid #ced4da !important;
+        box-shadow: none !important;
+    }
+
+    .btn-ai-assist {
+        background: linear-gradient(135deg, #6f42c1 0%, #0d6efd 100%);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+    }
+
+        .btn-ai-assist:hover:not(:disabled) {
+            color: #fff;
+            filter: brightness(1.05);
+        }
+
+        .btn-ai-assist:disabled {
+            opacity: 0.65;
+        }
+
+    #aiAssistToast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 1080;
+        min-width: 280px;
+        max-width: 420px;
+        display: none;
+    }
+</style>
+
+<div class="container-fluid p-0 medical-workstation"
+     id="interpretationDesktop"
+     data-report-id="@reportId"
+     data-exam-request-id="@examRequestId"
+     data-study-uid="@studyUid">
+
+    <div class="row g-0 h-100">
+
+        <div class="col-9 h-100 diagnostic-shell">
+            <iframe src="@ohifUrl" class="ohif-iframe" allowfullscreen></iframe>
+        </div>
+
+        <div class="col-3 h-100 report-shell">
+
+            <div class="report-scroll-area">
+                <div class="pb-3 mb-4 border-bottom">
+                    <h5 class="fw-bold mb-1" style="color: #0d6efd; letter-spacing: -0.01em;">
+                        @patientName
+                    </h5>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="badge bg-light text-dark border fw-medium">
+                            @gender
+                        </span>
+                        <span class="badge bg-light text-dark border fw-medium">
+                            @dob (@age old)
+                        </span>
+                        <div class="badge bg-light text-dark border fw-medium">
+                            <div class="badge bg-light text-dark border fw-medium">EXAM REQ</div>
+                            <div class="fw-bold" style="font-size: 13px;">#@examRequestId</div>
+                        </div>
+                    </div>
+                </div>
+                <label for="reportImpression" class="quiet-label d-block">Diagnostic Impression</label>
+                <textarea id="reportImpression" class="form-control medical-input" rows="3"
+                          placeholder="Summarize critical findings..."></textarea>
+
+                <label for="reportRecommendations" class="quiet-label d-block">Recommendations</label>
+                <textarea id="reportRecommendations" class="form-control medical-input" rows="2"
+                          placeholder="Suggested clinical follow-up..."></textarea>
+
+                <label class="quiet-label d-block">Findings Registry</label>
+                <div class="chip-container" id="structuredFindingChips">
+                    <button type="button" class="finding-chip" data-key="normal">No Acute Abnormality</button>
+                    <button type="button" class="finding-chip" data-key="consolidation">Consolidation</button>
+                    <button type="button" class="finding-chip" data-key="effusion">Pleural Effusion</button>
+                    <button type="button" class="finding-chip" data-key="pneumothorax">Pneumothorax</button>
+                    <button type="button" class="finding-chip" data-key="cardiomegaly">Cardiomegaly</button>
+                </div>
+
+                <textarea id="reportStructuredFindings" class="d-none">{}</textarea>
+
+                <label for="reportEditor" class="quiet-label d-block">Detailed Narrative</label>
+                <div class="mb-3">
+                    <textarea id="reportEditor"></textarea>
+                </div>
+            </div>
+
+            <div class="action-footer">
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <button class="btn btn-outline-secondary btn-sm w-100" data-transition="In_Progress">IN PROGRESS</button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-info btn-sm w-100" data-transition="Interpreted">INTERPRETED</button>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="button"
+                            class="btn btn-ai-assist btn-sm py-2 shadow-sm"
+                            id="btnAiAssist"
+                            data-exam-request-id="@examRequestId"
+                            data-patient-age="@age"
+                            data-patient-sex="@patientSex"
+                            title="Generate draft impression and narrative from DICOM images">
+                        <i class="bi bi-stars me-2"></i>AI ASSIST
+                    </button>
+                    <button class="btn btn-primary btn-lg fs-6 py-2 shadow-sm" id="btnSaveDraft">
+                        <i class="bi bi-save me-2"></i>SAVE DRAFT
+                    </button>
+                    <button class="btn btn-success btn-lg fs-6 py-2 shadow-sm fw-bold" id="btnFinalize">
+                        <i class="bi bi-check-circle me-2"></i>VERIFY & FINALIZE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="aiAssistToast" class="alert alert-info shadow" role="alert"></div>
+
+<script src="~/lib/ckeditor4/ckeditor.js" asp-append-version="true"></script>
+<script src="~/js/radiology-interpretation.js" asp-append-version="true"></script>
+
+<script>
+    (function () {
+        const findingsEl = document.getElementById("reportStructuredFindings");
+        const chipsRoot = document.getElementById("structuredFindingChips");
+        if (!findingsEl || !chipsRoot) return;
+
+        function getJsonData() {
+            try { return JSON.parse(findingsEl.value || "{}"); }
+            catch { return {}; }
+        }
+
+        function updateJsonData(obj) {
+            findingsEl.value = JSON.stringify(obj);
+            findingsEl.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+
+        function syncUI() {
+            const data = getJsonData();
+            chipsRoot.querySelectorAll(".finding-chip").forEach(chip => {
+                const key = chip.dataset.key;
+                chip.classList.toggle("active", !!data[key]);
+            });
+        }
+
+        chipsRoot.addEventListener("click", (e) => {
+            if (!e.target.classList.contains("finding-chip")) return;
+            const key = e.target.dataset.key;
+            const data = getJsonData();
+            data[key] = !data[key];
+            updateJsonData(data);
+            syncUI();
+        });
+
+        syncUI();
+    })();
+</script>

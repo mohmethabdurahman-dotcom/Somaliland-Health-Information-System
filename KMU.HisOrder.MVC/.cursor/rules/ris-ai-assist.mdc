@@ -1,0 +1,48 @@
+---
+description: RIS Interpretation Desktop AI Assist — Orthanc images, OpenAI Vision, config and troubleshooting
+globs: Areas/Radiology/**/*
+alwaysApply: false
+---
+
+# RIS AI Assist (Interpretation Desktop)
+
+## Feature overview
+
+- **Flow:** Orthanc JPEG previews → OpenAI Vision → fills `#reportImpression` + CKEditor narrative on Interpretation Desktop.
+- **Endpoint:** `POST /Radiology/Interpretation/AIAssist`
+- **Key files:** `Areas/Radiology/Services/AIAssistService.cs`, `OrthancAccessHelper.cs`, `InterpretationController.cs`, `wwwroot/js/radiology-interpretation.js`, `Views/Interpretation/Desktop.cshtml`
+- **DTOs/models:** `AIAssistRequestDto`, `AIAssistResult`, `AIAssistOptions`
+
+## Architecture
+
+| Path | Client | Auth | Target |
+|------|--------|------|--------|
+| OHIF iframe | Browser → `localhost:8042` | Cached Basic auth in browser | Orthanc direct |
+| AI Assist | MVC server | `OrthancInternal` HttpClient + `OrthancSettings` credentials | Orthanc DICOMweb / instances |
+| Stream proxy | Browser → MVC | Session auth | `GET /Radiology/Stream` forwards to Orthanc |
+
+- Do not assume browser Orthanc auth covers server-side AI Assist; server uses its own HttpClient and config.
+
+## Config (`appsettings.json`)
+
+**OrthancSettings:** `ApiBaseUrl`, `HttpUsername`, `HttpPassword` — must match `orthanc.json` `RegisteredUsers`.
+
+**AIAssist:** `OpenAIApiKey`, `Model` (e.g. `gpt-4o`), `MaxImages`, `MaxTokens`, `ImageDetail` (`low`), `RetryMaxImages`.
+
+**Environment overrides:** `ORTHANC_HTTP_USERNAME`, `ORTHANC_HTTP_PASSWORD`, `AIAssist__OpenAIApiKey`, `OPENAI_API_KEY`.
+
+**Development:** `appsettings.Development.json` must **not** empty-string override Orthanc credentials (blank values win over base config and cause 401). Store OpenAI key in user secrets or local Development config — never commit keys.
+
+## Troubleshooting history
+
+1. **502/503, no instances** — Orthanc 401; `OrthancInternal` had no auth, or Development.json cleared credentials.
+2. **DICOMweb** — requests need `Accept: application/json`.
+3. **tools/find Study tag** — use `0020,000D`, not `0020000D`.
+4. **OpenAI empty response** — parse `content` array; use `response_format: json_object` when applicable.
+5. **OpenAI refusal on medical images** — radiology framing, `image_detail: low`, retry with fewer images (`RetryMaxImages`), fallback draft text.
+
+## User / operator actions
+
+- Restart the app after config or AI Assist code changes.
+- Verify Orthanc auth: `curl -u user:pass` against the DICOM-web series endpoint for the study.
+- Confirm OpenAI key is set in Development secrets, not in committed files.

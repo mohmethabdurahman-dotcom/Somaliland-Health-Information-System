@@ -1,0 +1,141 @@
+@model IEnumerable<ScreeningQueueItemViewModel>
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Blood Bank → Screening Queue"; }
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell bb-screening-page">
+    <div class="form-group row mx-0 mb-0 align-items-center">
+        <div class="col-lg-8">
+            <h6 class="direction mx-0 mb-0">@ViewData["Title"]</h6>
+        </div>
+        <div class="col-lg-4 text-right">
+            <a asp-controller="Donors" asp-action="Find" class="bb-btn bb-btn-ghost bb-btn-sm"><i class="fa-solid fa-user-magnifying-glass"></i> Find donor</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null) { <div data-bb-toast data-bb-toast-type="success" class="bb-sr-only">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div data-bb-toast data-bb-toast-type="error" class="bb-sr-only">@TempData["Error"]</div> }
+
+    <div class="bb-kpi-row mx-2">
+        <div class="bb-kpi-card bb-kpi-card--sky">
+            <i class="fa-solid fa-flask bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@ViewBag.QueueCount</p>
+            <p class="bb-kpi-card__label">Awaiting screening</p>
+            <span class="bb-kpi-card__link">Queue →</span>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--amber">
+            <i class="fa-solid fa-box-archive bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@ViewBag.LegacyQueueCount</p>
+            <p class="bb-kpi-card__label">Legacy units</p>
+            <span class="bb-kpi-card__link">Legacy →</span>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--emerald">
+            <i class="fa-solid fa-circle-check bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@ViewBag.PassedToday</p>
+            <p class="bb-kpi-card__label">Passed today</p>
+            <span class="bb-kpi-card__link">Today →</span>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--crimson">
+            <i class="fa-solid fa-circle-xmark bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@ViewBag.FailedToday</p>
+            <p class="bb-kpi-card__label">Failed today</p>
+            <span class="bb-kpi-card__link">Deferrals →</span>
+        </div>
+    </div>
+
+    <h6 class="bb-section-direction mx-2"><i class="fa-solid fa-filter"></i> Queue filters</h6>
+    <div class="bb-card bb-screening-filter mx-2">
+        <div class="bb-card__header"><h4><i class="fa-solid fa-magnifying-glass"></i> Search screening queue</h4></div>
+        <div class="bb-card__body bb-screening-toolbar">
+            <div class="bb-screening-toolbar__search">
+                <label class="bb-label" for="screeningQueueFilter">Search queue</label>
+                <input type="search" id="screeningQueueFilter" class="form-control" placeholder="Donor ID, name, phone, blood type…" autocomplete="off" />
+            </div>
+            <div class="bb-screening-toolbar__filters">
+                <span class="bb-label">Show</span>
+                <button type="button" class="bb-chip is-active" data-screening-filter="all">All</button>
+                <button type="button" class="bb-chip" data-screening-filter="standard">Standard</button>
+                <button type="button" class="bb-chip" data-screening-filter="legacy">Legacy units</button>
+            </div>
+            <div class="bb-screening-toolbar__blood">
+                <label class="bb-label" for="screeningBloodFilter">Blood type</label>
+                <select id="screeningBloodFilter" class="form-control">
+                    <option value="">Any</option>
+                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                    <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="bb-table-wrap bb-screening-table-wrap mx-2" id="screeningQueueWrap">
+            <table class="bb-table bb-table-compact" id="screeningQueueTable">
+                <thead>
+                    <tr>
+                        <th>Donor ID</th>
+                        <th>Name</th>
+                        <th>Mobile phone</th>
+                        <th>Blood</th>
+                        <th>Type</th>
+                        <th>Registered</th>
+                        <th>Priority</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model)
+                {
+                    var rowKind = item.IsLegacyUnit ? "legacy" : "standard";
+                    var waitHours = (DateTime.Now - item.RegisteredAt).TotalHours;
+                    var priorityClass = waitHours >= 24 ? "bb-badge-failed" : waitHours >= 8 ? "bb-badge-pending" : "bb-badge-passed";
+                    var priorityLabel = waitHours >= 24 ? "Urgent" : waitHours >= 8 ? "Due" : "Normal";
+                    var priorityKey = waitHours >= 24 ? "urgent" : waitHours >= 8 ? "due" : "normal";
+                    <tr data-screening-row
+                        data-kind="@rowKind"
+                        data-priority="@priorityKey"
+                        data-blood="@item.BloodType"
+                        data-search="@($"{item.BloodBankDonorId} {item.FullName} {item.Phone} {item.BloodType} {item.DonationType}".ToLowerInvariant())">
+                        <td class="bb-mono">@item.BloodBankDonorId</td>
+                        <td><strong>@item.FullName</strong></td>
+                        <td class="bb-mono">@item.Phone</td>
+                        <td><span class="bb-badge bb-badge-blood">@item.BloodType</span></td>
+                        <td>
+                            @item.DonationType
+                            @if (item.IsLegacyUnit)
+                            {
+                                <span class="bb-badge bb-badge-muted">Legacy</span>
+                                @if (!string.IsNullOrEmpty(item.SerialNumber))
+                                {
+                                    <span class="bb-mono bb-page-subtitle">@item.SerialNumber</span>
+                                }
+                            }
+                        </td>
+                        <td data-order="@item.RegisteredAt.Ticks">@item.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td><span class="bb-badge @priorityClass">@priorityLabel</span></td>
+                        <td class="bb-table-actions">
+                            <a asp-controller="Donors" asp-action="Profile" asp-route-donorId="@item.DonorId" class="bb-btn bb-btn-sm bb-btn-ghost">History</a>
+                            @if (!item.IsLegacyUnit)
+                            {
+                                <a asp-controller="Donors" asp-action="Edit" asp-route-donorId="@item.DonorId" class="bb-btn bb-btn-sm bb-btn-ghost">Edit</a>
+                            }
+                            <a asp-action="Create" asp-route-donorId="@item.DonorId" asp-route-unitId="@item.UnitId" class="bb-btn bb-btn-sm bb-btn-primary">
+                                <i class="fa-solid fa-flask"></i> Screen
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <p class="bb-page-subtitle bb-mt-4 mx-2" id="screeningFilterEmpty" hidden>No rows match the current filters.</p>
+    }
+    else
+    {
+        <div class="bb-empty-state mx-2">
+            <i class="fa-solid fa-flask"></i>
+            <p>No donors awaiting screening.</p>
+            <a asp-controller="Donors" asp-action="Find" class="bb-btn bb-btn-primary bb-mt-4">Find donor</a>
+        </div>
+    }
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />

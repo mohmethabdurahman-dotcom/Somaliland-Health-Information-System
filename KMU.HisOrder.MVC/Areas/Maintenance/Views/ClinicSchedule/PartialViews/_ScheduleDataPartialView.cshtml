@@ -1,0 +1,156 @@
+﻿@model KMU.HisOrder.MVC.Areas.Maintenance.ViewModels.ScheduleListReturn
+@using KMU.HisOrder.MVC.Models;
+@using KMU.HisOrder.MVC.Extesion;
+
+@{
+    var aCount = Model.sdList.Count;
+    var oCount = Model.sdList.Where(c => c.enumOpenFlag == EnumClass.OpenFlag.On).Count();
+    var cCount = Model.sdList.Where(c => c.enumOpenFlag == EnumClass.OpenFlag.Off).Count();
+}
+<link href="~/css/style.css" rel="stylesheet" />
+<style>
+    .badge {
+        font-size: 100%
+    }
+</style>
+<div class="row mx-0">
+    <div class="col-4 pt-1 pb-0">
+        <div class="card p-2">
+            <div class="stat-widget-one card-body">
+                <div class="stat-icon d-inline-block">
+                    <i class="fa fa-shapes text-info border-info"></i>
+                </div>
+                <div class="stat-content d-inline-block">
+                    <div class="stat-text">All Clinic</div>
+                    <div class="stat-digit"><strong>@aCount</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-4 pt-1 pb-0">
+        <div class="card p-2">
+            <div class="stat-widget-one card-body">
+                <div class="stat-icon d-inline-block">
+                    <i class="fa fa-circle text-success border-success"></i>
+                </div>
+                <div class="stat-content d-inline-block">
+                    <div class="stat-text">Open</div>
+                    <div class="stat-digit"><strong>@oCount</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 pt-1 pb-0">
+        <div class="card p-2">
+            <div class="stat-widget-one card-body">
+                <div class="stat-icon d-inline-block">
+                    <i class="fa fa-square text-dark border-dark"></i>
+                </div>
+                <div class="stat-content d-inline-block">
+                    <div class="stat-text">Close</div>
+                    <div class="stat-digit"><strong>@cCount</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<table class="table table-borderless mx-0" id="schedule_tb">
+    @if (Model.ReturnT != null && Model.ReturnT.isSuccess)
+    {
+        <thead class="thead-dark border-bottom">
+            <tr>
+                <td class="font-weight-bold text-primary" style="width:5%"></td>
+                <td class="font-weight-bold text-dark" style="width:10%">Week</td>
+                <td class="font-weight-bold text-dark" style="width:10%">Shift</td>
+                <td class="font-weight-bold text-dark" style="width:8%">Room</td>
+                <td class="font-weight-bold text-dark" style="width:20%">Clinic Name/Code   </td>
+                <td class="font-weight-bold text-dark" style="width:20%">Doctor Name</td>
+                <td class="font-weight-bold text-dark" style="width:7%">Open/Close</td>
+                <td class="font-weight-bold text-dark" style="width:20%">Remark</td>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (Model.sdList != null && Model.sdList.Any())
+            {
+                foreach (var sd in Model.sdList)
+                {
+                    var Key = sd.SCHE_WEEK + "_" + sd.SCHE_NOON + "_" + sd.SCHE_ROOM + "_" + sd.SCHE_Shift;
+                    var DptName = sd.SCHE_DPT_NAME + "-(" + sd.SCHE_DPT + ")";
+                    <tr id="" style="cursor:pointer">
+                        <td class="font-weight-bold text-dark">
+                            <i class="fa-solid fa-pencil" onclick="fn_ShowModal('Update','@Key')"></i>
+                        </td>
+                        <td class="font-weight-bold">
+                            @foreach (DayOfWeek week in Enum.GetValues(typeof(DayOfWeek)))
+                            {
+                                if ("7" == sd.SCHE_WEEK)
+                                {
+                                    <span class="badge badge-primary">@week.EnumToString()</span>
+                                    break;
+                                }
+                                else
+                                {
+                                    if (week.ToString("d") == sd.SCHE_WEEK)
+                                    {
+                                        <span class="badge badge-primary">@week.EnumToString()</span>
+                                        break;
+                                    }
+                                }
+                            }
+                        </td>
+                        <td class="font-weight-bold"><span class="badge badge-secondary">@Html.Raw(sd.SCHE_Shift.Trim())</span></td>
+                        <td class="font-weight-bold"><span class="badge badge-danger">@Html.Raw(sd.SCHE_ROOM.Trim())</span></td>
+                        <td class="font-weight-bold">@Html.Raw(DptName)</td>
+                        <td class="font-weight-bold">@Html.Raw(sd.SCHE_DOCTOR_NAME)</td>
+                        <td class="font-weight-bold">
+                            @* 2023/05/09 updated by 異類,把急診的特例拿掉 *@
+                            @*@if (sd.DPT_CATEGORY == "EMG")
+                            {
+                                if (EnumClass.OpenFlag.On == sd.enumOpenFlag)
+                                {
+                                    <span><a><i class="fa-solid fa-toggle-on fa-2xl" style="color:green"></i></a></span>
+                                }
+                            }
+                            else
+                            {*@
+                                @if (EnumClass.OpenFlag.On == sd.enumOpenFlag)
+                                {
+                                    <span><a onclick="fn_SwitchOpenFlag(this,'@Key')"><i class="fa-solid fa-toggle-on fa-2xl" style="color:green"></i></a></span>
+                                }
+                                else
+                                {
+                                    <span><a onclick="fn_SwitchOpenFlag(this,'@Key')"><i class="fa-solid fa-toggle-off fa-2xl" style="color:black"></i></a></span>
+                                }
+                            @*}*@
+
+
+                        </td>
+                        <td class="font-weight-bold text-dark text-left">@Html.Raw(sd.REMARK)</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="font-weight-bold text-danger" colspan="5">Not Schedule Has Found!!</td>
+                </tr>
+            }
+        </tbody>
+    }
+    else
+    {
+        <tbody>
+            <tr>
+                <td class="text-center font-weight-bold text-danger" style="width:100%">Emsdy Param! </td>
+            </tr>
+        </tbody>
+    }
+</table>
+<script>
+
+
+    $(document).ready(function () {
+        $("#schedule_tb").DataTable({});
+    });
+</script>

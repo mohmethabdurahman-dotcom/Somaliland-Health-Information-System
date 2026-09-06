@@ -1,0 +1,211 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.PhysicalSign>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    Layout = null;
+
+    var inhospId = TempData["InhospitalId"].ToString();
+    var healthId = TempData["HealthId"].ToString();
+    var dt = TempData["Date"];
+    var date = Convert.ToDateTime(dt);
+
+    var _model = Model.Where(e => e.PhyType != "Headache" && e.PhyType != "Nausea" && e.PhyType != "Tiredness" && e.PhyType != "Fatigue" && e.PhyType != "Confusion").ToList();
+    var _ncdinfo = Model.Where(e => e.PhyType == "Headache" || e.PhyType == "Nausea" || e.PhyType == "Tiredness" || e.PhyType == "Fatigue" || e.PhyType == "Confusion").ToList();
+    var homeVitalSign = _context.home_physicalsign.Where(e => e.inhospid == inhospId && e.modify_time == date).ToList();
+}
+
+<style>
+    .headerround {
+        border: 1px solid;
+        margin-right: 18px;
+        margin-left: 10px;
+        padding: 10px;
+        background-color: #fff;
+        border-radius: 5px;
+    }
+
+    .input-box {
+        display: flex;
+        align-items: center;
+        max-width: 300px;
+        background: #fff;
+        border: 1px solid #a0a0a0;
+        border-radius: 4px;
+        padding-left: 4px;
+        overflow: hidden;
+    }
+
+        .input-box .prefix {
+            font-weight: 300;
+            font-size: 14px;
+            color: #999;
+            margin-right: 5px;
+        }
+
+        .input-box input {
+            flex-grow: 1;
+            background: #fff;
+            border: none;
+            outline: none;
+            padding: 0px;
+        }
+
+    .al {
+        text-align: left;
+    }
+</style>
+
+<div id="dhamaan">
+    <div class="row">
+        <p id="inhospId" hidden>@inhospId</p>
+        <p id="HealthId" hidden>@healthId</p>
+        <p id="date" hidden>@date</p>
+    </div>
+    <div>
+        <div class="card-title">
+            <h6 style=" border-left: 5px solid black; padding-left: 10px; margin: 0px 5px 10px 10px; ">Vital Sign</h6>
+        </div>
+    </div>
+    <div>
+        <div class="row border border-dark rounded mx-1">
+            @if (_model.Count() > 0)
+            {
+                @foreach (var item in _model.OrderBy(e => e.PhyId))
+                {
+                    <div class="d-flex align-items-center flex-column">
+                        <div class="col border">
+                            <p class="text-dark text-center"><b>@item.PhyType</b></p>
+                        </div>
+
+                        <div class="col border">
+                            <p class="text-center">@item.PhyValue</p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="pt-2 pl-2">
+                    <p class="text-sm-left">This patient does not have vital sign...</p>
+                </div>
+            }
+        </div>
+    </div>
+
+
+
+    @*
+    NCD INFO PART
+    *@
+
+    <div>
+        <div class="card-title mt-1">
+            <h6 style=" border-left: 5px solid black; padding-left: 10px; margin: 0px 5px 10px 10px; ">Non-Specific Symptoms</h6>
+        </div>
+    </div>
+    <div>
+        <div class="row border border-dark rounded mx-1">
+            @if (_ncdinfo.Count() > 0)
+            {
+                @foreach (var item in _ncdinfo.OrderBy(e => e.PhyId))
+                {
+                    <div class="d-flex align-items-center flex-column">
+                        <div class="col border">
+                            <p class="text-center">@item.PhyValue</p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="pt-2 pl-2">
+                    <p class="text-sm-left">This patient does not have ncd info...</p>
+                </div>
+            }
+        </div>
+    </div>
+
+
+    <div>
+        <div class="card-title">
+            <h6 style=" border-left: 5px solid black; padding-left: 10px; margin: 15px 5px 10px 10px; ">Diabetic Home Management VitalSign</h6>
+        </div>
+    </div>
+    <div>
+        <div class="row border border-dark rounded mx-1">
+            @if (homeVitalSign.Count() > 0)
+            {
+                <table class="table table-striped p-1">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Before Breakfast</th>
+                            <th>After Breakfast</th>
+                            <th>Before Dinner</th>
+                            <th>After Dinner</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in homeVitalSign.Where(e => e.category == "diabetes").OrderBy(e => e.date))
+                        {
+                            <tr>
+                                <td>@item.date.ToString("dd-MM-yyyy")</td>
+                                <td>@item.before_breakfast</td>
+                                <td>@item.after_breakfast</td>
+                                <td>@item.before_dinner</td>
+                                <td>@item.after_dinner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="pt-2 pl-2">
+                    <p class="text-sm-left">This patient does not have home management vitalsign...</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div>
+        <div class="card-title">
+            <h6 style=" border-left: 5px solid black; padding-left: 10px; margin: 15px 5px 10px 10px; ">Hypertension Home Management VitalSign</h6>
+        </div>
+    </div>
+    <div>
+        <div class="row border border-dark rounded mx-1">
+            @if (homeVitalSign.Count() > 0)
+            {
+                <table class="table table-striped p-1 al">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th colspan="2">Morning Systolic & Diastolic</th>
+                            <th style="text-align: left" colspan="2">Evening Systolic & Diastolic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in homeVitalSign.Where(e => e.category == "Hypertension").OrderBy(e => e.date))
+                        {
+                            <tr>
+                                <td>@item.date.ToString("dd-MM-yyyy")</td>
+                                <td>@item.morning_systolic</td>
+                                <td>@item.morning_diastolic</td>
+                                <td>@item.evining_systolic</td>
+                                <td>@item.evining_diastolic</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="pt-2 pl-2">
+                    <p class="text-sm-left">This patient does not have home management vitalsign...</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+

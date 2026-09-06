@@ -1,0 +1,54 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Areas.InPatient.ViewModels.vitalsignMV>
+
+@{
+    Layout = null;
+}
+
+<div class="">
+    <div class="">
+        <table class="table table-bordered table-hover text-center table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Time</th>
+                    <th>RR</th>
+                    <th>Oxygen</th>
+                    <th>HR</th>
+                    <th>Input</th>
+                    <th>Output</th>
+                    <th>Temp</th>
+                    <th>RBS</th>
+                    <th>Systolic</th>
+                    <th>Diastolic</th>
+                    <th>Shift</th>
+                    <th>By</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || Model.Count() == 0)
+                    {
+                    <tr> <th>No Data.</th></tr>
+                }
+                else
+                {
+                    @foreach (var vital in Model)
+                    {
+                        <tr>
+                            <td>@vital.at?.ToString("dd MMM yyyy hh:mm tt")</td>
+                            <td>@vital.RR</td>
+                            <td>@vital.Oxygen</td>
+                            <td>@vital.HR</td>
+                            <td>@vital.Input</td>
+                            <td>@vital.Output</td>
+                            <td>@vital.Temperature</td>
+                            <td>@vital.RBS</td>
+                            <td>@vital.Systolic</td>
+                            <td>@vital.Diastolic</td>
+                            <td>@vital.Shift</td>
+                            <td>@vital.by</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

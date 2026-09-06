@@ -1,0 +1,337 @@
+﻿@using KMU.HisOrder.MVC.Areas.InPatient.ViewModels
+@model BedChangeVM
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    var get_session = Context.Session.GetObject<KMU.HisOrder.MVC.Areas.HisOrder.Models.LoginDTO>("LoginDTO");
+}
+
+<style>
+    /* Bed Selection Grid */
+    .bed-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .bed-card {
+        padding: 15px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+        background: #f8f9fa;
+        border: 2px solid transparent;
+    }
+
+        .bed-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .bed-card.selected-bed {
+            border-color: #28a745;
+            background: #e8f5e9;
+        }
+
+        .bed-card.current-bed {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+
+    .selected-indicator {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        background: #28a745;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        border: 2px solid white;
+    }
+
+    .selected-indicator {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        background: #28a745;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        border: 2px solid white;
+    }
+
+    .occupied-badge {
+        background: #dc3545;
+        color: white;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 11px;
+        display: inline-block;
+        margin-top: 3px;
+    }
+
+    .current-bed {
+        background-color: #fff3cd;
+        border: 2px solid #ffc107;
+    }
+
+    .bed-card:hover {
+        background-color: #f8f9fa;
+        border-color: #007bff;
+    }
+
+</style>
+
+<div class="row">
+    <!-- Patient Info Section -->
+    <div class="col-md-12">
+        <div id="patCard">
+            <div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-1 position-relative d-flex justify-content-end align-items-end">
+                            <img src="/images/avatar.png" class="avatar-xl rounded-circle border-width-4 border-white" alt="" style="width: 66px; height:66px;" />
+                        </div>
+                        <div class="ml-2">
+                            <div class="mt-2 d-block">
+                                <h5 class="d-inline-block" id="patientName"><strong>@Model.Patient.ChrPatientFirstname @Model.Patient.ChrPatientMidname @Model.Patient.ChrPatientLastname</strong></h5>
+                                <div class="d-inline-block ml-2">
+                                    <label class="badge rounded-pill badge-warning"><i class="fa far fa-star"></i></label>
+                                </div>
+                            </div>
+
+                            <div class="text-dark">
+                                <h6 class="d-inline-block mr-3 pt-bl-color">
+                                    <a href="#" title="Patient ID">
+                                        <i class="fa-solid fa-id-card mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a> <span id="patientID">@Model.Patient.ChrHealthId</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-3">
+                                    <a href="#" title="Birthday / Age">
+                                        <i class="fa-solid fa-b mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a><span id="brithdate">@Model.Patient.ChrBirthDate?.ToString("yyyy-MM-dd")</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-3">
+                                    <a href="#" title="Sex">
+                                        <i class="fa-solid fas fa-venus-mars mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a>
+                                    <span id="sex">@Model.Patient.ChrSex</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-2">
+                                    <a href="#" title="Mobile">
+                                        <i class="fa fa-phone mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a> <span id="phoneNumber">@Model.Patient.ChrMobilePhone</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-2 pt-br-color">
+                                    <a href="#" title="Address">
+                                        <i class="fa far fas fa-location-dot mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="address"></i>
+                                    </a> <span id="address">@Model.Patient.ChrAddress</span>
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr />
+        </div>
+    </div>
+</div>
+
+<div class="row bg-white rounded infoCard p-2 ml-3">
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-white text-center">
+                <h6>Current Bed</h6>
+            </div>
+            <div class="card-body p-2">
+                <div class="bed-card current-bed mb-2" style="min-height: 60px;">
+                    <div class="d-flex align-items-center h-100">
+                        <div style="font-size: 1.8rem;">
+                            <i class="fa-solid fa-bed-pulse"></i>
+                        </div>
+                        <div class="ms-2">
+                            <div class="bed-name" style="font-weight: bold; font-size: 1rem;">@Model.CurrentBed.bedName</div>
+                            <span class="badge bg-danger mt-1">Occupied</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Icon Column -->
+    <div class="col-md-1 d-flex align-items-center justify-content-center">
+        <i class="fas fa-right-left fa-2x text-primary"></i>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h6>Select New Bed</h6>
+            </div>
+            <div class="card-body p-3">
+                <label class="form-label">Available Beds in</label>
+                @foreach( var ward in Model.Ward)
+                {
+                    <span>@ward.wardName (@ward.wardid),</span>
+                }
+                <div class="row" id="availableBedsContainer">
+
+                    @foreach (var bed in Model.AvailableBeds)
+                    {
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="bed-card h-100 p-2"
+                                 style="min-height: 60px; cursor: pointer; border: 1px solid #ddd; border-radius: 5px;"
+                                 data-bed-id="@bed.bedId", data-ward-id="@bed.wardId"
+                                 onclick="selectBed(this)">
+                                <div class="d-flex align-items-center h-100">
+                                    <div style="font-size: 1.5rem;">
+                                        <i class="fa-solid fa-bed text-success"></i>
+                                    </div>
+                                    <div class="ms-2">
+
+                                        @if (bed.wardId == "WI000")
+                                        {
+                                            <div class="ward-name fw-bold" style="font-size: 0.9rem;">ICU 1</div>
+
+                                        }
+                                        @if (bed.wardId == "WI001")
+                                        {
+                                            <div class="ward-name fw-bold" style="font-size: 0.9rem;">ICU 2</div>
+
+                                        }
+                                        <div class="bed-name fw-bold" style="font-size: 0.9rem;">@bed.bedName</div>
+                                        <span class="badge bg-@(bed.status == "Occupied" ? "danger" : "success") mt-1">
+                                            @bed.status
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <input type="hidden" id="selectedBedId" />
+                <input type="hidden" id="selectedWardId" />
+
+                <div class="text-end mt-3">
+                    <button class="btn btn-primary px-4" onclick="confirmBedChange()" disabled id="confirmBtn">
+                        <i class="fas fa-exchange-alt me-2"></i> Confirm Bed Change
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function selectBed(element) {
+        // Remove previous selection
+        $('.bed-card').removeClass('selected-bed');
+        $('.selected-indicator').remove(); // remove any old indicators
+
+        // Add selection to clicked bed
+        $(element).addClass('selected-bed');
+
+        // Add a visual check or icon indicator
+        const indicator = `<div class="selected-indicator"><i class="fa-solid fa-check"></i></div>`;
+        $(element).append(indicator);
+
+        //set hidden input war
+        $('#selectedWardId').val($(element).data('ward-id'));
+
+        // Set hidden input
+        $('#selectedBedId').val($(element).data('bed-id'));
+
+        // Enable confirm button
+        $('#confirmBtn').prop('disabled', false);
+    }
+
+
+    function confirmBedChange() {
+        var selectedWardId = $('#selectedWardId').val();
+        var selectedBedId = $('#selectedBedId').val();
+        var healthId = '@Model.Patient.ChrHealthId';
+        var inhospId = '@Model.Reservation.inhospId';
+        var currentBedId = '@Model.CurrentBed.bedId';
+
+        if (!selectedBedId) {
+            alert('Please select a bed first');
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("ChangeBed", "Ward")',
+            type: 'POST',
+            data: {
+                healthid: healthId,
+                inhospid: inhospId,
+                currentBedId: currentBedId,
+                newBedId: selectedBedId,          
+                newWardId:selectedWardId
+
+            },
+            success: function(response) {
+                if (response.success) {
+                    layer.alert(response.message, {
+                        skin: 'layui-layer-lan',
+                        closebtn: 1,
+                        anim: 5,
+                        icon: 1,
+                        btn: ['OK'],
+                        title: 'Success'
+                    }, function(index) {
+                        layer.close(index);
+                        $('#changeBedModal').modal('hide');
+                        location.reload(); 
+                    });
+                } else {
+                    layer.alert(response.message, {
+                        skin: 'layui-layer-lan',
+                        closebtn: 1,
+                        anim: 5,
+                        icon: 2,
+                        btn: ['OK'],
+                        title: 'Error'
+                    });
+                }
+            },
+            error: function() {
+                layer.alert('Failed to change bed. Please try again.', {
+                    skin: 'layui-layer-lan',
+                    closebtn: 1,
+                    anim: 5,
+                    icon: 2,
+                    btn: ['OK'],
+                    title: 'Error'
+                });
+            }
+        });
+    }
+</script>

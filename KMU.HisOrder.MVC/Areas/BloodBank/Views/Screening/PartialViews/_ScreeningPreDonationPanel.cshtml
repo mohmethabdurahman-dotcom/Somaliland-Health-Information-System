@@ -1,0 +1,76 @@
+@model ScreeningFormViewModel
+
+<section class="bb-scr-cbc" id="screeningPreDonationPanel" aria-label="Pre-donation screening and CBC">
+    <div class="bb-scr-cbc__head">
+        <div class="bb-scr-cbc__title">
+            <span class="bb-scr-cbc__icon"><i class="fa-solid fa-stethoscope"></i></span>
+            <div>
+                <h3 class="bb-scr-cbc__heading">Pre-donation CBC</h3>
+                <p class="bb-scr-cbc__reg">Enter values against institutional reference ranges</p>
+            </div>
+        </div>
+        <span class="bb-scr-cbc__step">Step 1</span>
+    </div>
+
+    <div class="bb-scr-cbc__grid">
+        <label class="bb-scr-vital" data-vital="hb">
+            <span class="bb-scr-vital__label">Hemoglobin</span>
+            <span class="bb-scr-vital__range">12.0 – 20.0 g/dL</span>
+            <div class="bb-scr-vital__input">
+                <input asp-for="Hemoglobin" type="number" id="scrHb" step="0.1" min="5" max="20"
+                       class="form-control" placeholder="0.0" required />
+                <span class="bb-scr-vital__unit">g/dL</span>
+            </div>
+            <span class="bb-vital-status" data-for="scrHb">—</span>
+        </label>
+
+        <label class="bb-scr-vital" data-vital="wbc">
+            <span class="bb-scr-vital__label">WBC</span>
+            <span class="bb-scr-vital__range">4.0 – 11.0 ×10³/µL</span>
+            <div class="bb-scr-vital__input">
+                <input asp-for="Wbc" type="number" id="scrWbc" step="0.1" min="1" max="30"
+                       class="form-control" placeholder="0.0" required />
+                <span class="bb-scr-vital__unit">×10³/µL</span>
+            </div>
+            <span class="bb-vital-status" data-for="scrWbc">—</span>
+        </label>
+
+        <label class="bb-scr-vital" data-vital="rbc">
+            <span class="bb-scr-vital__label">RBC</span>
+            <span class="bb-scr-vital__range">3.8 – 6.0 ×10⁶/µL</span>
+            <div class="bb-scr-vital__input">
+                <input asp-for="Rbc" type="number" id="scrRbc" step="0.01" min="2" max="8"
+                       class="form-control" placeholder="0.00" required />
+                <span class="bb-scr-vital__unit">×10⁶/µL</span>
+            </div>
+            <span class="bb-vital-status" data-for="scrRbc">—</span>
+        </label>
+
+        <label class="bb-scr-vital" data-vital="plt">
+            <span class="bb-scr-vital__label">Platelet</span>
+            <span class="bb-scr-vital__range">150 – 400 ×10³/µL</span>
+            <div class="bb-scr-vital__input">
+                <input asp-for="Platelet" type="number" id="scrPlatelet" step="1" min="50" max="600"
+                       class="form-control" placeholder="0" required />
+                <span class="bb-scr-vital__unit">×10³/µL</span>
+            </div>
+            <span class="bb-vital-status" data-for="scrPlatelet">—</span>
+        </label>
+    </div>
+
+    <details class="bb-scr-deferral">
+        <summary>Deferral criteria checklist</summary>
+        <div class="bb-scr-deferral__list">
+            <label class="bb-scr-deferral__item"><input type="checkbox" class="bb-deferral-flag" value="Fever or active infection" /> Fever, infection, or feeling unwell today</label>
+            <label class="bb-scr-deferral__item"><input type="checkbox" class="bb-deferral-flag" value="Recent tattoo or piercing" /> Tattoo or piercing within last 12 months</label>
+            <label class="bb-scr-deferral__item"><input type="checkbox" class="bb-deferral-flag" value="Malaria-endemic travel" /> Travel to malaria-endemic area</label>
+            <label class="bb-scr-deferral__item"><input type="checkbox" class="bb-deferral-flag" value="High-risk medication" /> Medication or procedure deferral applies</label>
+            <label class="bb-scr-deferral__item"><input type="checkbox" class="bb-deferral-flag" value="Low hemoglobin" /> Hemoglobin below institutional threshold</label>
+        </div>
+    </details>
+
+    <label class="bb-scr-attest">
+        <input type="checkbox" id="scrAttest" />
+        <span>I attest pre-donation CBC and eligibility criteria are satisfied when no deferral flags are selected.</span>
+    </label>
+</section>

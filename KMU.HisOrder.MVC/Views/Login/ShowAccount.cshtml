@@ -1,0 +1,99 @@
+﻿@model KmuUser
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+	html{
+		font-size: 15px;
+	}
+
+	h1 {
+		font-size: 1.8rem;
+	}
+
+	table {
+		font-size: 1rem;
+		min-width: 40vw;
+	}
+
+	label {
+		background-color: inherit !important;
+		font-weight: bold !important;
+		border: 0px !important;
+	}
+
+	input {
+		/*font-weight: bold !important;*/
+		text-align: center;
+		border-radius: 50rem !important;
+	}
+</style>
+
+@if( TempData["Show_User_Messages"] != null)
+{
+	<table align="center">
+		<tr>
+			<td>
+				<h2>
+					<center>
+						<div class="alert alert-primary" role="alert">
+						@TempData["Show_User_Messages"]
+						</div>
+					</center>
+				</h2>
+			</td>
+		</tr>
+	</table>
+}
+
+<table align="center">
+	<tr>
+		<td>
+			<h1 class="text-center"><i class="fa-solid fa-user"></i> User  Profile</h1><hr class="mb-4"></hr>
+
+			<div class="form-group row mx-0 mb-1">
+					<label class="form-control col-lg-4 px-0"><font color="red">*</font>Account ID:</label>
+					<input type="text" name="Account" class="form-control col-lg-8" value="@(Model.UserIdno)" readonly />
+			</div>
+	
+			<div class="form-group row mx-0 mb-1">
+					<label class="form-control col-lg-4 px-0"><font color="red">*</font>First Name:</label>
+					<input type="text" name="Firstname" class="form-control col-lg-8" value="@(Model.UserNameFirstname)" readonly />
+			</div>
+	
+			<div class="form-group row mx-0 mb-1">
+					<label class="form-control col-lg-4 px-0"><font color="red">*</font>Father's Name:</label>
+					<input type="text" name="Midname" class="form-control col-lg-8" value="@(Model.UserNameMidname)" readonly />
+			</div>
+	
+			<div class="form-group row mx-0 mb-1">
+					<label class="form-control col-lg-4 px-0"><font color="red">*</font>Grandfather's Name:</label>
+					<input type="text" name="Lastname" class="form-control col-lg-8" value="@(Model.UserNameLastname)" readonly />
+			</div>
+	
+			@*<div class="form-group row mx-0">
+				<label class="form-control col-lg-12 px-0"><font color="red">*</font>Mobile Phone Number：<span class="text-info font-weight-normal">not announced</span></label>
+			</div>*@
+	
+			<div class="form-group row mx-0 mb-1">
+					<label class="form-control col-lg-4 px-0"><font color="red">*</font>E-mail:</label>
+					<input type="text" name="mail" class="form-control col-lg-8" value="@(Model.UserEmail)" readonly />
+			</div>
+	
+			<div class="form-group row mx-0 mb-1">
+					<label class="form-control col-lg-4 px-0"><font color="red">*</font>Category:</label>
+					<input type="text" name="userCategory" class="form-control col-lg-8" value="@(ViewBag.UserCategory)" readonly />
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td class="pt-3">
+			<span class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Notice : </span>
+			<span class="text-danger">his page is read only and cannot be edited.</span>
+		</td>
+	</tr>
+</table>
+
+

@@ -1,0 +1,81 @@
+<script src="~/js/Ajax.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var pathPatientSearchUrl = '@Url.Action("PatientSearch", "Patients", new { area = "BloodBank" })';
+
+    function fn_PatientSearch() {
+        $("#PatientDataContent").html("");
+        $("#PatientDataContent").removeClass("show");
+
+        var patientId = $("#Txt_PatientID").val();
+        var mobilePhone = $("#Txt_MobilePhone").val();
+        var patientName = $("#Txt_PatientName").val();
+
+        if ((patientId == "" || patientId == null) && (mobilePhone == "" || mobilePhone == null) && (patientName == "" || patientName == null)) {
+            layer.alert('Please choose one of Condition to Search', {
+                skin: 'layui-layer-lan',
+                closebtn: 1,
+                anim: 5,
+                icon: 1,
+                btn: ['OK'],
+                title: 'Error Message'
+            }, function (index) {
+                layer.close(index);
+            });
+            return;
+        }
+
+        ajax(pathPatientSearchUrl, {
+            patientId: patientId,
+            phone: mobilePhone,
+            name: patientName
+        }, function (html) {
+            $("#PatientDataContent").html(html);
+            $("#PatientDataContent").addClass("show");
+            if ($.fn.DataTable && $('#patientInfo_tb').length && $('#patientInfo_tb tbody tr[id^="tr_patient_"]').length > 0) {
+                if ($.fn.DataTable.isDataTable('#patientInfo_tb')) {
+                    $('#patientInfo_tb').DataTable().destroy();
+                }
+                $('#patientInfo_tb').DataTable({ scrollX: true, pageLength: 25, columnDefs: [{ orderable: false, targets: 0 }] });
+                $(".dataTables_info").css("width", "100%");
+            }
+        }, function () {
+            layer.alert('Patient search failed. Please refresh the page and try again.', {
+                skin: 'layui-layer-lan',
+                closebtn: 1,
+                anim: 5,
+                icon: 2,
+                btn: ['OK'],
+                title: 'Search Error'
+            });
+        });
+    }
+
+    function fn_SelectRow(trRow) {
+        var trID = trRow.id;
+        $('tr[id^="tr_patient_"]').removeClass("trHighlight");
+        $("#" + trID).addClass("trHighlight");
+    }
+
+    window.fn_PatientSearch = fn_PatientSearch;
+    window.fn_SelectRow = fn_SelectRow;
+
+    $("#btnPatientSearch").on("click", function (e) {
+        e.preventDefault();
+        fn_PatientSearch();
+    });
+    $("#Txt_PatientID, #Txt_MobilePhone, #Txt_PatientName").on("keypress", function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            fn_PatientSearch();
+        }
+    });
+
+    @if (!string.IsNullOrEmpty(Context.Request.Query["patientId"]) || !string.IsNullOrEmpty(Context.Request.Query["phone"]) || !string.IsNullOrEmpty(Context.Request.Query["name"]))
+    {
+        @:fn_PatientSearch();
+    }
+})();
+</script>

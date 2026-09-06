@@ -1,0 +1,225 @@
+﻿@using KMU.HisOrder.MVC.Areas.Maintenance.ViewModels
+@using KMU.HisOrder.MVC.Models
+@using KMU.HisOrder.MVC;
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration _Configuration//參考資料 https://stackoverflow.com/a/71151666
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    var reserveType = ViewData["reserveType"] as string;
+    var scheduleList = ViewData["scheduleList"] as List<ScheduleData>;
+    var attrList = ViewData["attrList"] as List<KmuAttribute>;
+    var patientID = ViewData["PatientID"] as string;
+
+    var get_session = LoginSessionHelper.GetOrRestore(Context);
+    var findRol = get_session == null
+        ? new List<KmuAuth>()
+        : _context.KmuAuths.Where(e => e.UserIdno == get_session.EMPCODE && e.ProjectId == "NcdDataEntry").ToList();
+}
+<style>
+
+    .label {
+        background-color: inherit;
+    }
+
+    .DivContent_Red {
+        border-style: solid;
+        border-width: 0px;
+        border-color: gray;
+        border-top-color: #d60412;
+        border-top-width: 5px;
+        font-weight: bold;
+        font-style: normal;
+        font-variant: normal;
+        text-indent: .2em;
+        text-transform: none;
+        text-decoration: none;
+        vertical-align: middle
+    }
+
+    .inputStyle {
+        border-radius: 0.25rem;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+    }
+
+    ul li {
+        padding: 0px !important;
+        text-align: center !important;
+    }
+
+    .filter-option-inner-inner {
+        text-align: center;
+    }
+
+    .optGroupTitle {
+        color: red;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .optionText {
+        color: dodgerblue;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .bootstrap-select button {
+        background-color: white;
+    }
+
+</style>
+<div class="DivContent_Red">
+    <div class="form-group row mx-0 justify-content-center">
+        <div class="col-7" style="display:block">
+            <label class="border-0 font-weight-bold mb-0 px-0"><font color="red">*</font>Clinic Room:</label>
+            <select id="select_Clinic" class="selectpicker d-block w-100 text-center" onchange="fn_ReserveDesc()">
+                <option></option>
+                @foreach (var schedule in (scheduleList ?? new List<ScheduleData>()).GroupBy(c => c.SCHE_PARENT_DPT))
+                {
+                    var groupName = schedule.FirstOrDefault().SCHE_PARENT_DPT_NAME;
+
+                    <optgroup label="@groupName" class="optGroupTitle">
+                        @foreach (var sc in scheduleList.Where(c => c.SCHE_PARENT_DPT == schedule.Key))
+                        {
+                            string optionName = "";
+                            if (reserveType == "EMG")
+                            {
+                                optionName = sc.SCHE_DPT_NAME + "-" + "(" + sc.SCHE_ROOM + ")";
+                            }
+                            else
+                            {
+                                optionName = sc.SCHE_DOCTOR_NAME + "-" + "(" + sc.SCHE_ROOM + ")";
+                            }
+
+
+                            var optionValue = string.Format("{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}", "_",
+                            sc.SCHE_ROOM,
+                            sc.SCHE_DPT,
+                            sc.SCHE_DPT_NAME,
+                            sc.SCHE_DOCTOR_CODE,
+                            sc.SCHE_DOCTOR_NAME,
+                            sc.SCHE_Shift
+                            );
+                            <option value="@optionValue" class="optionText">@optionName</option>
+                        }
+                    </optgroup>
+                }
+            </select>
+        </div>
+
+        @if (findRol.Count > 0)
+        {
+            foreach (var rol in findRol)
+            {
+                if (rol.ProjectId == "NcdDataEntry")
+                {
+                    <div class="col-5" style="display:block">
+                        <label class="border-0 font-weight-bold mb-0 px-0"><font color="red">*</font>Reserve Date:</label>
+                        <input type="date" id="Txt_ReserveDate" class="form-control font-weight-bold text-center" />
+                    </div>
+                }
+            }
+        }
+        else
+        {
+            <div class="col-5" style="display:block">
+                <label class="border-0 font-weight-bold mb-0 px-0"><font color="red">*</font>Reserve Date:</label>
+                <input type="date" id="Txt_ReserveDate" class="form-control font-weight-bold text-center" readonly value='@DateTime.Today.ToString("yyyy-MM-dd")' />
+            </div>
+        }
+
+
+
+        @if (reserveType == "OPD")
+        {
+            <div class="col-6" style="display:block">
+                <label class="border-0 font-weight-bold mb-0  px-0"><font color="red">*</font>Payment Method:</label>
+                <select id="select_attr" class="selectpicker d-block w-100 text-center" onchange="fn_ReserveDesc()">
+                    <option value="" class=""></option>
+                    @foreach (var attr in attrList)
+                    {
+                        <option value="@attr.AttrCode" class="optionText">@attr.AttrName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-6" style="display:block">
+                <label class="border-0 font-weight-bold mb-0  px-0">Note</label>
+                <input type="text" class="form-control font-weight-bold text-center" id="attr_Desc" placeholder="Note" onfocusout="fn_ReserveDesc()" />
+            </div>
+            <div class="col-4" style="display:none">
+                <label class="border-0 font-weight-bold mb-0 px-0" hidden>Triage Level:</label>
+                <div class="form-group row mx-0">
+
+                    @if (reserveType == "OPD")
+                    {
+                        <input type="text" id="TriageNo" class="form-control col-6 font-weight-bold text-center" readonly value="0" />
+                        <i class="fa-solid fa-circle fa-3x" id="TriageLight" style="color:white"></i>
+                    }
+                    else
+                    {
+                        <input type="text" id="TriageNo" class="form-control col-6 font-weight-bold text-center" readonly hidden />
+                        <i class="fa-solid fa-circle fa-3x" hidden id="TriageLight"></i>
+                        <input type="text" id="TriageScoreNo" class="form-control col-6 font-weight-bold text-center" hidden />
+
+                    }
+                </div>
+            </div>
+            <div class="col-12" style="display:block">
+                <p id="p_ReserveDesc" class="form-control border-0 font-weight-bold text-center" style="background-color:inherit;color:blue;height:auto"></p>
+            </div>
+        }
+        else
+        {
+            <div class="col-6" style="display:block">
+                <label class="border-0 font-weight-bold mb-0  px-0"><font color="red">*</font>Payment Method:</label>
+                <select id="select_attr" class="selectpicker d-block w-100 text-center" onchange="fn_ReserveDesc()">
+                    <option value="" class=""></option>
+                    @foreach (var attr in attrList)
+                    {
+                        <option value="@attr.AttrCode" class="optionText">@attr.AttrName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-6" style="display:block">
+                <label class="border-0 font-weight-bold mb-0  px-0">Note:</label>
+                <input type="text" class="form-control font-weight-bold text-center" id="attr_Desc" placeholder="Note" onfocusout="fn_ReserveDesc()" />
+            </div>
+            <div class="col-4" style="display:block">
+                <label class="border-0 font-weight-bold mb-0 px-0" hidden>Triage Level:</label>
+                <div class="form-group row mx-0">
+
+                    @if (reserveType == "OPD")
+                    {
+                        <input type="text" id="TriageNo" class="form-control col-6 font-weight-bold text-center" readonly value="0" />
+                        <i class="fa-solid fa-circle fa-3x" id="TriageLight" style="color:white"></i>
+                    }
+                    else
+                    {
+                        <input type="text" id="TriageNo" class="form-control col-6 font-weight-bold text-center" hidden readonly />
+                        <i class="fa-solid fa-circle fa-3x" hidden id="TriageLight"></i>
+                        <input type="text" id="TriageScoreNo" class="form-control col-6 font-weight-bold text-center" hidden />
+
+                    }
+                </div>
+            </div>
+            <div class="col-8" style="display:block">
+                <p id="p_ReserveDesc" class="form-control border-0 font-weight-bold text-center" style="background-color:inherit;color:blue;height:auto"></p>
+            </div>
+        }
+    </div>
+    @*    <div class="form-group row mx-0 justify-content-center">
+    <p id="p_ReserveDesc" class="form-control col-10 border-0 font-weight-bold text-center" style="background-color:inherit;color:blue;height:auto"></p>
+    </div>*@
+    <div class="form-group row mx-0 justify-content-center">
+        <button type="button" id="btn_Reserve" class="btn btn-success col-6 font-weight-bold text-center" onclick="fn_MakeAppointment('@patientID')" hidden>Make An Appointment</button>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+
+        $("#select_Clinic").dropdownSubmenu();
+
+        $('.selectpicker').selectpicker();
+    });
+</script>

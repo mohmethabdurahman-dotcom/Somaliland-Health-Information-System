@@ -1,0 +1,452 @@
+﻿@addTagHelper *,Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewBag.Title = "TW-SOL HIS";
+    var get_user_auth_cookie = Context.User.Claims.ToList();
+    var get_session = Context.Session.GetObject<KMU.HisOrder.MVC.Areas.HisOrder.Models.LoginDTO>("LoginDTO");
+    var get_user_id = get_session.EMPCODE;
+    var get_user_name = get_session.EMPNAME;
+    var show_user_id__and__name = get_user_name + "(" + get_user_id + ")";
+
+    var htmlbody = Context.Session.GetString("htmlBody") != null ? Context.Session.GetString("htmlBody") : "nav-sm";
+
+
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--<title>KMU HIS System</title>-->
+    <title>@ViewBag.Title</title>
+    <!--DataTables-Bootstrap-Themes-->
+    <link rel="stylesheet"
+          type="text/css"
+          href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap4.min.css" />
+    <!-- Bootstrap -->
+    <link href="~/lib/bootstrap-4.6.2-dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/lib/font-awesome/css/all.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="~/lib/nprogress/nprogress.min.css" rel="stylesheet">
+    <!-- jQuery custom content scroller -->
+    <link href="~/lib/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet" />
+    <!-- iCheck -->
+    <link href="~/lib/iCheck/skins/all.css" rel="stylesheet">
+    <!-- DateRangePicker -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+    <!-- Custom Theme Style -->
+    <link href="~/css/custom.css" rel="stylesheet">
+
+
+    <style>
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "＞";
+        }
+    </style>
+
+
+    @RenderSection("head", required: false)
+</head>
+
+<body class="@htmlbody">
+    <div class="container body">
+        <div class="main_container">
+            <div class="col-md-3 left_col ">
+                <div class="left_col scroll-view">
+                    <div class="navbar nav_title" style="border: 0;">
+                        <a asp-area="" asp-controller="Home" asp-action="Index" class="site_title"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Flag_of_the_Republic_of_China.svg/640px-Flag_of_the_Republic_of_China.svg.png" width="50" height="34" /> <span><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Flag_of_Somaliland.svg/640px-Flag_of_Somaliland.svg.png" width="68" height="34" /> @(ViewBag.Title)</span></a>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <!-- menu profile quick info -->
+                    <div class="profile clearfix">
+                        @*<div class="profile_pic ">
+                        <img src="~/images/img.jpg" alt="..." class="img-circle profile_img">
+                        </div>*@
+                        @*<div class="profile_info">
+
+                        <span>Welcome,</span>
+                        <h2>@(show_user_id__and__name)</h2>
+                        </div>*@
+                    </div>
+                    <!-- /menu profile quick info -->
+
+                    <br />
+
+                    <!-- sidebar menu -->
+                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+                        @{
+                            if (get_user_auth_cookie.Where(t => t.Type == "User_auth_page_Name「" + "Frist_Login" + "」").Count() > 0)
+                            {
+                                    <TEXT>
+                                        <div class="menu_section">
+                                            <h3><span style="color:#FF0000;">Frist Login</span></h3>
+                                            <ul class="nav side-menu">
+                                                <li>
+                                                    <a asp-area="" asp-controller="Login" asp-action="change_password"><span style="color:#00FFFF;">Please change your password</span></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </TEXT>
+                            }
+                        }
+
+                        <div class="menu_section">
+                            <h3>General</h3>
+                            <ul class="nav side-menu">
+                                <li>
+                                    <a asp-area="" asp-controller="Home" asp-action="Index"><i class="fa fa-home"></i> Home </a>
+                                </li>
+                                @{
+                                    if (get_user_auth_cookie.Where(t => t.Type == "User_auth_page_Name「" + "HisOrder" + "」").Count() > 0)
+                                    {
+                                            <TEXT>
+                                            <li>
+                                                <a><i class="fa fa-user-md"></i> HisOrder <span class="fa fa-chevron-down"></span></a>
+                                                <ul class="nav child_menu">
+                                                    <li><a asp-area="HisOrder" asp-controller="DashBoard" asp-action="Index">Dashboard</a></li>
+                                                    <li><a asp-area="HisOrder" asp-controller="HisOrder" asp-action="Index">Enter Clinic</a></li>
+                                                 
+                                                </ul>
+                                            </li>
+                                            </TEXT>
+                                    }
+                                }
+
+                                <li>
+                                    <a><i class="fa fa-cash-register"></i> Reservation <span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+                                        <li><a href="index.html">Cvoer Page</a></li>
+                                        <li><a href="index2.html">Assign to Clinic</a></li>
+                                        <li><a href="index2.html">OPD Reservation</a></li>
+                                        <li><a href="index2.html">ER Reservation</a></li>
+                                    </ul>
+                                </li>
+
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "MedicalRecord" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a><i class="fa fa-file-medical"></i> Medical Record <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            <li><a asp-area="MedicalRecord" asp-controller="MedRecord" asp-action="MRFind">Find Medical Record</a> </li>
+                                            <li><a asp-area="MedicalRecord" asp-controller="MedRecord" asp-action="MRCreate">Create New Medical Record</a></li>
+                                            <li><a asp-area="MedicalRecord" asp-controller="MedRecord" asp-action="MREdit">Edit Medical Record</a></li>
+                                        </ul>
+                                    </li>
+                                }
+
+                                <li>
+                                    <a><i class="fa fa-capsules"></i> Pharmacy <span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+                                        <li><a href="index.html">Charge</a></li>
+
+                                    </ul>
+                                </li>
+
+                                <li>
+                                    <a><i class="fa fa-chart-column"></i> Examination <span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+                                        <li><a href="index.html">Charge</a></li>
+
+                                    </ul>
+                                </li>
+
+                            </ul>
+                        </div>
+                        @{
+                            if (get_user_auth_cookie.Where(t => t.Type == "User_auth_page_Name「" + "Maintenance_NewAccount" + "」").Count() > 0)
+                            {
+                                    <TEXT>
+                                        <div class="menu_section">
+                                            <h3><span style="color:#FF0000;">Maintenance</span></h3>
+                                            <ul class="nav side-menu">
+                                                <li>
+                                                    <a asp-area="" asp-controller="Login" asp-action="new_account"><span style="color:#00FFFF;">New Account</span></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </TEXT>
+                            }
+                        }
+                        <div class="menu_section">
+                            <h3>External Link</h3>
+                            <ul class="nav side-menu">
+                                <li>
+                                    <a href="https://www.roc-taiwan.org/smd/index.html" target="_blank"><i class="fa fa-external-link "></i>Taiwan Representative Office </a>
+                                </li>
+                                <li>
+                                    <a href="https://www.icdf.org.tw/wSite/mp?mp=1" target="_blank"><i class="fa fa-external-link"></i>Taiwan I.C.D.F </a>
+                                </li>
+                                <li>
+                                    <a href="https://www.kmu.edu.tw/" target="_blank"><i class="fa fa-external-link"></i>Kaohsiung Medical University </a>
+                                </li>
+                                @*<li>
+                                <a><i class="fa fa-sitemap"></i> Multilevel Menu </a>
+                                <ul class="nav child_menu">
+                                <li><a href="#level1_1">Level One</a>
+                                <li>
+                                <a>Level One<span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu">
+                                <li class="sub_menu">
+                                <a href="level2.html">Level Two</a>
+                                </li>
+                                <li>
+                                <a href="#level2_1">Level Two</a>
+                                </li>
+                                <li>
+                                <a href="#level2_2">Level Two</a>
+                                </li>
+                                </ul>
+                                </li>
+                                <li>
+                                <a href="#level1_2">Level One</a>
+                                </li>
+                                </ul>
+                                </li>
+                                <li><a href="javascript:void(0)"><i class="fas fa-yin-yang"></i> Landing Page <span class="label label-success pull-right">Coming Soon</span></a></li>*@
+                            </ul>
+                        </div>
+
+                    </div>
+                    <!-- /sidebar menu -->
+                    <!-- /menu footer buttons -->
+                    <div class="sidebar-footer hidden-small">
+                        <a data-toggle="tooltip" data-placement="top" title="Settings">
+                            <span aria-hidden="true"><i class="fa fa-gear"></i></span>
+                        </a>
+                        <a data-toggle="tooltip" data-placement="top" title="FullScreen">
+                            <span aria-hidden="true"><i class="fa fa-maximize"></i></span>
+                        </a>
+                        <a data-toggle="tooltip" data-placement="top" title="Lock">
+                            <span aria-hidden="true"><i class="fa fa-lock"></i></span>
+                        </a>
+                        <a asp-area="" asp-controller="Login" asp-action="logout" data-toggle="tooltip" data-placement="top" title="Logout">
+                            <span aria-hidden="true"><i class="fa fa-sign-out-alt"></i></span>
+                        </a>
+                    </div>
+                    <!-- /menu footer buttons -->
+                </div>
+            </div>
+
+            <!-- top navigation -->
+            <div class="top_nav">
+                <div class="nav_menu">
+                    <div class="nav toggle">
+                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                    </div>
+                    <nav class="nav navbar-nav">
+                        <ul class=" navbar-right">
+                            <li class="nav-item dropdown open" style="padding-left: 15px;">
+                                <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true" id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">
+                                    @*<img src="~/images/img.jpg" alt="">*@@(show_user_id__and__name)
+                                </a>
+                                <div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="javascript:;"> setting Profile(尚未完成)</a>
+                                    @*<a class="dropdown-item" href="javascript:;">
+                                    <span class="badge bg-red pull-right">50%</span>
+                                    <span>Settings</span>
+                                    </a>
+                                    <<<<<<< .mine
+                                    <a class="dropdown-item" href="javascript:;">Help</a>
+                                    <a asp-area="" asp-controller="Login" asp-action="change_password" class="dropdown-item"> Change Password</a>
+                                    ||||||| .r30278
+                                    <a class="dropdown-item" href="javascript:;">Help</a>
+                                    <a asp-area="" asp-controller="Login" asp-action="change_password" class="dropdown-item"> Change Password</a>
+                                    =======
+                                    <a class="dropdown-item" href="javascript:;">Help</a>*@
+                                    <a asp-area="" asp-controller="Login" asp-action="show_account" class="dropdown-item"> Profile</a>
+                                    <a asp-area="" asp-controller="Login" asp-action="change_password" class="dropdown-item"> Change Password</a>
+                                    <a asp-area="" asp-controller="Login" asp-action="change_mobile_phone" class="dropdown-item"> Change Mobile Phone</a>
+                                    >>>>>>> .r30326
+                                    <a asp-area="" asp-controller="Login" asp-action="logout" class="dropdown-item"><i class="fa fa-sign-out pull-right"></i> Log Out</a>
+                                </div>
+                            </li>
+
+                            <li role="presentation" class="nav-item dropdown open">
+<span style="color:#FF0000;">請將 Layout = "/Views/Shared/_BackAdmin.cshtml"; 改設定成 Layout = "/Views/Shared/_Layout.cshtml";</span>
+                                <<<<<<< .mine
+                                @*<a href="javascript:;" class="dropdown-toggle info-number" id="navbarDropdown1" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-bell" style="margin-top:5px; font-size:20px"></i>
+                                <span class="badge bg-green">6</span>
+                                </a>*@
+                                ||||||| .r30278
+                                @*<a href="javascript:;" class="dropdown-toggle info-number" id="navbarDropdown1" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-bell" style="margin-top:5px; font-size:20px"></i>
+                                <span class="badge bg-green">6</span>
+                                </a>*@
+                                =======
+                                @*<a href="javascript:;" class="dropdown-toggle info-number" id="navbarDropdown1" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-bell" style="margin-top:5px; font-size:20px"></i>
+                                <span class="badge bg-green">6</span>
+                                </a>*@
+                                >>>>>>> .r30326
+                                <ul class="dropdown-menu list-unstyled msg_list" role="menu" aria-labelledby="navbarDropdown1">
+                                    <li class="nav-item">
+                                        <a class="dropdown-item">
+                                                @*<span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>*@
+                                            <span>
+                                                <span>John Smith</span>
+                                                <span class="time">3 mins ago</span>
+                                            </span>
+                                            <span class="message">
+                                                Film festivals used to be do-or-die moments for movie makers. They were where...
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="dropdown-item">
+                                                @*<span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>*@
+                                            <span>
+                                                <span>John Smith</span>
+                                                <span class="time">3 mins ago</span>
+                                            </span>
+                                            <span class="message">
+                                                Film festivals used to be do-or-die moments for movie makers. They were where...
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="dropdown-item">
+                                                @*<span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>*@
+                                            <span>
+                                                <span>John Smith</span>
+                                                <span class="time">3 mins ago</span>
+                                            </span>
+                                            <span class="message">
+                                                Film festivals used to be do-or-die moments for movie makers. They were where...
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="dropdown-item">
+                                                @*<span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>*@
+                                            <span>
+                                                <span>John Smith</span>
+                                                <span class="time">3 mins ago</span>
+                                            </span>
+                                            <span class="message">
+                                                Film festivals used to be do-or-die moments for movie makers. They were where...
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <div class="text-center">
+                                            <a class="dropdown-item">
+                                                <strong>See All Alerts</strong>
+                                                <i class="fa fa-angle-right"></i>
+                                            </a>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <!--<div class="container-fluid nav_menu_breadcrumb">
+                    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                        <ol class="breadcrumb" style="margin-bottom:0px;">-->
+                @*<li class="breadcrumb-item">
+                <a href="#">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                <a href="#">Theme</a>
+                </li>
+                <li class="breadcrumb-item active"><span>Typography</span></li>*@
+                <!--</ol>
+                    </nav>
+                </div>-->
+            </div>
+            <!-- /top navigation -->
+            <!-- page content -->
+            <div id="page_content" class="right_col" role="main" style="height:750px;">
+
+                @RenderBody()
+            </div>
+            <!-- /page content -->
+            <!-- footer content -->
+            <footer>
+                <div class="float-right">
+
+                    2022 © KMU HIS. by <a href="https://www.kmuh.org.tw/">Kaohsiung Medical University Hospital</a>
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+            <!-- /footer content -->
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <!-- Bootstrap -->
+    @*<script src="../vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>*@
+    <script src="~/lib/bootstrap-4.6.2-dist/js/bootstrap.bundle.js"></script>
+    <!-- FastClick -->
+    @*<script src="../vendors/fastclick/lib/fastclick.js"></script>*@
+    <script src="~/lib/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="~/lib/nprogress/nprogress.js"></script>
+    <!-- jQuery custom content scroller -->
+    <script src="~/lib/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
+    <!-- Layer -->
+    <script src="~/lib/layer/layer.js"></script>
+
+    <!-- iCheck -->
+    <script scr="~/lib/iCheck/icheck.js"></script>
+
+
+    <!-- Daterangepicker -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+    <!-- DataTables -->
+    <script type="text/javascript"
+            language="javascript"
+            src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript"
+            language="javascript"
+            src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap4.min.js"></script>
+
+    <!-- Custom Theme Scripts -->
+    <script src="~/js/custom.js"></script>
+
+
+    <script>
+        function DynamicBreadcrumb() {
+
+            let BreadcrumbItem = [];
+
+            $('.current-page a').parents('li').each(function (n, li) {
+                let Childrena = $(li).children('a').parent().html();
+                BreadcrumbItem.push(Childrena);
+            });
+
+            let NewBreadcrumb = '';
+            for (let i = BreadcrumbItem.length - 1; i >= 0; i--) {
+                NewBreadcrumb += '<li class="breadcrumb-item">' + BreadcrumbItem[i] + '</li>';
+            }
+            $('.breadcrumb').html(NewBreadcrumb);
+
+            // Remove Side Bar Style
+            $('.breadcrumb').find('i').remove();
+            $('.breadcrumb').find('span').remove();
+            $('.breadcrumb').find('ul').remove();
+        }
+
+        $(document).ready(function () {
+            DynamicBreadcrumb();
+        });
+    </script>
+
+
+    @await RenderSectionAsync("Scripts", required: false) <!-- HisOrder DashBoard-->
+
+</body>
+</html>

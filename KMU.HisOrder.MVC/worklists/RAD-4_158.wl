@@ -1,0 +1,23 @@
+{
+  "patientName": "Geele^Wali^Xuseen",
+  "patientID": "HG00006306",
+  "patientBirthDate": "19830405",
+  "patientSex": "M",
+  "patientAge": "043Y",
+  "accessionNumber": "RAD-4-158",
+  "requestedProcedureID": "158",
+  "requestedProcedureDescription": "X-ray - Skull",
+  "studyInstanceUID": "1.2.826.0.1.3680043.8.498.20260310140318755.158",
+  "modality": "X-Ray 1",
+  "scheduledStationAETitle": "X-Ray 1_ROOM_01",
+  "scheduledProcedureStepStartDate": "20260310",
+  "scheduledProcedureStepStartTime": "170135",
+  "scheduledPerformingPhysicianName": "AOA06",
+  "scheduledProcedureStepDescription": "X-ray - Skull",
+  "scheduledProcedureStepID": "1",
+  "requestedProcedureComments": "",
+  "sourceType": "EMG",
+  "ticketNumber": 1,
+  "roomNumber": "01",
+  "status": "SCHEDULED"
+}

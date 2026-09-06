@@ -1,0 +1,471 @@
+﻿@using KMU.HisOrder.MVC.Areas.HisOrder.ViewModels;
+@model List<VKmuNonMedicine>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    Layout = null;
+    var inhospitalid = TempData["InhospitalId"];
+    var healthId = TempData["HealthId"].ToString();
+    var date = TempData["Date"];
+    var dept = TempData["DeptParent"];
+    var dt = Convert.ToDateTime(date).ToString("MM/dd/yyyy");
+    string[] dptCodes = { "3001", "3002", "6001", "6002", "6003" };
+
+    var find = _context.Registrations.FirstOrDefault(e => e.RegDate == DateOnly.FromDateTime(Convert.ToDateTime(dt)) && e.RegHealthId == healthId && dptCodes.Contains(e.RegDepartment)).Inhospid;
+
+    var physical = _context.PhysicalSigns.Where(e => e.Inhospid == find).ToList();
+
+    var GroupbyList = Model.OrderBy(c => c.ItemType).GroupBy(x => new { x.GroupCode, x.RefName, x.ItemType });
+    IEnumerable<KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.VKmuNonMedicine> OtherList = Model.Where(c => c.ItemType != "intake" && c.ItemType != "Comor" && c.ItemType != "Hist" && c.ItemType != "Vital" && c.ItemType != "Hyper" && c.ItemType != "Asthma" && c.ItemType != "Heart" && c.ItemType != "Diabetes");
+
+}
+
+<style>
+    .intakeHeader {
+        background-color: #006d92;
+        color: white;
+    }
+
+    .comorHeader {
+        background-color: #a881af;
+        color: white;
+    }
+
+    .histHeader {
+        background-color: #4d3c77;
+        color: white;
+    }
+
+    .vitalheader {
+        background-color: #DD6E0F;
+        color: white;
+    }
+
+    .hyperheader {
+        background-color: #5E716A;
+        color: white;
+    }
+
+    .asthmaheader {
+        background-color: #0E86D4;
+        color: white;
+    }
+
+    .heartheader {
+        background-color: #bb3e03;
+        color: white;
+    }
+
+    .diabetesheader {
+        background-color: #008B8B;
+        color: white;
+    }
+
+
+    .intake-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #006d92;
+    }
+
+    .Comor-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #a881af;
+    }
+
+    .Hist-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #4d3c77;
+    }
+
+    .vital-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #DD6E0F;
+    }
+
+    .hyper-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #5E716A;
+    }
+
+    .asthma-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #0E86D4;
+    }
+
+    .heart-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #bb3e03;
+    }
+
+    .diabetes-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #008B8B;
+    }
+
+
+    .intake-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #006d92;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .Comor-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #a881af;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .Hist-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #4d3c77;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .vital-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #DD6E0F;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .hyper-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #5E716A;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .asthma-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #0E86D4;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .heart-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #bb3e03;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .diabetes-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #008B8B;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .bgheader {
+        background-color: #D3D3D3;
+    }
+
+    .headerround {
+        border: 1px solid;
+        margin-right: 18px;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .textwrap {
+        white-space: nowrap;
+        max-width: 320px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .vitalInput {
+        margin-left: 20px;
+        width: 100px;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        border-bottom: 1px solid gray;
+    }
+
+    .ncd_items ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+</style>
+
+@* <div>
+    <div class="card-title">
+        <h6 style=" border-left: 5px solid black; padding-left: 10px; margin: 0px 5px 10px 10px; ">Vital Sign</h6>
+    </div>
+</div>
+<div class="container">
+    <div class="row border border-dark rounded mx-1">
+        @if (physical.Count() > 0)
+        {
+            @foreach (var item in physical)
+            {
+
+                <div class="d-flex align-items-center flex-column">
+                    <div class="col border">
+                        <p class="text-dark text-center"><b>@item.PhyType</b></p>
+                    </div>
+
+                    <div class="col border">
+                        <p class="text-center">@item.PhyValue</p>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="pt-2 pl-2">
+                <p class="text-sm-left">This patient does not have vital sign...</p>
+            </div>
+        }
+    </div>
+</div> *@
+
+<div>
+    <div class="card-title">
+        <h6 style=" border-left: 5px solid #006d92; padding-left: 10px; margin: 10px 5px 10px 10px; ">Intake Diagnose</h6>
+    </div>
+    <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+
+        @foreach (var item in GroupbyList)
+        {
+            if (item.Key.ItemType == "intake")
+            {
+                <div class="card">
+                    <div class="card-header NodeCardHeader intakeHeader">
+                        @item.Key.RefName
+                    </div>
+                    <div class="card-body NodeCardBody intake-body">
+                        @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "intake" && c.ItemSpec != "Comment"))
+                        {
+                            <div class="ncd_items textwrap">
+                                <ul class="row" id="ncd">
+                                    <li style="padding-left: 10px;"> <input height="100" width="100" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked disabled /> @Node.ItemName</li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+
+    </div>
+    <span class="section "
+          style=" border-bottom: 1px solid #dfdfdf; width: calc(100% - 53px); margin: 15px 26px 5px 26px; "></span>
+
+    <div>
+        <div class="card-title">
+            <h6 style=" border-left: 5px solid #a881af; padding-left: 10px; margin: 10px 5px 10px 10px; ">Comorbidities</h6>
+        </div>
+        <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+            @foreach (var item in GroupbyList)
+            {
+                if (item.Key.ItemType == "Comor")
+                {
+                    <div class="card">
+                        <div class="card-header NodeCardHeader comorHeader">
+                            @item.Key.RefName
+                        </div>
+                        <div class="card-body NodeCardBody Comor-body">
+                            @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Comor" && c.ItemSpec != "Comment"))
+                            {
+                                <div class="ncd_items textwrap">
+                                    <ul class="row" id="ncd">
+                                        <li style="padding-left: 10px;"> <input height="100" width="100" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked disabled /> @Node.ItemName</li>
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <span class="section "
+              style=" border-bottom: 1px solid #dfdfdf; width: calc(100% - 53px); margin: 15px 26px 5px 26px; "></span>
+    </div>
+
+
+
+    <div>
+        <div class="card-title">
+            <h6 style=" border-left: 5px solid #4d3c77; padding-left: 10px; margin: 10px 5px 10px 10px; ">History</h6>
+        </div>
+        <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+
+            @foreach (var item in GroupbyList)
+            {
+                if (item.Key.ItemType == "Hist")
+                {
+                    <div class="card">
+                        <div class="card-header NodeCardHeader histHeader">
+                            @item.Key.RefName
+                        </div>
+                        <div class="card-body NodeCardBody Hist-body">
+                            @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Hist" && c.ItemSpec != "Comment"))
+                            {
+                                <div class="ncd_items textwrap">
+                                    <ul class="row" id="ncd">
+                                        <li style="padding-left: 10px;"> <input height="100" width="100" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked disabled /> @Node.ItemName</li>
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <span class="section "
+          style=" border-bottom: 1px solid #dfdfdf; width: calc(100% - 53px); margin: 15px 26px 5px 26px; "></span>
+
+    <div>
+        <div class="card-title">
+            <h6 style=" border-left: 5px solid #5E716A; padding-left: 10px; margin: 10px 5px 10px 10px; ">Hypertentions</h6>
+        </div>
+
+        <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+            @foreach (var item in GroupbyList)
+            {
+                if (item.Key.ItemType == "Hyper")
+                {
+                    <div class="card">
+                        <div class="card-header NodeCardHeader hyperheader">
+                            @item.Key.RefName
+                        </div>
+                        <div class="card-body NodeCardBody hyper-body">
+                            @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Hyper" && c.ItemSpec != "Comment"))
+                            {
+                                <div class="ncd_items textwrap">
+                                    <ul class="row" id="ncd">
+                                        <li style="padding-left: 10px;"> <input height="100" width="100" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked disabled /> @Node.ItemName</li>
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <span class="section "
+          style=" border-bottom: 1px solid #dfdfdf; width: calc(100% - 53px); margin: 15px 26px 5px 26px; "></span>
+
+    <div>
+        <div class="card-title">
+            <h6 style=" border-left: 5px solid #0E86D4; padding-left: 10px; margin: 10px 5px 10px 10px; ">Asthma</h6>
+        </div>
+        <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+            @foreach (var item in GroupbyList)
+            {
+                if (item.Key.ItemType == "Asthma")
+                {
+                    <div class="card">
+                        <div class="card-header NodeCardHeader asthmaheader">
+                            @item.Key.RefName
+                        </div>
+                        <div class="card-body NodeCardBody asthma-body">
+                            @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Asthma" && c.ItemSpec != "Comment"))
+                            {
+                                <div class="ncd_items textwrap">
+                                    <ul class="row" id="ncd">
+                                        <li style="padding-left: 10px;"> <input height="100" width="100" type="checkbox" class="checkbox textwrap ncd" value="@Node.ItemId" checked disabled /> @Node.ItemName</li>
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <span class="section "
+          style=" border-bottom: 1px solid #dfdfdf; width: calc(100% - 53px); margin: 15px 26px 5px 26px; "></span>
+
+    <div>
+        <div class="card-title">
+            <h6 style=" border-left: 5px solid #bb3e03; padding-left: 10px; margin: 10px 5px 10px 10px; ">Heart</h6>
+        </div>
+        <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+            @foreach (var item in GroupbyList)
+            {
+                if (item.Key.ItemType == "Heart")
+                {
+                    <div class="card">
+                        <div class="card-header NodeCardHeader heartheader">
+                            @item.Key.RefName
+                        </div>
+                        <div class="card-body NodeCardBody heart-body">
+                            @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Heart" && c.ItemSpec != "Comment"))
+                            {
+                                <div class="ncd_items textwrap">
+                                    <ul class="row" id="ncd">
+                                        <li style="padding-left: 10px;"> <input height="100" width="100" type="checkbox" class="checkbox textwrap ncd" value="@Node.ItemId" checked disabled /> @Node.ItemName</li>
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <span class="section "
+          style=" border-bottom: 1px solid #dfdfdf; width: calc(100% - 53px); margin: 15px 26px 5px 26px; "></span>
+
+    <div>
+        <div class="card-title">
+            <h6 style=" border-left: 5px solid #008B8B; padding-left: 10px; margin: 10px 5px 10px 10px; ">Diabetes</h6>
+        </div>
+        <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+            @foreach (var item in GroupbyList)
+            {
+                if (item.Key.ItemType == "Diabetes")
+                {
+                    <div class="card">
+                        <div class="card-header NodeCardHeader diabetesheader">
+                            @item.Key.RefName
+                        </div>
+                        <div class="card-body NodeCardBody diabetes-body">
+                            @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Diabetes" && c.ItemSpec != "Comment"))
+                            {
+                                if (Node.enabled == true)
+                                {
+                                    <div class="ncd_items textwrap p-3">
+                                        <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100" width="100" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemName" checked disabled /> @Node.ItemName</li> </ul>
+                                        <p class="border rounded m-0 p-2 text-wrap">@Node.PlanDes</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="ncd_items textwrap">
+                                        <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100" width="100" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" checked disabled /> @Node.ItemName</li> </ul>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <span class="section "
+          style=" border-bottom: 1px solid #dfdfdf; width: calc(100% - 53px); margin: 15px 26px 5px 26px; "></span>
+</div>

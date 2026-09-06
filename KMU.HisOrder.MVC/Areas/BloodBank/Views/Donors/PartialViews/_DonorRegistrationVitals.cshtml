@@ -1,0 +1,21 @@
+@model DonorRegistrationViewModel
+
+<h3 class="text-center mt-3">Blood Pressure</h3>
+<p class="text-muted small text-center mb-2">Record at registration. Hemoglobin and CBC are entered at screening.</p>
+
+<div class="form-group row mx-0">
+    <label class="form-control col-lg-2 border-0 font-weight-bold px-0"><font color="red">*</font>Blood pressure:</label>
+    <div class="col-lg-10 px-0">
+        <div class="form-group row mx-0 align-items-center">
+            <input type="number" id="regBpSys" placeholder="Sys" min="70" max="220"
+                   class="form-control col-lg-2 rounded py-0 text-center" />
+            <span class="col-lg-1 text-center px-0">/</span>
+            <input type="number" id="regBpDias" placeholder="Dias" min="40" max="140"
+                   class="form-control col-lg-2 rounded py-0 text-center" />
+            <span class="col-lg-2 small">mmHg</span>
+            <span class="col-lg-3 small text-muted">Reference: 90–200 / 50–120</span>
+            <span class="col-lg-2"><span class="bb-vital-status" data-for="regBp">—</span></span>
+            <input type="hidden" asp-for="PreDonationBloodPressure" id="PreDonationBloodPressure" />
+        </div>
+    </div>
+</div>

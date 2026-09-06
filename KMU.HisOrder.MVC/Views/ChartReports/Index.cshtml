@@ -1,0 +1,276 @@
+﻿@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+@{
+	var currentDate = DateTime.Now;
+}
+<script src="~/lib/c3js/js/d3.js"></script>
+<script src="~/lib/c3js/js/c3.js"></script>
+
+<link href="~/lib/c3js/css/c3.css" rel="stylesheet" />
+<link href="~/css/style.css" rel="stylesheet" />
+
+<div class="m-3 col"></div>
+<div class="bg-white text-center m-3">
+   
+</div>
+
+
+<div class="row col-11 m-4">
+	<div class="col-lg-3 col-sm-5 pt-1 pb-0">
+                <div class="card p-2">
+                    <div class="stat-widget-one card-body">
+                        <div class="stat-icon d-inline-block">
+                            <i class="fa fa-users text-info border-info"></i>
+                        </div>
+                        <div class="stat-content d-inline-block">
+                            <div class="stat-text">All Patients</div>
+					<div class="text-dark"><strong>@TempData["allPatients"]</strong></div>
+                        </div>
+                    </div>
+                </div>
+         </div>
+	<div class="col-lg-3 col-sm-5 pt-1 pb-0">
+		<div class="card p-2">
+			<div class="stat-widget-one card-body">
+				<div class="stat-icon d-inline-block">
+					<i class="fa fa-male text-danger border-danger"></i>
+				</div>
+				<div class="stat-content d-inline-block">
+					<div class="stat-text">Male</div>
+					<div class="text-dark"><strong>@TempData["allMale"]</strong></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-3 col-sm-5 pt-1 pb-0">
+		<div class="card p-2">
+			<div class="stat-widget-one card-body">
+				<div class="stat-icon d-inline-block">
+					<i class="fa fa-female text-secondary border-secondary"></i>
+				</div>
+				<div class="stat-content d-inline-block">
+					<div class="stat-text">Female</div>
+					<div class="text-dark"><strong>@TempData["allfemale"]</strong></div>
+				</div>
+			</div>
+		</div>
+	</div>
+		 
+		 <div class="col-lg-3 col-sm-5 pt-1 pb-0">
+                <div class="card p-2">
+                    <div class="stat-widget-one card-body">
+                        <div class="stat-icon d-inline-block">
+					      <i class="fa fa-square-check text-success border-success"></i>
+                        </div>
+                        <div class="stat-content d-inline-block">
+                            <div class="stat-text">Finished</div>
+					<div class="text-dark"><strong>@TempData["finished"]</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+	<div class="row  my-3 d-flex justify-content-center col-12" style="margin-left:0.4px;">
+		<div class="col-12 row shadow-sm bg-white">
+			<div class="text-center my-2 col-12">
+				<h6 class="text-mute">Date:  <span class="text-secondary" id="currentDate"> @currentDate.ToString("MM/yyyy")</span></h6>
+			</div>
+
+
+			<div class="col-6">
+				<div class="row">
+					<div class="col-4 ml-2">
+						Year
+						<input class="form-control input-sm" onkeyup="PhoneNumber_Only_Integer(this)" name="year" id="year" value="@currentDate.ToString("yyyy")" style="width:7rem;" />
+					</div>
+					<div class="col-7">
+						<span class="d-block">Month</span>
+						<div class="d-flex">
+							<input class="form-control input-sm d-inline" onkeyup="PhoneNumber_Only_Integer(this)" name="month" id="month" value="@currentDate.ToString("MM")" style="width:10rem;" />
+							<button type="button" class="btn btn-primary float-right d-inline" id="reloadpage" style="border: #2a3f54;font-size: 10px;margin-left:5px;background-color: #2a3f54;"><i class="fa-solid fa-rotate"></i></button>
+						</div>
+					</div>
+				</div>
+
+
+
+				<div class="row m-1">
+					<div class="col-lg-6 col-sm-6 pt-1 pb-0">
+						<div class="card p-2">
+							<div class="stat-widget-one card-body">
+								<div class="d-inline-block">
+									<i class="fa fa-users text-info border-info" style="font-size:1.5rem;"></i>
+								</div>
+								<div class="stat-content d-inline-block">
+									<div class="stat-text">All Patients</div>
+									<div class="text-dark" id="total"><strong>46000</strong></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-6 col-sm-6 pt-1 pb-0">
+						<div class="card p-2">
+							<div class="stat-widget-one card-body">
+								<div class="d-inline-block">
+									<i class="fa fa-square-check text-success border-success" style="font-size:1.8rem;"></i>
+								</div>
+								<div class="stat-content d-inline-block">
+									<div class="stat-text">Finished</div>
+									<div class="text-dark" id="finished"><strong>500000</strong></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-lg-6 col-sm-6 pt-1 pb-0">
+						<div class="card p-2">
+							<div class="stat-widget-one card-body">
+								<div class="d-inline-block">
+									<i class="fa fa-male text-danger border-success" style="font-size:2.2rem;"></i>
+								</div>
+								<div class="stat-content d-inline-block">
+									<div class="stat-text">Male</div>
+									<div class="text-dark" id="male"><strong>500000</strong></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-lg-6 col-sm-6 pt-1 pb-0">
+						<div class="card p-2">
+							<div class="stat-widget-one card-body">
+								<div class="d-inline-block">
+									<i class="fa fa-female text-secondary border-success" style="font-size:2.2rem;"></i>
+								</div>
+								<div class="stat-content d-inline-block">
+									<div class="stat-text">Female</div>
+									<div class="text-dark" id="female"><strong>500000</strong></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-6">
+				<div id="pie">
+					<div id="PieChart"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+
+<script src="~/lib/jquery1.min.js"></script>
+<script>
+	
+	$(document).ready(function(){
+		
+		$('input[name="ChosenDate"]').daterangepicker({
+			singleDatePicker: true,
+			showDropdowns: true,
+			locale: {
+				format: 'DD/MM/YYYY'
+			}
+		});
+
+   
+
+	var totalchart = [];
+	console.log(totalchart);
+		$("#reloadpage").on('click', function reloaPage() {
+
+			
+			var year = $("#year").val();
+			var month = $("#month").val();
+			if(year < 2023 || year > 20123){
+				layer.msg("Please make sure the year!");
+			}
+			else if (month < 1 || month > 12){
+				layer.msg("Please make sure the month!")
+			}
+			else{		
+			$("#currentDate").text(month+'/'+year);
+
+
+			$.ajax({
+				type:"post",
+				url: "/ChartReports/CardData",
+				data:{
+					Year: year,
+					Month: month
+				},
+				success:function(response){
+					$("#total").text(response.total);
+					$("#finished").text(response.finished);
+					$("#male").text(response.maleCount);
+					$("#female").text(response.femaleCount);
+				}
+
+			})//ajax 1 end
+
+
+
+			$.ajax({
+				type: "post",
+				url: "/ChartReports/ChartData",
+				data: {
+					Year:year,
+					Month:month
+				},
+				success: function (response) {
+					$.each(response, function (key, value) {
+
+						totalchart.push([this.departmentName, this.totalPatients]);
+						
+					})
+
+			
+						var chart3 = c3.generate({
+							bindto: "#PieChart",
+							size: {
+								height: 275,
+								width: 320
+							},
+							data: {
+								columns: totalchart,
+								type: 'pie'
+							},
+							color: {
+								pattern: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5', '#9fa756', '#56a75d', '#5685a7', '#8251ad', '#fca5b9', '#7d0909',
+									'#7d6909', '#2a7d09', '#097d53', '#096b7d', '#09267d', '#53097d', '#873f86', '#873f57', '#7fccb8']
+							}, legend: {
+								show: false
+							},
+							tooltip: {
+								format: {
+									value: function (value, ratio, id) {
+										return value;
+									}
+								}
+							}
+						});//gerate end
+					
+					totalchart = [];
+				}
+				
+			});//ajax end
+
+			}
+			
+		});//sr onlick end
+
+		//$("#refresh").on("click", function refresh() {
+			
+		//});
+
+		$("#reloadpage").trigger('click');
+		
+	});
+
+	
+</script>

@@ -1,0 +1,1261 @@
+@inject KMU.HisOrder.MVC.Models.KMUContext _context;
+@using KMU.HisOrder.MVC.Areas.HisOrder.Models;
+@using KMU.HisOrder.MVC.Areas.HisOrder.Controllers;
+@using Microsoft.AspNetCore.Http;
+
+@model PatientDTO
+
+@{
+    var Patientdto = ViewData["PatientDTO"];
+    KMU.HisOrder.MVC.Areas.HisOrder.Models.PatientDTO _PatientDTO = (KMU.HisOrder.MVC.Areas.HisOrder.Models.PatientDTO)ViewData["PatientDTO"];
+
+    var phys = _context.PhysicalSigns
+        .Where(e => e.Inhospid == Model.Inhospid)
+        .ToList();
+    // Console.WriteLine(Model.Inhospid);
+    // Console.WriteLine("phys count = " + phys.Count());
+    var patientJson = System.Text.Json.JsonSerializer.Serialize(
+        Model,
+        new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
+    );
+    var physJson = System.Text.Json.JsonSerializer.Serialize(
+        phys,
+        new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
+    );
+    var icdR = _context.KmuCoderefs.SingleOrDefault(c => c.RefCode == "ICDR").RefDefaultFlag;
+
+
+    var visitStatus = "";
+    var visitColor = "";
+    //var showSaveBtn = true;
+    var showExaminingBtn = true;
+    switch (Model.RegStatus)
+    {
+        case "N":
+
+            visitStatus = "Waiting";
+            visitColor = "badge-outline-primary";
+            break;
+        case "T":
+            visitStatus = "Examining";
+            visitColor = "badge-outline-warning";
+            break;
+        case "*":
+            //showSaveBtn = false;
+            showExaminingBtn = false;
+            visitStatus = "Completed";
+            visitColor = "badge-outline-success";
+            break;
+    }
+
+
+    List<Hisorderplan> MedList = ViewBag.MedList;
+    List<Hisorderplan> NonMedList = ViewBag.NonMedList;
+    List<hisordersoa_version> soapVersion = ViewBag.SoapVersion;
+    List<HistoryRecordDto> HistoryRecordMaster = ViewBag.HistoryRecordMaster;
+
+
+    var clinicDto = Context.Session.GetObject<ClinicDTO>("ClinicDTO");
+
+    ViewData["SourceType"] = clinicDto.InhospType;
+    ViewData["dptname"] = clinicDto.DeptCode;
+    ViewData["MedFreq"] = ViewBag.MedFreq;
+    ViewData["MedIndication"] = ViewBag.MedIndication;
+    ViewData["MedPathWay"] = ViewBag.MedPathWay;
+    ViewData["MedItem"] = ViewBag.MedItem;
+    ViewData["PatientDTO"] = Model;
+    ViewData["MG_INFO"] = ViewBag.MG_INFO;
+    ViewData["NonMedLocation"] = ViewBag.NonMedLocation;
+
+
+
+
+    ClinicDTO _clinicDto = null;
+    if (Context.Session.GetObject<ClinicDTO>("ClinicDTO") != null)
+    {
+        _clinicDto = Context.Session.GetObject<ClinicDTO>("ClinicDTO");
+    }
+
+}
+
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Font-Awesome -->
+<link href="~/lib/font-awesome/css/all.min.css"
+      rel="stylesheet" />
+
+<!-- iCheck -->
+<link href="~/lib/iCheck/skins/all.min.css"
+      rel="stylesheet" />
+
+<!-- Tagify -->
+@*<link href="~/css/tagify.css" rel="stylesheet" />*@
+
+<!--DragSort-->
+@*<link href="~/lib/dragsort/dragsort.css" rel="stylesheet" />
+*@
+<!-- Style -->
+<link href="~/css/style.css" rel="stylesheet" />
+
+<!--  HisOrder InputHelper  -->
+<link href="~/css/hisorderInputHelper.css" rel="stylesheet">
+
+<style>
+    .border-danger:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 182, 193, 0.9);
+    }
+
+
+    .pt-br-color {
+        border: Solid rgb(234, 233, 233);
+        border-left-width: 0px;
+        border-bottom-width: 0px;
+        border-top-width: 0px;
+        border-right-width: 1px;
+        padding-right: 15px;
+        /* padding-left: 15px; */
+    }
+
+    .pt-function-column-br-color {
+        border: Solid lightgray;
+        border-left-width: 0px;
+        border-bottom-width: 0px;
+        border-top-width: 0px;
+        border-right-width: 1px;
+        padding-right: 4px;
+        padding-top: 4px;
+        padding-bottom: 3px;
+        margin-right: 10px;
+    }
+
+
+    .pt-bl-color {
+        /* border: Solid rgb(234, 233, 233);
+                border-left-width: 0px;
+                border-bottom-width: 0px;
+                border-top-width: 0px;
+                border-left-width: 1px;
+                padding-left: 10px; */
+    }
+
+    .radius-30-icon {
+        display: block;
+        font-size: 1rem;
+        background: #eee;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        overflow: hidden;
+        border-radius: 20%;
+        color: #999;
+        margin: 0;
+        margin: 0 10px 0 0;
+        text-align: center;
+    }
+
+    .d-flex-item-icon {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+        justify-content: flex-start;
+    }
+
+    .bd-callout {
+        padding: 0.5rem;
+        margin-top: 0rem;
+        margin-bottom: 10px;
+        border: 1.5px solid #e9ecef;
+        border-top-width: 0.2rem;
+        border-radius: 0.45rem;
+    }
+
+    .bd-callout-info {
+        border-top-color: #593bdb;
+    }
+
+    .bd-callout-primary {
+        border-top-color: #0E5CA7;
+    }
+
+    .bd-callout-success {
+        border-top-color: #1ABB9C;
+    }
+
+
+    .bd-callout-warning {
+        border-top-color: #EC8F3F;
+    }
+
+    .bd-callout-danger {
+        border-top-color: #dc3545;
+    }
+
+    .bd-callout-pink {
+        border-top-color: #e6a1f2;
+    }
+
+    .bd-callout-dark {
+        border-top-color: #545454;
+    }
+
+    .bd-callout-gray {
+        border-top-color: gray;
+    }
+
+    .bd-callout-purple {
+        border-top-color: #593bdb;
+    }
+
+    .bd-callout-master {
+        border-top-color: #2A3F54;
+    }
+
+
+
+
+
+    .page-titles-fixed {
+        background-color: ghostwhite;
+        overflow: hidden;
+        /* position: fixed;*/
+        top: 40px;
+        width: 100%;
+        padding-left: 15px;
+        padding-right: 5px;
+        /*z-index: 9999;*/
+        border-radius: 5px;
+        box-shadow: 0 5px 20px rgb(0 0 0 / 10%);
+    }
+
+    .page-content {
+        margin-top: 2.5px;
+    }
+
+    .tagify {
+        padding-left: 5px;
+        width: 100%;
+        height: 65px;
+        max-height: 100%;
+        border-radius: 3px;
+        overflow: auto;
+        flex-wrap: unset;
+        align-items: center;
+    }
+
+    /*凍結表頭/行頭*/
+    /*sticky會跟著上一層的overfloat跑！！因此要定義一個外框*/
+    .table-sticky-wrapper {
+        width: 100%;
+        height: 60vh; /*外框的高度*/
+        overflow: auto;
+    }
+
+    table.table-sticky {
+        table-layout: fixed;
+        min-width: 100%;
+        width: auto;
+        overflow: unset !important
+    }
+
+    .table-sticky th {
+        position: sticky;
+        word-break: keep-all;
+        background: #fff
+    }
+
+    .table-sticky td {
+        /*  border-right: 1px solid #ddd;
+                text-align: right*/
+    }
+
+    .table-sticky thead tr th:first-of-type {
+        left: 0; /*sticky要用 上下左右定位*/
+        z-index: 2;
+        border-right: 0px hidden #0E5CA7;
+        /*  box-shadow: -2px -2px 0 inset #ddd*/
+    }
+
+    .table-sticky thead tr th {
+        top: 0; /*sticky要用 上下左右定位*/
+        background: #0E5CA7;
+        vertical-align: top;
+        border-bottom: 0;
+        border-right: 0px hidden #0E5CA7;
+        box-shadow: 0 -1px 0 inset #ddd;
+        z-index: 999;
+        color: white;
+    }
+
+
+    .table-sticky thead tr.th-green th:first-of-type {
+        left: 0; /*sticky要用 上下左右定位*/
+        z-index: 2;
+        border-right: 0px hidden #DBFEF7;
+        /*  box-shadow: -2px -2px 0 inset #ddd*/
+    }
+
+    .table-sticky thead tr.th-green th {
+        top: 0; /*sticky要用 上下左右定位*/
+        background: #1ABB9C;
+        vertical-align: top;
+        border-bottom: 0;
+        border-right: 0px hidden #DBFEF7;
+        box-shadow: 0 -1px 0 inset #ddd;
+        z-index: 999;
+        color: white;
+    }
+
+    /*sticky要用 上下左右定位*/
+    .table-sticky tbody th {
+        left: 0; /*定位用*/
+        z-index: 20; /*遮蓋表格內容的圖層層級設定*/
+        box-shadow: -2px 0 0 inset #ddd; /*內框線*/
+    }
+
+    .table-sticky .card-header {
+        background: #f7f7f7
+    }
+
+    .table-sticky td a {
+        float: left
+    }
+    /*為了按鈕設定的，刪除不影響*/
+    .table-sticky th a {
+        display: inline-block
+    }
+    /*為了按鈕設定的，刪除不影響*/
+
+    /*表格做記號：群組底色*/
+    table [data-group="0"], table tr[data-group="0"] > th {
+        background: #ffffff !important;
+    }
+
+    table [data-group="1"], table tr[data-group="1"] > th {
+        background: #F5F6F7 !important;
+    }
+
+    @@media screen and (max-width: 767px) {
+        .table-sticky tbody th,
+        .table-sticky thead tr th:first-of-type {
+            width: unset !important; /*th有時會自帶寬度設定，用以清除*/
+            word-break: break-word;
+            min-width: 100px;
+            max-width: 150px
+        }
+    }
+    /*讓左邊第一直欄的寬度 手機尺寸時不要過寬遮蔽資訊*/
+
+    /*   .note-editor.note-frame {
+                background-color: white;
+                height: 90%;
+                }
+                */
+
+    /*    .note-editable.card-block {
+                background-color: white;
+                height: 98%;
+                }*/
+
+
+    body {
+        /* font-family: "Roboto", sans-serif; */
+        /*   font-family: "CenturyGothic", "微軟正黑體";*/
+        /*    background: rgba(88, 115, 254, 0.04);*/
+        /*    color: #868e96;*/
+        font-family: "Roboto", sans-serif;
+        font-size: 17px;
+        overflow-x: hidden;
+        overflow-y: hidden;
+    }
+</style>
+
+
+
+@Html.Hidden("patientInhospid")
+@Html.Hidden("patientHealthId")
+@Html.Hidden("patientVisitStatus")
+@Html.Hidden("clinicSourceType")
+@Html.Hidden("wardid")
+
+<div>
+    <div class=" page-titles-fixed mx-0 mb-0 ">
+        @{
+            Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_ClinicInfoPartialView.cshtml", Model);
+        }
+        <!-- PATIENT DATA FOR JS (hidden) -->
+        <div id="patientData" style="display:none;"
+             data-age="@Model.Age"
+             data-gender="@Model.Sex"
+             data-bp="@ViewBag.LatestBP"
+             data-hr="@ViewBag.LatestHR"
+             data-temp="@ViewBag.LatestTemp"
+             data-dept='@ViewData["dptname"]'>
+        </div>
+    </div>
+    <div class=" row page-content ">
+        @*<div class=" col-lg-1 col-xl-1"></div>*@
+        <div class="col-sm-12 col-lg-12 col-xl-12 col-xxl-12 " style="padding-left:20px ; padding-right:90px;">
+            <div class="custom-tab-1">
+                <ul class="nav nav-tabs nav-pills nav-justified">
+                    <li class="nav-item">
+                        <a class="nav-link chrome-tab-link active-Top-black-style active" data-toggle="tab" href="#Soap_tab">
+                            <i class="fa fa-user-md pr-2"></i>Clinic Remarks x Management
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link chrome-tab-link active-Top-blue-style" data-toggle="tab" href="#Med_tab">
+                            <i class="fa fa-solid fa-pills pr-2"></i><strong>Medicine</strong>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link chrome-tab-link active-Top-green-style" data-toggle="tab" href="#NonMed_tab">
+                            <i class="fa-solid fa-radiation pr-2"></i>Other
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade active show" id="Soap_tab">
+                        <div class="pt-1">
+                            @{
+                                Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_SoapPartialView.cshtml", soapVersion, new ViewDataDictionary(ViewData));
+                            }
+                        </div>
+                    </div>
+                    @*<div class="tab-pane fade " id="Diagnosis_tab" role="tabpanel">
+                    <div class="pt-1">
+                    <div class="col-lg-12 pt-1 pl-0 pr-0 pb-0">
+                    <div class="card bd-callout bd-callout-warning " style="height: calc(100vh - 205px); background-color: #F4EBE4; /*#DBFEF7;*/ ">
+                    @{
+                    Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_DiagnosisPartialView.cshtml");
+                    }
+                    </div>
+                    </div>
+                    </div>
+                    </div>*@
+                    <div class="tab-pane fade" id="Med_tab">
+                        <div class="pt-1">
+                            <div class="col-lg-12 pt-1 pl-0 pr-0 pb-0">
+                                <div class="card bd-callout bd-callout-primary " style=" height: calc(100vh - 205px);  background-color: #DBECFE;">
+                                    <div class="medorder-section  " style=" min-height: 100% ">
+                                        @{
+                                            Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_MedicinePartialView.cshtml", MedList, new ViewDataDictionary(ViewData));
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="NonMed_tab">
+                        <div class="pt-1">
+                            <div class="col-lg-12 pt-1 pl-0 pr-0 pb-0">
+                                <div class="card bd-callout bd-callout-success " style=" height: calc(100vh - 205px); background-color: #E6F1ED; overflow: hidden;">
+                                    <div class="nonmedorder-section  " style=" height: 100%; min-height: 0; ">
+                                        @{
+                                            Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_NonMedPartialView.cshtml", NonMedList, new ViewDataDictionary(ViewData));
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        @*<div id="DragHemoDiv" style="position: absolute; right: 0px; z-index: 99; width: calc(100vw - 169px); height: 85%; display: block; background-color: ghostwhite; border-radius: 10px; margin: 10px 85px 15px 85px; border: 1px; border-color: ghostwhite; box-shadow: 0 5px 20px rgb(0 0 0 / 10%);">
+        <div style="float:right" ><i class="fa fa-close"></i></div>
+        <div id="HemoDiv" style="background-color:white">
+        </div>
+        </div>*@
+
+
+        <!--右側工具欄-->
+        <div class="side_tool_wrap newFiexdSide" style="display: block;">
+            <div class="side_tool">
+
+                @*<button type="button" class="btn btn-lg btn-secondary"> <i class="fa fa-save"></i></button>
+                <button type="button" class="btn btn-lg btn-secondary"> <i class="fa fa-save"></i></button>
+                <button type="button" class="btn btn-lg btn-secondary"> <i class="fa fa-save"></i></button>
+                <button type="button" class="btn btn-lg btn-secondary"> <i class="fa fa-save"></i></button>
+                <button type="button" class="btn btn-lg btn-secondary"> <i class="fa fa-save"></i></button>
+                <button type="button" class="btn btn-lg btn-secondary"> <i class="fa fa-save"></i></button>*@
+
+                @*<ul class="nav nav-tabs nav-fill" style="margin-bottom: 40px">
+                <li class="nav-item">
+                <a class="nav-link active-yellow-style  active " data-toggle="tab" href="#Diagnosis_tab"><i class="fa fa-solid fa-stethoscope" style="vertical-align: text-top"></i></a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link  active-black-style" data-toggle="tab" href="#Soap_tab"><i class="fa fa-user-md" style="vertical-align: text-top"></i></a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link active-blue-style" data-toggle="tab" href="#Med_tab"><i class="fa fa-solid fa-pills" style="vertical-align: text-top"></i></a>
+                </li>
+                </ul>*@
+
+                <ul>
+                    <li class=" nav-item">
+                        <button type="button" class="history-btn btn  btn-primary rounded-pill-7px mr-3" id="historyrecord_btn" @*data-toggle="modal" data-target="#HisStroyRecordModal"*@ style="width:60px; height:60px">
+                            <i class="fa-solid fa-book-medical" style="font-size:25px;"></i>Hist.
+                        </button>
+                        <button onclick="ShowModal('@Url.Action("Detail", "TestResult", new { patientId = Model.RegPatientId, sex = Model.Sex }, Context.Request.Scheme)',' Test Result History')" type="button" class="history-btn btn  btn-warning rounded-pill-7px mr-3 " id="resultBtn" @*data-toggle="modal" data-target="#HisStroyRecordModal"*@ style="width:60px; display:none; height:60px">
+                            <i class="fa-solid fa-microscope" style="font-size:25px;"></i>Res.
+                            .
+                        </button>
+                        @{
+                            if (_clinicDto != null)
+                            {
+                                if (@_clinicDto.InhospType == "OPD")
+                                {
+                                    <button type="button" class="call-btn btn  btn-pink rounded-pill-7px mr-3" style="width:60px">
+                                        <i class="fa-solid fa-volume-high"></i> Call
+                                    </button>
+                                }
+                            }
+                        }
+                    </li>
+                </ul>
+
+
+
+                <button id="completed-btn" type="button" class="completed-btn btn  btn-success rounded-pill-7px mr-3" style="width:60px; height:60px">
+                    <i class="fa fa-save"></i> Fin.
+                </button>
+                @if (_clinicDto?.InhospType != "WARD" && _clinicDto?.DeptCode == "0401")
+                {
+                    <button id="Inward-btn" type="button" class="Inward-btn btn btn-danger rounded-pill-7px mr-3" style="width:60px; height:60px;" data-toggle="modal" data-target="#departmentModal">
+                        <i class="fa-solid fa-bed-pulse"></i> Inwar.
+                    </button>
+                }
+
+
+                <button type="button" class="cancel-btn btn btn-light rounded-pill-7px mr-3 mb-3" style="width:60px">
+                    <i class="fa fa-arrow-right"></i> Exit
+                </button>
+
+
+                @{
+                    if (_clinicDto?.InhospType != "WARD")
+                    {
+                        if (showExaminingBtn == true)
+                        {
+                            <button type="button" class="examining-btn btn  btn-secondary rounded-pill-7px mr-3 " style="width:60px; height:60px ; margin-top:70px">
+                                <i class="fa-solid fa-microscope"></i> Exam.
+                            </button>
+
+
+
+                            if (@_clinicDto?.InhospType == "EMG")
+                            {
+                                <button type="button" class="observation-btn btn rounded-pill-7px mr-3 text-white" style="width:60px; height:60px; background-color:purple;">
+                                    <i class="fa-solid fa-bed"></i> Obse.
+                                </button>
+                            }
+
+                        }
+                        else
+                        {
+                            <button type="button" class="btn  btn-secondary rounded-pill-7px mr-3   hidden" style="width:60px; height:60px" disabled="disabled">
+                                <i class="ffa-solid fa-microscope"></i> Exam.
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <button id="Inward-btn" type="button" class=" btn btn-danger rounded-pill-7px mr-3" style="width:60px; height:60px; margin-top:70px" data-toggle="modal" data-target="#dischargeModal">
+                            <i class="fa-solid fa-bed-pulse"></i> Disch.
+                        </button>
+                    }
+                }
+
+
+                @*<ul style="position: fixed; bottom: 12%;">
+                <li>
+                <a href="javascript:;" class="backtop" style="display: none;" google-data-stat="公共部分_工具欄_返回頂部"></a>
+                <div class="side-show side-txt"><i></i>返回頂部</div>
+                </li>
+                </ul>*@
+            </div>
+        </div>
+
+
+
+        <!--Modal-->
+        @{
+            Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_InputHelperPartialView.cshtml");
+        }
+
+
+        <!--歷史病歷 HisStory Record-->
+        <div class="modal fade" id="HisStroyRecordModal" data-first-open="true" role="dialog" aria-hidden="true">
+            <!--遷走-->
+        </div>
+
+        <div id="PrintForm"></div>
+        <span id="icdR">@icdR</span>
+    </div>
+</div>
+<style>
+
+    .chrome-tab-link {
+        position: relative;
+        display: block;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px 6px 0 0;
+        background-color: transparent;
+        color: #333;
+        font-weight: 500;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+
+        .chrome-tab-link.active::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 3px;
+            border-radius: 1px;
+            background-color: currentColor; /* Inherits text color */
+        }
+
+
+
+    .active-Top-black-style.active {
+        color: #212121;
+    }
+
+    .active-Top-blue-style.active {
+        color: #1a73e8;
+    }
+
+    .active-Top-green-style.active {
+        color: #34a853;
+    }
+
+
+    .nav-tabs .nav-item {
+        margin-bottom: -1px;
+    }
+
+    #jsPreviewTextarea {
+        resize: vertical;
+        overflow-y: hidden;
+        min-height: 400px;
+        max-height: 60vh;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+
+    .helper-text {
+        font-size: 1rem;
+        font-style: italic;
+    }
+
+
+    .modal-header {
+        border-bottom: none;
+        padding-top: 1.5rem;
+    }
+
+    .modal-title {
+        font-weight: 700;
+        font-size: 1.4rem;
+    }
+
+
+    .btn-close.text-danger {
+        position: absolute !important;
+        right: 15px !important;
+        top: 15px !important;
+        font-size: 32px !important;
+        background: #ff0000 !important;
+        border: none !important;
+        cursor: pointer !important;
+        color: white !important;
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        z-index: 1000 !important;
+    }
+
+        .btn-close.text-danger:hover {
+            background: #cc0000 !important;
+        }
+
+
+    .modal-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 1rem 1.5rem;
+        flex-wrap: wrap;
+    }
+
+        .modal-footer .btn {
+            min-width: 140px;
+            margin: 5px;
+        }
+</style>
+
+<div class="modal fade" id="departmentModal" tabindex="-1" role="dialog" aria-labelledby="departmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-white ">
+                <h5 class="modal-title" id="departmentModalLabel">
+                    <i class="fa-solid fa-bed-pulse"></i> Select Department and Ward
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Department</label>
+                    <select id="departmentSelect" class="form-control">
+                        <option value="">Loading departments...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ward</label>
+                    <select id="wardSelect" class="form-control" disabled>
+                        <option value="">Please select department first</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    Close
+                </button>
+                <button type="button" id="saveDepartmentWard" class="btn btn-primary" disabled>
+                    <i class="fas fa-calendar-check "></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="dischargeModal" tabindex="-1" role="dialog" aria-labelledby="dischargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="dischargeModalLabel">Discharge Status</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="dischargeStatus">Select Discharge Status:</label>
+                    <select class="form-control" id="dischargeStatus" required>
+                        <option value="" disabled selected>Select an option</option>
+                        @foreach (var type in ViewBag.Discharge as List<KmuCoderef>)
+                        {
+                            <option value="@type.RefCode">@type.RefName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group transfer-input" style="display: none;" id="transferInputDiv">
+                    <label for="transefer_place">Transefer Place?</label>
+                    <select class="form-control" id="transefer_place">
+                        <option disabled selected>Select an option</option>
+                        @foreach (var type in ViewBag.Departments as List<KmuDepartment>)
+                        {
+                            <option value="@type.DptCode">@type.DptName</option>
+                        }
+                    </select>
+                    <input type="text" class="form-control" id="transfer_where" placeholder="Enter facility">
+                </div>
+
+                <button type="button" class="discharge-btn btn btn-success">Save</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- AI Generated Content Modal -->
+<div class="modal fade" id="jsPreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header justify-content-center position-relative">
+                <h5 class="modal-title text-center w-100">
+                    🤖 <span class="text-primary fw-bold">AI Generated Content</span>
+                </h5>
+                <button type="button" class="btn-close text-danger" data-dismiss="modal" aria-label="Close">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Combined Input Column -->
+                    <div class="col-md-12" id="jsAiColumn">
+                        <div id="jsPreviewRender" class="form-control" style="min-height: 400px; height: auto; white-space: pre-wrap; display:none;"></div>
+                        <textarea id="jsPreviewTextarea" class="form-control" rows="15" style="display:none;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer d-flex flex-column align-items-center">
+                <p class="helper-text mb-3 text-muted" id="jsModalHelperText">
+                    Review the content below. Click a button to edit and save.
+                </p>
+                <div class="d-flex justify-content-center">
+                    <button type="button" class="btn btn-secondary mx-2" id="jsDeclineBtn">
+                        Manual
+                    </button>
+                    <button type="button" class="btn btn-primary mx-2" id="jsEditBtn">
+                        AI
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+@section scripts
+{
+    <script>
+        var Root = '@Url.Content("~/HisOrder/")';
+        var HISORDER_ROOT = Root = '@Url.Content("~/HisOrder/")';
+        fullscreenLoading(true);
+    </script>
+    <script>
+        // Inject the JSON you already prepared
+        window.__patientDto    = @Html.Raw(patientJson);
+        window.__physicalSigns = @Html.Raw(physJson);
+
+        // Quick sanity‐check
+        // console.log("➤ patientDto:", window.__patientDto);
+        // console.log("➤ physicalSigns:", window.__physicalSigns);
+    </script>
+    @* <!-- Tagify -->
+    <script src="~/lib/tagify/dist/jQuery.tagify.min.js"></script>
+    <!--DragSort-->
+    <script src="~/lib/dragsort/dragsort.js"></script>*@
+    <!-- Ckeditor -->
+    @*<script src="~/lib/ckeditor/ckeditor5-build-inline/build/ckeditor.js"></script>*@
+    <!-- iCheck -->
+    <script src="~/lib/iCheck/icheck.js"></script>
+    <!-- CKeditor 4 -->
+    <script src="~/lib/ckeditor4/ckeditor.js"></script>
+    <!-- SignalR -->
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <!-- Area -->
+    <script src="~/js/Area.js"></script>
+    <!-- HisOrder InputHelper -->
+    <script src="~/js/hisorderInputHelper.js"></script>
+    <!-- HisOrder : clinicOrder -->
+    <script src="~/js/clinicOrder.js"></script>
+    <!-- HisOrder : soap -->
+    <script src="~/js/soap.js"></script>
+    <!-- HisOrder : medOrder -->
+    <script src="~/js/medOrder.js"></script>
+    <!-- History modal → SOAP / Medicine tab transfer -->
+    <script src="~/js/history-transfer.js"></script>
+    <!-- HisOrder : nonMedOrder -->
+    <script src="~/js/nonMedOrder.js"></script>
+    <!-- HisOrder : Diagnosis -->
+    <script src="~/js/hisorderDiagnosisOrder.js"></script>
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#resultBtn').hide();
+
+            $('#patientInhospid').val('@Model.Inhospid');
+            $('#patientVisitStatus').val('@visitStatus');
+            $('#patientHealthId').val('@Model.RegPatientId');
+            $('#clinicSourceType').val('@clinicDto.InhospType');
+            $('#wardid').val('@clinicDto.WardId');
+            checkLabOrders('@Model.RegPatientId');
+
+            //初始化各區塊js
+            init_MedOrder();
+            init_NonMedOrder();
+
+            $('a[href="#Med_tab"]').on('shown.bs.tab', function (e) {
+                fn_showMedOrderCount();
+            })
+
+            $('a[href="#NonMed_tab"]').on('shown.bs.tab', function (e) {
+                fn_showNonMedOrderCount();
+            })
+
+
+            $('#dischargeStatus').on('change', function () {
+                 var status = $(this).val();
+
+          if (status === 'TW') {
+            $('#transferInputDiv').show();
+            $('#transefer_place').show();
+            $('#transfer_where').hide();
+          } else if (status === 'TF') {
+            $('#transferInputDiv').show();
+            $('#transefer_place').hide();
+            $('#transfer_where').show();
+          } else {
+            $('#transferInputDiv').hide();
+          }
+            });
+
+            $('.radio_transfer').iCheck({
+                labelHover: true,
+                cursor: true,
+                checkboxClass: "icheckbox_flat-green",
+                radioClass: "iradio_square-green",
+                increaseArea: "15%"
+            });
+
+            $('.checkbox_transfer').iCheck({
+                labelHover: true,
+                cursor: true,
+                checkboxClass: "icheckbox_flat-green",
+                radioClass: "iradio_square-green",
+                increaseArea: "15%"
+            });
+
+             $('#departmentModal').on('show.bs.modal', function () {
+                 console.log("hhhhhhhhhhh");
+                loadDepartments();
+            });
+
+
+
+            $('.checkbox_transfer').on('ifChanged', function (event) {
+
+                const value = $(this).iCheck('update')[0].checked;
+                if (value) {
+                    $("#transfer_des").attr("readonly", false);
+                } else {
+
+                    layer.alert('Are you sure to cancel the transfer? Your description will be cleared together', {
+                        skin: 'layui-layer-lan',
+                        closebtn: 1,
+                        anim: 5,
+                        icon: 2,
+                        btn: ['Yes', 'cancel'],
+                        title: 'Edit Message',
+                        yes: function (index) {
+                            $('.checkbox_transfer').iCheck('uncheck');
+                            $("#transfer_des").val("");
+                            $("#transfer_des").attr("readonly", true);
+                            layer.close(index);
+                        },
+                        btn2: function (index) {
+                            $('.checkbox_transfer').iCheck('check');
+                        }
+                    });
+                }
+            });
+
+            function checkLabOrders(patientId) {
+                $.ajax({
+
+                    url: '@Url.Action("CheckPatientLabs", "HisOrder")',
+                    type: 'GET',
+                    data: { patientId: patientId },
+                    success: function (response) {
+                        $('#loadingSpinner').hide(); // Hide the spinner once complete
+                        if (response.hasLabOrders) {
+                            $('#resultBtn').show();
+                        } else {
+                            $('#resultBtn').hide();
+                        }
+                    },
+                    error: function () {
+                        $('#loadingSpinner').hide();
+                    }
+                });
+            };
+
+            $('#historyrecord_btn').click(function () {
+
+                var patientInhospid = $('#patientInhospid').val();
+                var patientPatientid = $('#patientHealthId').val();
+                var clinicSourceType = $('#clinicSourceType').val();
+                console.log('clinicSourceType',clinicSourceType)
+                var vURL = "/HisOrder/HisOrder/HistoryRecordMastrView";
+                var vData = {
+                    patientInhospid: patientInhospid,
+                    patientPatientid: patientPatientid,
+                    clinicSourceType: clinicSourceType,
+                    showClinic: true,
+                    showPrint: true
+                };
+                var vSuccessFunc = function (result) {
+                    console.log(result);
+                    if (result == "null") {
+                        layer.alert('No historical medical records for this patient', {
+                            skin: 'layui-layer-lan',
+                            closebtn: 3,
+                            anim: 5,
+                            icon: 7,
+                            btn: ['OK'],
+                            title: 'Message',
+                            OK: function (index) {
+                                layer.close(index);
+                            }
+                        });
+                    }
+                    else {
+                        $('#HisStroyRecordModal').empty();
+                        $('#HisStroyRecordModal').html(result);
+                        //事件重綁?
+
+                        //default range
+                        //$('input[.data-hs-date-from]').val()
+
+
+                        $('#HisStroyRecordModal').find("input").iCheck({
+                            labelHover: true,
+                            cursor: true,
+                            checkboxClass: "icheckbox_flat-green",
+                            radioClass: "iradio_square-green",
+                            increaseArea: "15%"
+                        });
+
+                        $('#v-pills-tab > button:first').tab('show') // Select first tab
+
+                        $('#HisStroyRecordModal').modal('show');
+
+                        $('#RePrintBtn').click(function () {
+
+                            var activeLink = $('button.nav-link.active');
+                            console.log('activeLink =' + activeLink);
+                            var activeLinkInhospid = activeLink.data('inhospid');
+                            console.log('activeLinkInhospid =' + activeLinkInhospid);
+                            fn_RePrint(null, activeLinkInhospid);
+
+                        });
+                    }
+
+                };
+                var vErrorFunc = function () {
+                    console.log("yyyyyyyyyyyyyyyyyy");
+                    return this;
+                };
+                // History payload can be large; default ajaxGet timeout (10–20s) is often too low.
+                ajaxGet(vURL, vData, vSuccessFunc, vErrorFunc, 120000);
+            });
+
+             function loadDepartments() {
+                $.ajax({
+                    url: '/HisOrder/HisOrder/GetDepartmentsWithWards',
+                    type: 'GET',
+                    beforeSend: function () {
+                        $('#departmentSelect').empty().append('<option value="">Loading departments...</option>');
+                    },
+                    success: function (data) {
+                        $('#departmentSelect').empty();
+                        if (data.length > 0) {
+                            $('#departmentSelect').append('<option value="">Select Department</option>');
+                            $.each(data, function (index, department) {
+                                $('#departmentSelect').append(`<option value="${department.id}">${department.name}</option>`);
+                            });
+                        } else {
+                            $('#departmentSelect').append('<option value="">No departments available</option>');
+                        }
+                        resetWardDropdown();
+                    },
+                    error: function () {
+                        $('#departmentSelect').empty().append('<option value="">Error loading departments</option>');
+                        resetWardDropdown();
+                    }
+                });
+            };
+
+               $('#saveDepartmentWard').click(function () {
+                const departmentCode = $('#departmentSelect').val();
+                const wardId = $('#wardSelect').val();
+                var patientInhospid = $('#patientInhospid').val();
+                var patientPatientid = $('#patientHealthId').val();
+                saveDepartmentWardSelection(departmentCode, wardId, patientPatientid,patientInhospid);
+            });
+
+            $('#departmentSelect').change(function () {
+                const departmentCode = $(this).val();
+                if (departmentCode) {
+                    loadWards(departmentCode);
+                } else {
+                    resetWardDropdown();
+                }
+            });
+
+            function loadWards(departmentCode) {
+                $.ajax({
+                    url: '/HisOrder/HisOrder/GetWardsByDepartment',
+                    type: 'GET',
+                    data: { departmentCode: departmentCode },
+                    beforeSend: function () {
+                        $('#wardSelect').empty().append('<option value="">Loading wards...</option>').prop('disabled', true);
+                        $('#saveDepartmentWard').prop('disabled', true);
+                    },
+                    success: function (data) {
+                        $('#wardSelect').empty().prop('disabled', false);
+                        if (data.length > 0) {
+                            $('#wardSelect').append('<option value="">Select Ward</option>');
+                            $.each(data, function (index, ward) {
+                                $('#wardSelect').append(`<option value="${ward.id}">${ward.name}</option>`);
+                            });
+                        } else {
+                            $('#wardSelect').append('<option value="">No wards available for this department</option>');
+                        }
+                    },
+                    error: function () {
+                        $('#wardSelect').empty().append('<option value="">Error loading wards</option>').prop('disabled', true);
+                        $('#saveDepartmentWard').prop('disabled', true);
+                    }
+                });
+            }
+                $('#wardSelect').change(function () {
+                $('#saveDepartmentWard').prop('disabled', $(this).val() === '');
+            });
+
+            function resetWardDropdown() {
+                $('#wardSelect').empty().append('<option value="">Select department first</option>').prop('disabled', true);
+                $('#saveDepartmentWard').prop('disabled', true);
+            }
+
+            // Switch tabs according to menu button,and hide the other tab
+            $('#MedicalCategoryList').on('show.bs.modal', function (e) {
+
+                let btnId = $(e.relatedTarget).attr('id');
+                switch (btnId) {
+                    case "DiagnosisModalBtn":
+                        $('#nav-ICD-tab').tab('show');
+                        break;
+                    case "MedModalBtn":
+                        $('#nav-Med-tab').tab('show');
+                        break;
+                    case "NonMedModalBtn":
+                        $('#nav-Lab-tab').tab('show');
+                        break;
+                }
+
+                // Switch search input by menu button
+                let MenuType = '';
+                $(".MenuTabs").find('.nav-item .nav-link').each(function (index, value) {
+                    if ($(this).hasClass('active') == true) {
+                        let MenuSearch = $(this).data('search');
+                        $('#SearchGroups .top_search').hide();
+                        $('#' + MenuSearch).show();
+
+                        // show the tab button
+                        MenuType = $(this).parent().data('menutype');
+                    }
+                });
+
+                $('#MedicalCategoryList .nav-item').each(function (index, value) {
+                    if ($(this).data('menutype') == MenuType) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+              function saveDepartmentWardSelection(departmentCode, wardId,patientPatientid,inhospitalId) {
+            $.ajax({
+                url: '/HisOrder/HisOrder/SaveDepartmentWard',
+                type: 'POST',
+                data: {
+                    departmentCode: departmentCode,
+                    patientPatientid: patientPatientid,
+                    departmentCode: departmentCode,
+                    inhospitalId: inhospitalId,
+                    wardId: wardId
+                },
+                success: function(response) {
+                    console.log(response)
+                    if(response.success==true){
+                           const editorElement = $('#editor_managment');
+                                        $('#MG_Inward').iCheck('check');
+
+                           const department = response.departmentName || '[Department]';
+        const ward = response.wardName || '[Ward]';
+
+        const transferText = `<p> transferring to <strong>${department}</strong>  And <strong>${ward}</strong> .</p>`;
+
+
+            if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.editor_managment) {
+                  layer.msg('Department/Ward saved successfully!', { icon: 1 });
+
+                    $('#departmentModal').modal('hide');
+                            $('#departmentModal').removeClass('show').hide();
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+                CKEDITOR.instances.editor_managment.setData(transferText);
+                            layer.msg('Department/Ward saved successfully!', { icon: 1 });
+
+            } else {
+                  layer.msg('Department/Ward saved successfully!', { icon: 1 });
+
+                    $('#departmentModal').modal('hide');
+                            $('#departmentModal').removeClass('show').hide();
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+
+                editorElement.html(transferText);
+            }
+                        layer.msg('Department/Ward saved successfully!', { icon: 1 });
+
+                    $('#departmentModal').modal('hide');
+
+                    }
+                         else{
+        layer.alert(response.message, {
+                                      skin: 'layui-layer-lan',
+                                      closebtn: 1,
+                                      anim: 5,
+                                      icon: 2,
+                                      btn: ['OK'],
+                                      title: 'Error Message'
+                                  }, function (index) {
+                                      layer.close(index);
+                                  });
+
+                                                 $('#departmentModal').modal('hide');
+
+                         }
+                },
+                error: function() {
+                    $('#departmentModal').modal('hide');
+                }
+            });
+        }
+        });
+        $(window).on('load', function () { fullscreenLoading(false); });
+
+        $(window).resize(function () {
+            CKEDITOR.instances.editor_clinic_remarks.resize("100%", $(".test1").height() - 68);
+            CKEDITOR.instances.editor_managment.resize("100%", $(".test2").height() - 68);
+        });
+
+    </script>
+}

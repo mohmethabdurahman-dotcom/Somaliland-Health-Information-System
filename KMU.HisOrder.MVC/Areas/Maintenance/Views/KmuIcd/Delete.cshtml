@@ -1,0 +1,65 @@
+﻿@model KMU.HisOrder.MVC.Models.KmuIcd
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Delete";
+}
+<link href="~/css/style.css" rel="stylesheet" />
+
+<style>
+    .IcdInfo {
+        display: block;
+        margin: 15px;
+        border: 1;
+        border-bottom: 1px solid;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-6">
+        <div style="padding:10px;">
+            <h4>Are you sure you want to delete this diagnosis?</h4>
+            <hr />
+            <div class="IcdInfo">
+                <b>ICD10</b>：@Html.DisplayFor(model => model.IcdCode)
+            </div>
+            <div class="IcdInfo">
+                <b>Name</b>：@Html.DisplayFor(model => model.IcdEnglishName)
+            </div>
+            <div class="IcdInfo">
+                <b>ParentCode</b>：@Html.DisplayFor(model => model.ParentCode)
+            </div>
+            <div class="IcdInfo">
+                <b>Type</b>：@Html.DisplayFor(model => model.IcdType)
+            </div>
+            <div class="IcdInfo">
+                <b>ShowMode</b>：@Html.DisplayFor(model => model.ShowMode)
+            </div>
+            <div class="IcdInfo">
+                <b>Versioncode</b>：@Html.DisplayFor(model => model.Versioncode)
+            </div>
+            <div class="IcdInfo">
+                <b>Off/On</b>：
+                @if (Model.Status == "1")
+                {
+                    <span>True</span>
+                }
+                else if (Model.Status == "2")
+                {
+                    <span>False</span>
+                }
+            </div>
+            <div class="IcdInfo">
+                <b>Versioncode</b>：@Html.DisplayFor(model => model.Versioncode)
+            </div>
+            <div style="margin:15px;">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="IcdCode" />
+                    <input type="submit" value="Delete" class="btn btn-danger" style="width:140px; margin-right:10px;" />
+                    <a class="btn btn-default" asp-action="Index" style="width:140px; float:right;">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+

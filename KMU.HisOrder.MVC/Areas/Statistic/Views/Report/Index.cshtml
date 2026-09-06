@@ -1,0 +1,75 @@
+﻿@using Microsoft.EntityFrameworkCore
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Index";
+
+
+    var Model = _context.KmuDepartments.ToList();
+    var registration = _context.Registrations.ToList();
+    var cy = DateTime.Now.Year;
+    int month = Convert.ToInt32(TempData["month"]);
+    var days = DateTime.DaysInMonth(cy, month);
+
+}
+<div class="mx-4">
+<div>
+    <div style="height:4rem"></div>
+
+<div class="col-4">
+    <form class="row mt-2" asp-action="Index">
+        <input class="form-control col-6" name="month" id="month" value="@DateTime.Now.Month"/>
+        <input class="btn btn-primary col-2" id="btnsearch" value="Search"/>
+      
+    </form>
+</div>
+
+<div class="col-6">
+
+            <div class="row d-flex justify-content-end">
+        <div class="">
+            <a class="btn btn-warning ml-2 text-dark">EXPORT</a>
+        </div>
+    </div>
+   
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Department</th>
+            <th>Patient</th>
+        </tr>
+    </thead>
+    <tbody>
+      @foreach (var item in Model) {
+          @if(registration.Any(r=> r.RegDepartment == item.DptCode && (r.RegStatus == "*" || r.RegStatus == "T") && (r.RegDate >= DateOnly.FromDateTime(new DateTime(cy, month, 1)) && r.RegDate <= DateOnly.FromDateTime(new DateTime(cy, month, days))))){
+
+        <tr>
+          <td>@item.DptName</td>
+         
+          <td>@registration.Where(r=> (r.RegDepartment == item.DptCode) && (r.RegStatus== "*"|| r.RegStatus == "T") && (r.RegDate >= DateOnly.FromDateTime(new DateTime(cy, month, 1)) && r.RegDate <= DateOnly.FromDateTime(new DateTime(cy, month, days)))).Count()</td>
+        </tr>
+      
+          }
+}
+    </tbody>
+</table>
+</div>
+</div>
+
+<script src="~/lib/jquery1.min.js"></script>
+<script>
+    $("#btnsearch").click(function(){
+    var month = $("#month").val();
+       
+   
+    $.ajax({
+        type:"post",
+            url: "/Statistic/Report/Index?month=" + month,
+        success: function(){
+            alert("success");
+        }
+    })
+
+    })
+</script>

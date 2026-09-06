@@ -1,0 +1,44 @@
+@model IEnumerable<BloodBankDispenseRecord>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Blood Bank → Dispense History";
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell">
+    <h6 class="direction mx-2">@ViewData["Title"]</h6>
+    <div class="bb-card">
+        <div class="bb-table-wrap">
+            <table class="bb-table">
+                <thead>
+                    <tr>
+                        <th>Date / time</th>
+                        <th>Patient</th>
+                        <th>Serials</th>
+                        <th>Collector</th>
+                        <th>Staff</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var d in Model)
+                {
+                    <tr>
+                        <td>@d.DispenseDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td><strong>@d.PatientName</strong><br /><span class="bb-mono">@d.PatientId</span></td>
+                        <td class="bb-mono">@d.SerialNumbers</td>
+                        <td>@d.CollectorName</td>
+                        <td>@d.DispensingStaffName</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            @if (!Model.Any())
+            {
+                <div class="bb-empty-state">
+                    <i class="fa-solid fa-droplet"></i>
+                    <p>No dispense records yet.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />

@@ -1,0 +1,80 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.VKmuMedicine>
+
+@{
+    string ConverMedType = "";
+}
+
+<div id="MedMenu" class="row">
+    <div class="TabMenuColumn">
+        <table id="MedMenuTable" class="table table-striped jambo_table MenuTable">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.BrandName)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.GenericName)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.MedType)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.UnitSpec)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.PackSpec)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.DefaultFreq)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.RefDuration)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Remarks)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.MedId)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr ondblclick="AddMedData(event,this)">
+                        <td class="BrandName" title="@item.BrandName">
+                            @Html.DisplayFor(modelItem => item.BrandName)
+                        </td>
+                        <td class="GenericName" title="@item.GenericName">
+                            @Html.DisplayFor(modelItem => item.GenericName)
+                        </td>
+                        <td class="MedType">
+                            @{
+                                ConverMedType = item.MedType == "1" ? "Oral" : item.MedType == "2" ? "Injection" : item.MedType == "3" ? "External" : "Not Medicine";
+                            }
+                            @Html.DisplayFor(modelItem => ConverMedType)
+                        </td>
+                        <td class="UnitSpec">
+                            @Html.DisplayFor(modelItem => item.UnitSpec)
+                        </td>
+                        <td class="PackSpec">
+                            @Html.DisplayFor(modelItem => item.PackSpec)
+                        </td>
+                        <td class="DefaultFreq">
+                            @Html.DisplayFor(modelItem => item.DefaultFreq)
+                        </td>
+                        <td class="RefDuration">
+                            @Html.DisplayFor(modelItem => item.RefDuration)
+                        </td>
+                        <td class="Remarks" title="@item.Remarks">
+                            @Html.DisplayFor(modelItem => item.Remarks)
+                        </td>
+                        <td class="MedId">
+                            @Html.DisplayFor(modelItem => item.MedId)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

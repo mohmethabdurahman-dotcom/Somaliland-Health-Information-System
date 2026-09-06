@@ -1,0 +1,101 @@
+@model DonorRegistrationViewModel
+@using KMU.HisOrder.MVC.Models.BloodBank
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = ViewData["Title"] ?? "Blood Bank → Donor Registration";
+    var bloodTypes = ViewBag.BloodTypes as string[] ?? BloodBankLookups.BloodTypes;
+    var components = ViewBag.Components as string[] ?? BloodBankLookups.Components;
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<partial name="~/Areas/BloodBank/Views/Donors/PartialViews/_DonorRegistrationHisStyles.cshtml" />
+
+<div class="bb-donor-mr-page">
+    <h6 class="direction mx-2">@ViewData["Title"]</h6>
+
+    @if (ViewBag.IsReturnVisit == true)
+    {
+        <div class="alert alert-info mx-2 py-2" role="status">
+            Returning donor (@ViewBag.SourceDonorDisplayId) — personal details preloaded from the previous visit.
+            Enter new blood pressure and complete registration; a new donor ID will be assigned.
+        </div>
+    }
+
+    @if (TempData["Success"] != null) { <div data-bb-toast data-bb-toast-type="success" class="bb-sr-only">@TempData["Success"]</div> }
+
+    <form asp-action="Create" method="post" id="donorWizardForm" novalidate
+          data-pending-search-url="@Url.Action("SearchPendingRequests", "Donors", new { area = "BloodBank" })"
+          data-phone-check-url="@Url.Action("PhoneChecker", "Donors", new { area = "BloodBank" })"
+          data-is-return-visit="@(ViewBag.IsReturnVisit == true ? "true" : "false")"
+          data-initial-request-id="@(Model.RequestId?.ToString() ?? "")"
+          data-initial-donation-type="@Model.DonationType">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group row mx-0 border-bottom">
+            <div class="col-lg-7 border-right">
+                <div class="form-group row mx-0">
+                    <label class="form-control col-lg-3 font-weight-bold border-0 px-0"><font color="red">*</font>Donor ID Number:</label>
+                    <input type="text" id="Txt_DonorID" class="form-control col-lg-3 font-weight-bold text-center rounded" placeholder="Automatic Generate" readonly />
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <a asp-action="Index" class="btn btn-default btn-sm float-right"><i class="fa fa-arrow-left"></i> Donor list</a>
+            </div>
+        </div>
+
+        <nav class="bb-reg-stepper-mr mx-2" aria-label="Registration steps">
+            <div class="bb-reg-stepper-mr__item is-active" id="regStep1">1. Personal information</div>
+            <div class="bb-reg-stepper-mr__item" id="regStep2">2. Blood pressure</div>
+            <div class="bb-reg-stepper-mr__item" id="regStep3">3. Donation &amp; register</div>
+        </nav>
+
+        <div class="form-group row mx-0">
+            <div class="col-lg-7 border-right" id="bbColDemographics">
+                <partial name="~/Areas/BloodBank/Views/Donors/PartialViews/_DonorMrStylePersonalInfo.cshtml" model="Model" />
+                <partial name="~/Areas/BloodBank/Views/Donors/PartialViews/_DonorRegistrationVitals.cshtml" model="Model" />
+            </div>
+
+            <div class="col-lg-5 border-left">
+                <partial name="~/Areas/BloodBank/Views/Donors/PartialViews/_DonorDonationPanel.cshtml" model="Model" />
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal fade" id="bbDonorPhoneModal" tabindex="-1" role="dialog" aria-labelledby="bbDonorPhoneModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title text-danger mb-0" id="bbDonorPhoneModalTitle">
+                    <i class="fa-solid fa-user"></i> This phone number is already registered to these donors
+                </p>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-0">
+                <table class="table table-striped mb-0" id="bbDonorPhoneTable">
+                    <thead>
+                        <tr>
+                            <th>Donor ID</th>
+                            <th>Full name</th>
+                            <th>Mobile phone</th>
+                            <th>Sex</th>
+                            <th>Blood</th>
+                            <th>Visits</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Continue new registration</button>
+            </div>
+        </div>
+    </div>
+</div>
+<button type="button" id="bbDonorPhoneModalTrigger" class="d-none" data-toggle="modal" data-target="#bbDonorPhoneModal" aria-hidden="true"></button>
+
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+<partial name="~/Areas/BloodBank/Views/Donors/_DonorRegistrationScripts.cshtml" />

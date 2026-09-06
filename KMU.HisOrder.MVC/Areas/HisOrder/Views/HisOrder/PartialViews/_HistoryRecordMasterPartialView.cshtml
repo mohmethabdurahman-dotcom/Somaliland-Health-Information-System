@@ -1,0 +1,147 @@
+﻿@using KMU.HisOrder.MVC.Areas.HisOrder.Models;
+@using KMU.HisOrder.MVC.Areas.HisOrder.Controllers;
+@using Microsoft.AspNetCore.Http;
+
+@{ 
+
+    PatientDTO patientInfo = (PatientDTO)ViewData["patientInfo"];
+    List<HistoryRecordDto> HistoryRecordMaster = (List<HistoryRecordDto>)ViewData["HistoryRecordMaster"];
+    List<HistoryRecordDetail> HistoryRecordDetail = (List<HistoryRecordDetail>)ViewData["HistoryRecordDetail"];
+}
+
+<div class="modal-dialog" style="max-width:90%; height:98%; padding:0;">
+    <div class="modal-content" style="height:98% ; border-radius:5px; ">
+        <div class="modal-header" style="padding:5px 10px;">
+            <h5 class="modal-title" style="font-weight:bold;">History Record</h5>
+            <button type="button" class="close" data-dismiss="modal" style="font-size: 30px; padding-right: 20px; padding-top: 20px; ">&times;</button>
+        </div>
+        <div class="modal-body pt-0" style="">
+            <div class="col-xl-12">
+                @{
+                    Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_ClinicInfoPartialView.cshtml", patientInfo, new ViewDataDictionary(ViewData));
+                }
+            </div>
+            <div class="col-xl-12" hidden>
+                <div class="form-row"  style="height:85px;">
+
+                    <div class="form-group" style="background-color: whitesmoke; border-radius: 8px; padding: 5px 10px 5px 10px; margin-bottom: 20px; border: 1px solid gainsboro ">
+                        <div><label class="mb-0">Source Type</label></div>
+
+                        <div class="input-group input-daterange">
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label ">
+                                    <input type="checkbox" id="checkbox_opd" value="OPD" checked="checked" class="form-check-input"><span class="ml-2 align-text-top">OPD</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input type="checkbox" id="checkbox_er" checked="checked" value="ER" class="form-check-input"><span class=" ml-2 align-text-top">ER</span>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group ml-2" style="background-color: whitesmoke; border-radius: 8px; padding: 5px 10px 5px 10px; margin-bottom: 20px; border: 1px solid gainsboro ">
+                        <div>
+                            <label class="mb-0">Date Range</label>
+                        </div>
+                        <div class="input-group input-daterange">
+                            <input type="date"  class="form-control form-control-sm data-hs-date-from" value="@patientInfo.RegDate.Value.AddMonths(-6).ToString("yyyy-MM-dd")" readonly="readonly">
+                            <div class="input-group-addon input-group-sm" style="vertical-align:middle">~</div>
+                            <input type="date" class="form-control form-control-sm data-hs-date-to" value="@patientInfo.RegDate.Value.ToString("yyyy-MM-dd")" readonly="readonly">
+                        </div>
+
+                    </div>
+
+                    <div class="form-group ml-2" style="background-color: whitesmoke; border-radius: 8px; padding: 5px 10px 5px 10px; margin-bottom: 20px; border: 1px solid gainsboro ">
+                        <div><label class="mb-0">Display Order Type</label></div>
+
+                        <div class="input-group input-daterange">
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input type="checkbox" id="checkbox_opd" value="OPD" checked="checked" class="form-check-input"><span class="ml-2 align-text-top">Clinic Remarks & Managment</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input type="checkbox" id="checkbox_er" checked="checked" value="ER" class="form-check-input"><span class=" ml-2 align-text-top">Diagnosis</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input type="checkbox" id="checkbox_er" checked="checked" value="ER" class="form-check-input"><span class=" ml-2 align-text-top">Medicine</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input type="checkbox" id="checkbox_er" checked="checked" value="ER" class="form-check-input"><span class=" ml-2 align-text-top">Other</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-12 d-flex ">
+                <div class="col-xl-3 p-0">
+                    <div class="nav flex-column nav-pills card p-2" id="v-pills-tab" role="tablist" aria-orientation="vertical" style="overflow: auto; height: calc( 100vh - 200px ); display: grid; align-content:start; border-radius:5px ">
+                        @*<button class="nav-link  active-black-style active" id="v-pills-home-tab" data-toggle="pill" data-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">2022/12/26 General Medical</button>
+                            <button class="nav-link active-black-style" id="v-pills-profile-tab" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2022/12/27 General Medical</button>
+                            <button class="nav-link active-black-style" id="v-pills-messages-tab" data-toggle="pill" data-target="#v-pills-messages" type="button" role="tab" aria-controls="v-pills-messages" aria-selected="false">2022/12/28 General Medical</button>
+                            <button class="nav-link active-black-style" id="v-pills-settings-tab" data-toggle="pill" data-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings" aria-selected="false">2022/12/26 General Medical</button>
+                            <button class="nav-link active-black-style" id="v-pills-home-tab" data-toggle="pill" data-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">2022/12/30 General Medical</button>
+                            <button class="nav-link active-black-style" id="v-pills-profile-tab" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2023/01/13 General Medical</button>
+                            <button class="nav-link active-black-style" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2023/01/13 General Medical</button>
+                            <button class="nav-link active-black-style" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2023/01/13 Emgergecny</button>
+                            <button class="nav-link active-black-style" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2023/01/13 Emgergecny</button>
+                            <button class="nav-link active-black-style" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2023/01/13 Emgergecny</button>*@
+
+                        @{
+                            var firstMaster = true;
+                            foreach (var master in HistoryRecordMaster)
+                            {
+                                var title = string.Format("{0} {1}", master.regDate.ToString("dd/MM/yyyy"), master.clinicName);
+                                var wardDisplay = !string.IsNullOrEmpty(master.wardid) ? " /" + master.wardid : "";
+
+                                var targetid = "v-pills-" + master.inhospid.ToString() ;
+                                if (firstMaster == true)
+                                {
+                                    <button class="nav-link  active-black-style" data-inhospid="@master.inhospid.ToString()" data-toggle="pill" data-target="#@targetid" type="button" role="tab" aria-controls="@targetid" aria-selected="true">@title @wardDisplay</button>
+                                }
+                                else
+                                {
+                                    <button class="nav-link  active-black-style" data-inhospid="@master.inhospid.ToString()" data-toggle="pill" data-target="#@targetid" type="button" role="tab" aria-controls="@targetid" aria-selected="true">@title</button>
+                                }
+
+                                firstMaster = false;
+                            }
+
+
+                        }
+
+
+
+                    </div>
+                </div>
+
+                <div class="col-xl-9 p-0 pl-3">
+                    <div class="tab-content" id="v-pills-tabContent" style="overflow: auto; height: calc( 100vh - 200px );">
+     
+                        @{
+                            if(HistoryRecordDetail!=null && HistoryRecordDetail.Count > 0)
+                            {
+                                foreach(var obj in HistoryRecordDetail)
+                                {
+                                    Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_HistoryRecordPartialView.cshtml", obj);
+
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+</div>

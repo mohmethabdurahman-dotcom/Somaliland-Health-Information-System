@@ -1,0 +1,55 @@
+<script>
+(function () {
+  'use strict';
+  var input = document.getElementById('donorHistoryQuery');
+  var live = document.getElementById('donorHistoryLiveResults');
+  if (!input || !live) return;
+
+  var timer = null;
+  var url = '@Url.Action("SearchHistory", "Donors", new { area = "BloodBank" })';
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function render(items) {
+    if (!items || !items.length) {
+      live.innerHTML = '<p class="bb-donor-history-live__empty">No quick matches — press Search for full lookup.</p>';
+      live.hidden = false;
+      return;
+    }
+    var html = '<p class="bb-donor-history-live__title">Quick matches</p><ul class="bb-donor-history-live__list">';
+    items.forEach(function (it) {
+      var href = '@Url.Action("Profile", "Donors", new { area = "BloodBank" })?donorId=' + encodeURIComponent(it.primaryDonorId);
+      html += '<li><a href="' + href + '" class="bb-donor-history-live__item">' +
+        '<strong>' + escapeHtml(it.fullName) + '</strong>' +
+        '<span class="bb-mono">' + escapeHtml(it.phone) + '</span>' +
+        '<span class="bb-donor-history-live__pill">' + it.lifetimeVisits + ' visits · ' + it.successfulDonations + ' OK</span>' +
+        '</a></li>';
+    });
+    html += '</ul>';
+    live.innerHTML = html;
+    live.hidden = false;
+  }
+
+  input.addEventListener('input', function () {
+    var q = input.value.trim();
+    clearTimeout(timer);
+    if (q.length < 2) {
+      live.hidden = true;
+      live.innerHTML = '';
+      return;
+    }
+    timer = setTimeout(function () {
+      fetch(url + '?q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.success) render(data.items);
+        })
+        .catch(function () { live.hidden = true; });
+    }, 320);
+  });
+})();
+</script>

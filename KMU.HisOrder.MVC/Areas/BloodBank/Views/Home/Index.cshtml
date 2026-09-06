@@ -1,0 +1,30 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Blood Bank → Dashboard";
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell">
+    <h6 class="direction mx-2">Blood Bank → Dashboard</h6>
+    <div class="form-group row mx-0 mb-2">
+        <div class="col-lg-12 text-right">
+            <a asp-area="BloodBank" asp-controller="Patients" asp-action="Find" class="bb-btn bb-btn-primary">
+                <i class="fa-solid fa-user-injured"></i> Find Patient
+            </a>
+            <a asp-area="BloodBank" asp-controller="Donors" asp-action="Find" class="bb-btn bb-btn-primary">
+                <i class="fa-solid fa-user-magnifying-glass"></i> Find Donor
+            </a>
+            <a asp-area="BloodBank" asp-controller="Donors" asp-action="Create" class="bb-btn bb-btn-success">
+                <i class="fa-solid fa-user-plus"></i> Register Donor
+            </a>
+            <a asp-area="BloodBank" asp-controller="Requests" asp-action="Create" class="bb-btn bb-btn-primary">
+                <i class="fa-solid fa-plus"></i> New Request
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null) { <div data-bb-toast data-bb-toast-type="success" class="bb-sr-only">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div data-bb-toast data-bb-toast-type="error" class="bb-sr-only">@TempData["Error"]</div> }
+
+    <partial name="~/Areas/BloodBank/Views/Shared/_BloodBankDashboard.cshtml" />
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />

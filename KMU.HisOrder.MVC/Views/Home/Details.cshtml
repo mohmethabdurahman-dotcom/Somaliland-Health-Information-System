@@ -1,0 +1,230 @@
+﻿@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+@model IEnumerable<KMU.HisOrder.MVC.Models.Registration>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+@using KMU.HisOrder.MVC.Areas.HisOrder.Models;
+
+@{
+    Registration registration = new Registration();
+    var count = 0;
+    int age = 0;
+}
+
+<style>
+    .detailCard {
+        margin: 35px;
+        padding: 10px;
+    }
+    .br{
+        border-radius: 25px;
+        border: 1px solid #0d6efd;
+        background-color: transparent;
+        color: #0d6efd;
+    }
+</style>
+<div class="p-3">
+    <br />
+    <div class="border rounded bg-white " style="margin: 35px; padding: 15px">
+
+        <div class="row">
+            <h4 class="text-dark col-md-4">@TempData["DepName"] Department</h4>
+            <div class="col-1">
+            </div>
+            <div class="ml-2">
+                @{
+                    var all = Model.Where(e => e.RegStatus != "C").ToList();
+                    <h5 id="total" class="btn btn-dark">Total Paitents @all.Count()</h5>
+                }
+            </div>
+
+            @*Total Two*@
+            <div>
+                @{
+                    var alll = Model.ToList();
+                    <button id="totaltwo" class="btn btn-dark">Total Paitents @alll.Count()</button>
+                }
+            </div>
+
+            <div class="ml-2">
+                @{
+                    var finsh = Model.Where(e => e.RegStatus == "*").ToList();
+                    <h5 class="btn btn-success"><span class="text-bold">Finish</span> @finsh.Count() </h5>
+                }
+            </div>
+            <div class="ml-2">
+                @{
+                    var waitnig = Model.Where(e => e.RegStatus == "N").ToList();
+                    <h5 class="btn btn-primary"><span>Waiting</span> @waitnig.Count()  </h5>
+                }
+            </div>
+            <div class="ml-2">
+                @{
+                    var Examming = Model.Where(e => e.RegStatus == "T").ToList();
+                    <h5 class="btn btn-info"><span>Examing</span> @Examming.Count()  </h5>
+                }
+            </div>
+            <div class="ml-2">
+                @{
+                    var Observing = Model.Where(e => e.RegStatus == "O").ToList();
+                    <h5 class="btn text-white" style="background-color:purple;"><span>Observing</span> @Observing.Count()</h5>
+                }
+            </div>
+            <div class="ml-2">
+                @{
+                    var cancel = Model.Where(e => e.RegStatus == "C").ToList();
+                    <button class="btn btn-danger" id="cancelBtn">Cancel @cancel.Count()  </button>
+                }
+            </div>
+
+            <div class="ml-2">
+                <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index"><i class="fa fa-arrow-right"></i> Exit</a>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="ml-2">
+                    <input type="checkbox" id="qari" /> &nbsp;
+                    <label id="bedel" style="margin-top: 10px">Show Cancel Status</label>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="row">
+                    <form asp-controller="Home" asp-action="Details">
+                        <div class="col-md-8">
+                            <input id="ChosenDate" name="ChosenDate" type="date" style="font-size: 15px;" class="form-control ml-2" value="">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-dark"><i class="fa-solid fa-rotate"></i></button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bg-white detailCard">
+        <table class="table border rounded table-striped table-light data-table" id="stable">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>HealthId</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Phone Number</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var patientInfo = _context.KmuCharts.Where(e => e.ChrHealthId == item.RegHealthId).ToList();
+                    var dt = Convert.ToDateTime(item.RegCreateTime);
+
+                    <tr id="tr1">
+                        <td>@(count += 1)</td>
+                        <td>@item.RegDate</td>
+                        <td>@dt.ToString("HH:mm tt")</td>
+                        <td>@item.RegHealthId</td>
+                        @foreach (var kan in patientInfo)
+                        {
+                            <td>@kan.ChrPatientFirstname &nbsp;&nbsp @kan.ChrPatientMidname &nbsp;&nbsp @kan.ChrPatientLastname</td>
+                            <td>
+                                @{
+                                    age = DateTime.Now.Year - kan.ChrBirthDate.Value.Year;
+                                }
+                                @age
+                            </td>
+                            @if (item.RegStatus == "N")
+                            {
+                                <td>
+                                    <span class="br p-2"> @kan.ChrMobilePhone</span>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>@kan.ChrMobilePhone</td>
+                            }
+                        }
+                        @{
+                            if (item.RegStatus == "N")
+                            {
+                                <td class="texy text-primary rounded"><b>Waiting</b></td>
+                            }
+                            else if (item.RegStatus == "*")
+                            {
+                                <td class="text text-success rounded"><b>Finish</b></td>
+                            }
+                            else if (item.RegStatus == "T")
+                            {
+                                <td class="text text-info rounded"><b>Examing</b></td>
+                            }
+                            else if (item.RegStatus == "O")
+                            {
+                                <td class="text rounded" style="color:purple;"><b>Observing</b></td>
+                            }
+                            else if (item.RegStatus == "C")
+                            {
+                                <td class="text text-danger rounded" id="C"><b>Cancel</b></td>
+                            }
+                        }
+
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="~/lib/jquery1.min.js"></script>
+
+<script>
+    //$(document).ready(function () {
+    //    $('.data-table').DataTable();
+    //});
+    $(document).ready(function () {
+        $("#stable").DataTable({});
+
+        $("#cancelBtn").hide();
+        $("#totaltwo").hide();
+
+        $("#stable tbody #tr1").each(function (row, tr) {
+            var waiting = $(tr).find('td:eq(3)').text();
+
+            if (waiting == "Cancel") {
+                $(this).hide();
+            }
+        })
+
+        $("#qari").on("click", function () {
+            $("#cancelBtn").toggle();
+            $("#totaltwo").toggle();
+            $("#total").toggle();
+            var qari = $("#bedel").text();
+            if (qari == "Show Cancel Status") {
+                $("#bedel").text("Hide Cancel Status");
+                //$("#cancelBtn").show();
+            }
+            else if (qari == "Hide Cancel Status") {
+                $("#bedel").text("Show Cancel Status");
+                //$("#cancelBtn").hide();
+            }
+
+            $("#stable tbody #tr1").each(function (row, tr) {
+                var waiting = $(tr).find('td:eq(3)').text();
+                if (waiting == "Cancel") {
+                    $(this).toggle();
+                }
+            })
+        })
+
+    });
+                    //document.getElementById("#kan").style.visibility = "hidden";
+                    //document.getElementById("#tan").style.visibility = "visible";
+</script>

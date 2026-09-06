@@ -1,0 +1,6 @@
+This visit is from a Non-Communicable Disease (NCD) clinic (chronic disease follow-up).
+Write the draft in chronic-disease follow-up style, not acute/emergency style.
+Emphasize when data is present: condition control or stability (hypertension, diabetes, asthma/COPD, heart failure), medication adherence and changes, lifestyle factors, comorbidities, and follow-up or patient education.
+Use Management notes (care-plan context) when provided—integrate them into management_plan, do not ignore them.
+Use NCD form data from the database when provided—highlight relevant chronic disease findings.
+Use neutral clinical language; note limitations when data is incomplete.

@@ -1,0 +1,286 @@
+﻿
+
+@{
+    var Patient = ViewData["Patient"] as KmuChart;
+    var inhospId = ViewData["inhospid"].ToString();
+}
+
+
+ 
+
+
+<style>
+    body {
+        font-family: 'Nunito Sans', sans-serif;
+        background-color: #f8f9fa;
+        overflow-y: auto;
+    }
+
+    .infoCard {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        background: #fff;
+        padding: 25px;
+      
+    }
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0d6efd;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .card {
+        border-radius: 1rem;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+        border: none;
+        margin-bottom: 1.5rem;
+    }
+
+        .card:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        }
+
+    .card-header {
+        font-weight: 600;
+        font-size: 1rem;
+        background: #8A8AFF;
+        color: #fff !important;
+        border-radius: 1rem 1rem 0 0 !important;
+    }
+
+    .ioTable thead th {
+        background-color: #e9f2fb;
+        color: #0d6efd;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .ioTable td, .table th {
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+
+    .abnormal-low {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .abnormal-high {
+        color: #ffc107;
+        font-weight: 600;
+    }
+
+    .normal {
+        color: #20c997;
+    }
+
+    #ioTable tfoot td {
+        font-weight: bold;
+        background-color: #f0f8ff;
+    }
+</style>
+
+<div class="row" style="max-height: 85vh; overflow-y: auto;">
+    <div class="container-fluid py-4">
+        <div class="infoCard">
+
+            <!-- Patient Info -->
+            <div class="d-flex align-items-center mb-3">
+                <img src="/images/avatar.png" class="rounded-circle me-3" alt="Patient Avatar" style="width: 70px; height: 70px;">
+                <div>
+                    <h5 class="mb-1">
+                        <strong>@Patient.ChrPatientFirstname @Patient.ChrPatientMidname @Patient.ChrPatientLastname</strong>
+                        <span class="badge bg-warning ms-2"><i class="fa fa-star"></i></span>
+                    </h5>
+                    <div class="text-muted small">
+                        <span class="me-3 px-2"><i class="px-1 fa fa-id-card text-primary me-1"></i>@Patient.ChrHealthId</span>
+                        <span class="me-3 px-2"><i class="px-1 fa fa-birthday-cake text-primary me-1"></i>@Patient.ChrBirthDate</span>
+                        <span class="me-3 px-2"><i class="px-1 fa fa-venus-mars text-primary me-1"></i>@Patient.ChrSex</span>
+                        <span class="me-3 px-2"><i class="px-1 fa fa-phone text-primary me-1"></i>@Patient.ChrMobilePhone</span>
+                        <span><i class="px-1 fa fa-location-dot text-primary me-1 px-2"></i>@Patient.ChrAddress</span>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <hr>
+   
+
+        <!-- Vital Charts -->
+        <div class="card">
+            <div class="card-header">Heart Rate, Respiratory Rate & Temperature Trends</div>
+            <div class="card-body" style="height:420px;">
+                <canvas id="chartTop"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Blood Pressure Trends (Systolic & Diastolic)</div>
+            <div class="card-body" style="height:380px;">
+                <canvas id="chartBP"></canvas>
+            </div>
+        </div>
+
+        <!-- SpO₂ & Pain Score Table -->
+        <div class="card">
+            <div class="card-header">Oxygen Saturation & Pain Score (Every 4 Hours)</div>
+            <div class="card-body table-responsive">
+                <table id="spopainTable" class="table table-sm table-bordered table-hover text-center">
+                    <thead><tr id="spopainHeader"></tr></thead>
+                    <tbody>
+                        <tr id="spoRow"></tr>
+                        <tr id="painRow"></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Daily I/O Totals -->
+        <div class="card">
+            <div class="card-header">Daily I/O Totals</div>
+            <div class="card-body table-responsive">
+                <table id="ioTable" class="ioTable table table-bordered table-sm table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Intake (mL)</th>
+                            <th>Output (mL)</th>
+                            <th class="text-center">Balance (mL)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ioBody"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Total</td>
+                            <td id="totalIntake"></td>
+                            <td id="totalOutput"></td>
+                            <td id="totalBalance"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/chart.js"></script>
+<script>
+    $(document).ready(function () {
+        var inhospId = "@inhospId";
+
+        $.ajax({
+            type: "get",
+            url: "/InPatient/Ward/GetWeeklyVitalsJson",
+            data: { inhospId: inhospId },
+            success: function (data) {
+                var labels = data.labels;
+
+                // === Chart 1: HR, RR, Temp ===
+                var ctx1 = document.getElementById('chartTop').getContext('2d');
+                new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'HR (bpm)', data: data.datasets.hr, borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,0.1)', yAxisID: 'y_left' },
+                            { label: 'RR (breaths/min)', data: data.datasets.rr, borderColor: '#000000', backgroundColor: 'rgba(0,0,0,0.1)', yAxisID: 'y_left' },
+                            { label: 'Temp (°C)', data: data.datasets.temp, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,0.1)', yAxisID: 'y_right' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } },
+                        scales: {
+                            y_left: { type: 'linear', position: 'left', suggestedMin: 10, suggestedMax: 180, title: { display: true, text: 'HR / RR' } },
+                            y_right: { type: 'linear', position: 'right', suggestedMin: 35, suggestedMax: 41, grid: { drawOnChartArea: false }, title: { display: true, text: 'Temp (°C)' } },
+                            x: { ticks: { maxRotation: 90, minRotation: 0, autoSkip: false } }
+                        }
+                    }
+                });
+
+                // === Chart 2: BP ===
+                var ctx2 = document.getElementById('chartBP').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'SBP (mmHg)', data: data.datasets.sbp, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)' },
+                            { label: 'DBP (mmHg)', data: data.datasets.dbp, borderColor: '#fd7e14', backgroundColor: 'rgba(253,126,20,0.1)' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } },
+                        scales: {
+                            y: { suggestedMin: 30, suggestedMax: 200, title: { display: true, text: 'BP (mmHg)' } },
+                            x: { ticks: { maxRotation: 90, minRotation: 0, autoSkip: false } }
+                        }
+                    }
+                });
+
+                // === SpO₂ & Pain Score Table ===
+                var headerRow = $('#spopainHeader');
+                headerRow.append('<td style="background-color:#FFFFFF;"></td>');
+                labels.forEach(l => headerRow.append('<td style="min-width:60px; background-color:#FFFFFF; color:#6c757d; font-size:14px;">' + l.replace('\n', '<br/>') + '</td>'));
+
+                var spoRow = $('#spoRow');
+                spoRow.append('<td style="font-weight:600;">SpO₂ (%)</td>');
+                data.datasets.spo2.forEach(v => {
+                    let cls = (v < 80) ? "abnormal-low" : (v > 100) ? "abnormal-high" : "normal";
+                    spoRow.append('<td class="' + cls + '">' + (v ?? '') + '</td>');
+                });
+
+                var painRow = $('#painRow');
+                painRow.append('<td style="font-weight:600;">Pain</td>');
+                data.datasets.pain.forEach(v => {
+                    let cls = (v >= 7) ? "abnormal-high" : (v <= 3 && v !== null) ? "normal" : "";
+                    painRow.append('<td class="' + cls + '">' + (v ?? '') + '</td>');
+                });
+
+                // === Daily I/O Totals ===
+                var ioBody = $('#ioBody');
+                var totalIn = 0, totalOut = 0, totalBal = 0;
+
+                data.dailyTotals.forEach(d => {
+                    let balValue = parseFloat(d.balance) || 0;
+                    let inValue = parseFloat(d.intake) || 0;
+                    let outValue = parseFloat(d.output) || 0;
+
+                    totalIn += inValue;
+                    totalOut += outValue;
+                    totalBal += balValue;
+
+                    let balClass = (d.balance.includes("LOSS") || balValue < 0) ? "abnormal-low" : "normal";
+                    ioBody.append(
+                        `<tr>
+                            <td>${d.date}</td>
+                            <td>${d.intake}</td>
+                            <td>${d.output}</td>
+                            <td class="${balClass} text-center">${d.balance}</td>
+                        </tr>`
+                    );
+                });
+
+                $('#totalIntake').text(totalIn.toFixed(2));
+                $('#totalOutput').text(totalOut.toFixed(2));
+                $('#totalBalance').text(totalBal.toFixed(2));
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
+                alert("Failed to load vitals data: " + error);
+            }
+        });
+    });
+</script>

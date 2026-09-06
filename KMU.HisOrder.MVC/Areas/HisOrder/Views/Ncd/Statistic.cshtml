@@ -1,0 +1,132 @@
+﻿@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    Layout = null;
+    var inhosp = TempData["InhospitalId"];
+    var healthId = TempData["HealthId"];
+    var date = TempData["Date"];
+
+    var dt = Convert.ToDateTime(date).ToString("MM/dd/yyyy");
+
+    var find = _context.Registrations.Where(e => e.RegHealthId == Convert.ToString(healthId)).ToList();
+}
+
+<script src="~/lib/c3js/js/d3.js"></script>
+<script src="~/lib/c3js/js/c3.js"></script>
+
+<link href="~/lib/c3js/css/c3.css" rel="stylesheet" />
+
+<p id="inhospId" hidden>@inhosp</p>
+<p id="HealthId" hidden>@healthId</p>
+
+<div id="chart"></div>
+
+<div>
+    @foreach (var list in find)
+    {
+
+        var Weight = _context.PhysicalSigns.Where(e => e.Inhospid == list.Inhospid && e.PhyType == "Weight").OrderByDescending(e => e.ModifyTime).ToList();
+        var Sys = _context.PhysicalSigns.Where(e => e.Inhospid == list.Inhospid && e.PhyType == "Systolic (Sys)").OrderByDescending(e => e.ModifyTime).ToList();
+        var Dias = _context.PhysicalSigns.Where(e => e.Inhospid == list.Inhospid && e.PhyType == "Diastolic (Dias)").OrderByDescending(e => e.ModifyTime).ToList();
+        var HBA1 = _context.PhysicalSigns.Where(e => e.Inhospid == list.Inhospid && e.PhyType == "HBA1C").OrderByDescending(e => e.ModifyTime).ToList();
+
+        <select id="weightitems" hidden>
+            @foreach (var item in Weight)
+            {
+                <option class="value" value="@item.PhyValue">@item.PhyValue</option>
+            }
+        </select>
+        <select id="Sysitems" hidden>
+            @foreach (var item in Sys)
+            {
+                <option class="date" value="@Convert.ToDateTime(item.ModifyTime).ToString("MMMM dd")">@item.ModifyTime</option>
+                <option class="value" value="@item.PhyValue">@item.PhyValue</option>
+            }
+        </select>
+        <select id="Diasitems" hidden>
+            @foreach (var item in Dias)
+            {
+                <option class="date" value="@Convert.ToDateTime(item.ModifyTime).ToString("MMMM dd")">@item.ModifyTime</option>
+                <option class="value" value="@item.PhyValue">@item.PhyValue</option>
+            }
+        </select>
+        <select id="Hbaitems" hidden>
+            @foreach (var item in HBA1)
+            {
+                <option class="value" value="@item.PhyValue">@item.PhyValue</option>
+            }
+        </select>
+    }
+</div>
+
+<script>
+
+    var inhospId = $("#inhospId").text();
+    var healthId = $("#HealthId").text();
+    var healthId = $("#HealthId").text();
+
+    var Data = ['Weight']
+    var dt = ['x']
+    var Sys = ['Sys']
+    var Dias = ['Dias']
+    var Hba = ['HBA1C']
+
+
+    $("#weightitems .value").each(function () {
+        var val = $(this).val();
+        var rep = val.replace(/\D/g, '');
+        Data.push(parseInt(rep));
+    });
+
+    $("#Sysitems .date").each(function () {
+        var val = $(this).val();
+        dt.push(val);
+    });
+
+    $("#Sysitems .value").each(function () {
+        var val = $(this).val();
+        Sys.push(val);
+    });
+
+    $("#Diasitems .date").each(function () {
+        var val = $(this).val();
+        dt.push(val);
+    });
+
+    $("#Diasitems .value").each(function () {
+        var val = $(this).val();
+        Dias.push(val);
+    });
+
+    $("#Hbaitems .value").each(function () {
+        var val = $(this).val();
+        Hba.push(val);
+    });
+
+    var chart = c3.generate({
+        bindto: '#chart',
+        size: {
+            height: 400,
+            width: 700,
+        },
+        data: {
+            x: 'x',
+            columns: [
+                dt,
+                Data,
+                Sys,
+                Dias,
+                Hba
+            ],
+            groups: [
+                ['Weight', 'Sys', 'Dias', 'HBA1C']
+            ],
+            // type: 'bar'
+        },
+        axis: {
+            x: {
+                type: 'category' // this needed to load string x value
+            }
+        }
+    });
+</script>

@@ -1,0 +1,114 @@
+﻿@model KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.PrintClass
+
+@{
+    Layout = "/Views/Shared/_PrintLayout.cshtml";
+}
+
+<!-- Render Border -->
+<div class="page-border"></div>
+
+<div class="header">
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_v_Header.cshtml",Model)
+</div>
+
+@* <div class="footer">
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_v_Footer.cshtml",Model)
+</div> *@
+
+<!-- Medical Record Page -->
+@if (Model.ShowPrint.Contains("MedicalRecord"))
+{
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_MedicalRecord.cshtml", Model)
+}
+<!-- Prescription Page -->
+@if (Model.ShowPrint.Contains("Prescription"))
+{
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_Prescription.cshtml", Model)
+}
+
+<!-- Laboratory Page -->
+@if (Model.ShowPrint.Contains("Laboratory"))
+{
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_Laboratory.cshtml", Model)
+}
+
+<!-- Emergency Laboratory Page -->
+@if (Model.ShowPrint.Contains("Emergency Laboratory"))
+{
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_LaboratoryER.cshtml", Model)
+}
+
+<!-- Examination Page -->
+@if (Model.ShowPrint.Contains("Radiology"))
+{
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_Examination.cshtml", Model)
+}
+
+<!-- Pathology Page -->
+@if (Model.ShowPrint.Contains("Pathology"))
+{
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_Pathology.cshtml", Model)
+}
+
+<!-- Pathology Page -->
+@if (Model.ShowPrint.Contains("Blood"))
+{
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_Blood.cshtml", Model)
+}
+
+<!-- Material Page -->
+@if (Model.ShowPrint.Contains("Material"))
+{
+    @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_Supply.cshtml", Model)
+}
+
+
+@section scripts{
+    <script>
+        function DynamicChangeHeight() {
+            // Check patient and doctor name length to change header and footer height
+
+            /* ------------ header ------------ */
+            //let HeaderHeight = $('#HeaderTable').height();
+            //let SetHeaderHeight = '';
+
+            //if (HeaderHeight > 170) {
+            //    SetHeaderHeight = '65px'; /* height can't > 68px */
+            //} else if (HeaderHeight > 150) {
+            //    SetHeaderHeight = '50px';
+            //}
+
+            //$('.header').css('height', SetHeaderHeight);
+            //$('.header-space').css('height', SetHeaderHeight);
+
+            /* ------------ footer ------------ */
+            let FooterHeight = $('#FooterTable').height();
+            let SetFooterHeight = '';
+
+            if (FooterHeight > 75) {
+                SetFooterHeight = '118px';
+            } else if (FooterHeight > 55) {
+                SetFooterHeight = '103px';
+            } else if (FooterHeight > 40) {
+                SetFooterHeight = '90px';
+            }
+
+            $('.footer').css('height', SetFooterHeight);
+            $('.footer-space').css('height', SetFooterHeight);
+        }
+
+        $(document).ready(function () {
+
+            DynamicChangeHeight();
+
+            setTimeout(function () {
+                window.print();
+            }, 500);
+
+            // Print done close window.
+            window.addEventListener('afterprint', function () {
+                setTimeout(function () { window.close(); }, 10);
+            });
+        });
+    </script>
+}

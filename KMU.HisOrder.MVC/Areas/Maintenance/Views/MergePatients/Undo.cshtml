@@ -1,0 +1,82 @@
+﻿
+@model IEnumerable<KMU.HisOrder.MVC.Models.KMU_MergeHistory>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row d-flex justify-content-center">
+    <div class="col-11">
+    <div class="col-8 shadow-sm mt-4 bg-white p-3 d-flex justify-content-between align-items-center">
+            <a class="btn btn-secondary btn-sm" asp-controller="MergePatients" asp-action="ChartMerged">Back</a>
+        <p>Undo Merged Patient</p>
+    </div>
+    <div class="col-8 shadow-sm card rounded my-2">
+        <table class="table table-striped" id="undotbl">
+            <thead>
+                <tr>
+                    <th>Inhospital ID</th>
+                    <th>Chart Health ID</th>
+                    <th>Merged Health ID</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                <tr  class="text-right bg-white">
+                    <td></td>
+                    <td></td>
+                   <td class="text-right"> <a id="undobtn" class="btn btn-sm btn-success undo"><i class="fa fa-undo"></i> Undo</a></td>
+                </tr>
+                @foreach (var item in Model)
+                {
+
+                 <tr id="maintr">
+                    <td>@item.InhospId</td>
+                    <td id="chr_Id">@item.chr_halth_id</td>
+                    <td id="mh_Id">@item.mh_health_id</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    </div>
+</div>
+<script src="~/lib/jquery1.min.js"></script>
+
+<script>
+    $("#undobtn").on("click", function(){
+        var chr_Id = $("#chr_Id").text();
+        var mh_Id = $("#mh_Id").text();     
+        var arr = [];
+        $("#undotbl tbody #maintr").each(function(row, tr){
+            var inhospid = $(tr).find('td:eq(0)').text();
+            arr.push(inhospid)
+        })//table each end
+        if(chr_Id == "" || mh_Id == "" || arr.length < 1){
+            layer.msg("Please Select Patient");
+        }
+        else{
+
+      $.ajax({
+          type:"post",
+            url: "/Maintenance/MergePatients/Save",
+            data:{
+                inhospitalIdList:arr,
+                chr_id:chr_Id,
+                mh_id:mh_Id
+            },
+            success:function(response){
+                console.log(response);
+                layer.msg('Undo Merged Patient Success', { time: 2200, icon: 1 });
+
+                $("tbody").remove();
+               
+            }
+      })//ajax end
+
+      //window.open("/Maintenance/MergePatients/ChartMerged");
+      }//end else
+
+    });//on click end
+</script>

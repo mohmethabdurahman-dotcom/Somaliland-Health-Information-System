@@ -1,0 +1,114 @@
+﻿@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+	html {
+		font-size: 15px;
+	}
+
+	h1 {
+		font-size: 1.8rem;
+	}
+
+	table {
+		font-size: 1rem;
+		min-width: 40vw;
+	}
+
+	label {
+		background-color: inherit !important;
+		font-weight: bold !important;
+		border: 0px !important;
+		white-space: nowrap !important;
+	}
+
+	input {
+		/*font-weight: bold !important;*/
+		text-align: center;
+		border-radius: 50rem !important;
+	}
+</style>
+
+@if( TempData["Show_User_Messages"] != null)
+{
+	<table align="center">
+		<tr>
+			<td>
+				<h2>
+					<center>
+						<div class="alert alert-primary" role="alert">
+						@TempData["Show_User_Messages"]
+						</div>
+					</center>
+				</h2>
+			</td>
+		</tr>
+	</table>
+}
+
+<form method="post" asp-area="" asp-controller="Login" asp-action="DoChangeMobilePhone">
+<table align="center">
+	<tr>
+		<td>
+			<h1 class="text-center"><i class="fa-solid fa-phone"></i> Change Your Mobile Phone</h1><hr class="mb-4"></hr>
+			
+			<div class="form-group row mx-0">
+					<label class="form-control col-lg-2 border-0 font-weight-bold px-0 float-left" style="background-color:inherit"><font color="red">*</font>Mobile Phone:</label>
+            <div class="col-lg-10 px-0">
+                <div class="form-group row mx-0">
+                    <select name="CountryPhone" id="Select_NationalPhone" class="form-control col-lg-6 font-weight-bold text-center text-danger" onchange="fn_SetAreaPhone()">
+						<option value="">Select Country Calling Codes</option>
+						@foreach (var national in ViewData["NationPhoneList"] as List<KmuCoderef>)
+                        {
+							if (ViewData["Phone_Country"] as string == national.RefDefaultFlag)
+                            {
+								<option value="@national.RefDefaultFlag" selected>@national.RefName (@national.RefDefaultFlag)</option>                                
+                            }
+                            else
+                            {
+								<option value="@national.RefDefaultFlag" >@national.RefName (@national.RefDefaultFlag)</option>
+                            }
+                        }
+                        @*<option value="Add">Add More+</option>*@
+                    </select>
+					<input type="text" name="AreaPhone" id="Txt_AreaPhone" class="form-control col-lg-2 rounded font-weight-bold text-center" value="@ViewData["Phone_Area"]" placeholder="Type Area Phone Code" onchange="PhoneNumber_Only_Integer(this)" />
+                    <input type="text" name="MobilePhone" id="Txt_Phone" class="form-control col-lg-4 rounded font-weight-bold text-center" value="@ViewData["Phone_MobilePhone"]" placeholder="Type Phone Number" required="" minlength="@ViewBag.MobilePhoneNumberminlength" onchange="PhoneNumber_Only_Integer(this)" pattern=".{@ViewBag.MobilePhoneNumberminlength,}" />
+                </div>
+            </div>
+        </div>
+
+@*
+			<div class="form-group row mx-0 mb-1">
+					<label class="form-control col-lg-5 px-0"><font color="red">*</font>Phone Number:</label>
+					<input type="password" name="MobilePhone" class="form-control col-lg-7" placeholder="Phone Number" required="" />
+			</div>
+	
+			<div class="form-group row mx-0 mb-1">
+					<label class="form-control col-lg-5 px-0"><font color="red">*</font>New Phone Number:</label>
+					<input type="password" name="NewMobilePhone" class="form-control col-lg-7" placeholder="New Phone Number" required="" minlength="@ViewBag.MobilePhoneNumberminlength" />
+			</div>
+	
+			<div class="form-group row mx-0 mb-1">
+					<label class="form-control col-lg-5 px-0"><font color="red">*</font>New Phone Number Again:</label>
+					<input type="password" name="NewMobilePhone2" class="form-control col-lg-7" placeholder="New Phone Number Again" required="" minlength="@ViewBag.MobilePhoneNumberminlength"/>
+			</div>
+*@	
+			
+
+			<div class="form-group row mx-0 mb-1">
+				<span class="col-lg-5 px-0"></span>
+				<button type="submit" class="btn btn-primary col-lg-7 rounded-pill">Reset Mobile Phone</button>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td class="pt-3">
+			<span class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Notice</span> :
+			<div class="pl-2">
+					New Mobile Phone Number at least @ViewBag.MobilePhoneNumberminlength number<br>The Phone Number will be used as a <span class="text-danger">reset condition when the password is forgotten</span>.
+			</div>
+		</td>
+	</tr>
+</table>
+</form>

@@ -1,0 +1,52 @@
+﻿@model KMU.HisOrder.MVC.Models.Bed
+@using Microsoft.EntityFrameworkCore;
+@inject KMU.HisOrder.MVC.Models.KMUContext _Context
+@{
+    ViewBag.Title = "Create Bed";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var wards = _Context.Wards.OrderBy(w => w.wardName).ToList();
+}
+
+<div class="px-3 text-center">
+    <h3 class="my-4">Create New Bed</h3>
+</div>
+<hr />
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <form asp-controller="Bed" asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
+
+            <div class="form-group">
+                <label for="wardId" class="control-label">Ward</label>
+                <select asp-for="wardId" class="form-control">
+                    <option disabled selected>--Select Ward--</option>
+                    @foreach (var ward in wards)
+                    {
+                        <option value="@ward.wardid">@ward.wardName</option>
+                    }
+                </select>
+                <span asp-validation-for="wardId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="bedName" class="control-label">Bed Name</label>
+                <input asp-for="bedName" class="form-control" placeholder="Enter bed name" />
+                <span asp-validation-for="bedName" class="text-danger"></span>
+            </div>
+
+           
+
+            <div class="row justify-content-between">
+                <div class="col-6">
+                    <a class="btn btn-danger" asp-action="Index">Back to List</a>
+                </div>
+                <div class="col-6">
+                    <input type="submit" value="Create" class="btn btn-primary form-control" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+

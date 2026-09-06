@@ -1,0 +1,194 @@
+@model RequestQueueViewModel
+@using KMU.HisOrder.MVC.Models.BloodBank
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Blood Bank → Dr Requests";
+    var pid = Model.PatientIdFilter;
+    var phone = Model.PhoneFilter;
+    var bt = Model.BloodTypeFilter;
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell bb-dr-requests-page">
+    <header class="bb-dr-requests-hero">
+        <div class="bb-dr-requests-hero__row">
+            <h6 class="direction mb-0"><i class="fa-solid fa-user-doctor"></i> @ViewData["Title"]</h6>
+            <a asp-action="Create" class="bb-btn bb-btn-primary bb-btn-sm">
+                <i class="fa-solid fa-plus"></i> New request
+            </a>
+        </div>
+    </header>
+
+    @if (TempData["Success"] != null) { <div data-bb-toast data-bb-toast-type="success" class="bb-sr-only">@TempData["Success"]</div> }
+
+    <div class="bb-dr-toolbar mx-2">
+        @* ── Find patient (GET form works even if JS fails) ── *@
+        <section class="bb-dr-find-panel" aria-label="Find patient">
+            <div class="bb-dr-find-panel__title">
+                <span class="bb-dr-find-panel__icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <div>
+                    <h2 class="bb-dr-find-panel__heading">Find patient</h2>
+                    <p class="bb-dr-find-panel__hint">Search by patient ID, mobile, or blood type — then press Find</p>
+                </div>
+            </div>
+            <form method="get" asp-area="BloodBank" asp-controller="Requests" asp-action="Index" class="bb-dr-find-panel__row" id="bbReqFindForm">
+                @if (!string.IsNullOrWhiteSpace(Model.StatusFilter))
+                {
+                    <input type="hidden" name="status" value="@Model.StatusFilter" />
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.UrgencyFilter))
+                {
+                    <input type="hidden" name="urgencyFilter" value="@Model.UrgencyFilter" />
+                }
+                <label class="bb-dr-field bb-dr-field--id">
+                    <span class="bb-dr-field__label"><i class="fa-solid fa-id-card"></i> Patient ID</span>
+                    <input type="text" id="bbReq_Txt_PatientID" name="patientIdFilter" class="bb-dr-field__input bb-mono"
+                           value="@Model.PatientIdFilter" placeholder="Chart / health ID" autocomplete="off" />
+                </label>
+                <label class="bb-dr-field bb-dr-field--phone">
+                    <span class="bb-dr-field__label"><i class="fa-solid fa-mobile-screen"></i> Mobile phone</span>
+                    <input type="text" id="bbReq_Txt_MobilePhone" name="phoneFilter" class="bb-dr-field__input bb-mono"
+                           value="@Model.PhoneFilter" placeholder="e.g. 0612345678" autocomplete="off" />
+                </label>
+                <label class="bb-dr-field bb-dr-field--blood">
+                    <span class="bb-dr-field__label"><i class="fa-solid fa-droplet"></i> Blood type</span>
+                    <select id="bbReq_Txt_BloodType" name="bloodTypeFilter" class="bb-dr-field__input bb-dr-field__select">
+                        <option value="">All</option>
+                        @foreach (var bloodType in BloodBankLookups.BloodTypes)
+                        {
+                            if (Model.BloodTypeFilter == bloodType)
+                            {
+                                <option value="@bloodType" selected="selected">@bloodType</option>
+                            }
+                            else
+                            {
+                                <option value="@bloodType">@bloodType</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <button type="submit" class="bb-dr-find-btn" id="bbReq_btnPatientSearch">
+                    <i class="fa-solid fa-search"></i> Find
+                </button>
+            </form>
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(Model.PatientIdFilter) || !string.IsNullOrWhiteSpace(Model.PhoneFilter) || !string.IsNullOrWhiteSpace(Model.BloodTypeFilter))
+        {
+            <div class="bb-dr-active-filter">
+                <span class="bb-dr-active-filter__label"><i class="fa-solid fa-filter"></i> Active filter</span>
+                @if (!string.IsNullOrWhiteSpace(Model.PatientIdFilter))
+                {
+                    <span class="bb-dr-chip bb-dr-chip--id">@Model.PatientIdFilter</span>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.PhoneFilter))
+                {
+                    <span class="bb-dr-chip bb-dr-chip--phone"><i class="fa-solid fa-mobile-screen"></i> @Model.PhoneFilter</span>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.BloodTypeFilter))
+                {
+                    <span class="bb-dr-chip bb-dr-chip--id"><i class="fa-solid fa-droplet"></i> @Model.BloodTypeFilter</span>
+                }
+                <a href="@Url.Action("Index")" class="bb-dr-chip bb-dr-chip--clear">Clear all</a>
+            </div>
+        }
+
+        @* ── KPI summary (click to filter status) ── *@
+        <div class="bb-dr-kpi-grid">
+            <a href="@Url.Action("Index", new { status = RequestStatuses.Pending, patientIdFilter = pid, phoneFilter = phone, bloodTypeFilter = bt })"
+               class="bb-dr-kpi bb-dr-kpi--pending @(Model.StatusFilter == RequestStatuses.Pending ? "is-active" : "")">
+                <i class="fa-solid fa-hourglass-half bb-dr-kpi__watermark"></i>
+                <span class="bb-dr-kpi__value">@ViewBag.PendingCount</span>
+                <span class="bb-dr-kpi__label">Pending</span>
+                <span class="bb-dr-kpi__hint">Awaiting</span>
+            </a>
+            <a href="@Url.Action("Index", new { status = RequestStatuses.Fulfilled, patientIdFilter = pid, phoneFilter = phone, bloodTypeFilter = bt })"
+               class="bb-dr-kpi bb-dr-kpi--fulfilled @(Model.StatusFilter == RequestStatuses.Fulfilled ? "is-active" : "")">
+                <i class="fa-solid fa-circle-check bb-dr-kpi__watermark"></i>
+                <span class="bb-dr-kpi__value">@ViewBag.FulfilledCount</span>
+                <span class="bb-dr-kpi__label">Fulfilled</span>
+                <span class="bb-dr-kpi__hint">Completed</span>
+            </a>
+            <a href="@Url.Action("Index", new { status = RequestStatuses.Rejected, patientIdFilter = pid, phoneFilter = phone, bloodTypeFilter = bt })"
+               class="bb-dr-kpi bb-dr-kpi--rejected @(Model.StatusFilter == RequestStatuses.Rejected ? "is-active" : "")">
+                <i class="fa-solid fa-ban bb-dr-kpi__watermark"></i>
+                <span class="bb-dr-kpi__value">@ViewBag.RejectedCount</span>
+                <span class="bb-dr-kpi__label">Rejected</span>
+                <span class="bb-dr-kpi__hint">Declined</span>
+            </a>
+            <a href="@Url.Action("Index", new { status = RequestStatuses.Pending, urgencyFilter = UrgencyLevels.Emergency, patientIdFilter = pid, phoneFilter = phone, bloodTypeFilter = bt })"
+               class="bb-dr-kpi bb-dr-kpi--emergency @(Model.UrgencyFilter == UrgencyLevels.Emergency ? "is-active" : "")">
+                <i class="fa-solid fa-truck-medical bb-dr-kpi__watermark"></i>
+                <span class="bb-dr-kpi__value">@ViewBag.EmergencyCount</span>
+                <span class="bb-dr-kpi__label">Emergency</span>
+                <span class="bb-dr-kpi__hint">Critical pending</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="bb-dr-requests-list mx-2">
+    @foreach (var r in Model.Requests) {
+        var urgClass = r.UrgencyLevel == UrgencyLevels.Emergency ? "emergency" : r.UrgencyLevel == UrgencyLevels.Urgent ? "urgent" : "routine";
+        var badgeClass = r.UrgencyLevel == UrgencyLevels.Emergency ? "bb-badge-emergency" : r.UrgencyLevel == UrgencyLevels.Urgent ? "bb-badge-urgent" : "bb-badge-routine";
+        var statusBadge = r.Status == RequestStatuses.Fulfilled ? "bb-badge-fulfilled" : r.Status == RequestStatuses.Rejected ? "bb-badge-rejected" : "bb-badge-pending";
+        <div class="bb-card bb-request-card bb-request-card--color @urgClass">
+            <div class="bb-request-card__ribbon @urgClass" aria-hidden="true"></div>
+            <div class="bb-card__body">
+                <div class="bb-request-card__top">
+                    <div>
+                        <span class="bb-dr-request-id bb-mono">Dr Request #@r.RequestId</span>
+                        <p class="bb-request-card__patient">@r.PatientName</p>
+                        <span class="bb-request-card__id bb-mono">Patient @r.PatientId</span>
+                    </div>
+                    <span class="bb-badge @badgeClass">@r.UrgencyLevel</span>
+                </div>
+                <div class="bb-request-card__mid">
+                    <span class="bb-badge bb-badge-blood">@r.BloodType</span>
+                    <span class="bb-request-card__chip bb-request-card__chip--color">@r.ComponentType</span>
+                    <span class="bb-request-card__chip bb-request-card__chip--color">@r.UnitsRequested unit@(r.UnitsRequested == 1 ? "" : "s")</span>
+                    @if (r.Orderplanid.HasValue) { <span class="bb-request-card__chip bb-mono bb-request-card__chip--his">Order #@r.Orderplanid</span> }
+                </div>
+                <div class="bb-request-card__bottom">
+                    <span><i class="fa-solid fa-user-doctor"></i> Dr. @r.RequestingDoctorName · @(r.Ward ?? "—")</span>
+                    <span><i class="fa-regular fa-clock"></i> @r.RequestDateTime.ToString("dd/MM/yyyy HH:mm")</span>
+                    <span class="bb-badge @statusBadge">@r.Status</span>
+                    <div class="bb-request-card__actions">
+                        @if (r.Status == RequestStatuses.Pending) {
+                            <a asp-action="Details" asp-route-id="@r.RequestId" class="bb-btn bb-btn-ghost bb-btn-sm">View</a>
+                            <a asp-action="Dispense" asp-route-id="@r.RequestId" class="bb-btn bb-btn-success bb-btn-sm">Dispense <i class="fa-solid fa-arrow-right"></i></a>
+                            <button type="button" class="bb-btn bb-btn-ghost bb-btn-sm" data-bb-reject-toggle>Reject</button>
+                            <form asp-action="Reject" method="post" class="bb-reject-expand" onsubmit="return confirm('Reject this request?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@r.RequestId" />
+                                <input type="text" name="reason" class="form-control" placeholder="Reject reason" required />
+                                <button type="submit" class="bb-btn bb-btn-danger bb-btn-sm">Confirm Reject</button>
+                            </form>
+                        } else {
+                            <a asp-action="Details" asp-route-id="@r.RequestId" class="bb-btn bb-btn-ghost bb-btn-sm">View</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+    @if (!Model.Requests.Any()) {
+        <div class="bb-empty-state mx-2">
+            <i class="fa-solid fa-inbox"></i>
+            @if (!string.IsNullOrWhiteSpace(Model.PatientIdFilter) || !string.IsNullOrWhiteSpace(Model.PhoneFilter) || !string.IsNullOrWhiteSpace(Model.BloodTypeFilter))
+            {
+                <p>No Dr requests match your Find filters.</p>
+                <a href="@Url.Action("Index")" class="bb-btn bb-btn-ghost bb-mt-2">Show all requests</a>
+            }
+            else
+            {
+                <p>No Dr requests match your filters.</p>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+    <partial name="~/Areas/BloodBank/Views/Requests/_RequestsFindPatientScripts.cshtml" />
+}

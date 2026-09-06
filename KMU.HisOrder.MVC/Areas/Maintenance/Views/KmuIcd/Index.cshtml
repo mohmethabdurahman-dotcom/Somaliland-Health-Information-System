@@ -1,0 +1,120 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.KmuIcd>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "ICD";
+}
+
+<link href="~/css/style.css" rel="stylesheet" />
+<h4>&nbsp;&nbsp;&nbsp;ICD10</h4>
+<div class="row" style="margin:0px;">
+    <div class="col-md-9">
+        <div style=" display:inline-block; padding-right:35px; margin-right:30px;">
+            <label style="font-weight:bold; display:inline-block;">ICD10</label>
+            <select id="IcdCode" name="IcdCode" class="form-control font-weight-bold" style="margin:0px 10px; width:120px; display:inline-block;">
+                <option value="A">A</option>
+                <option value="B,C,D">B~D</option>
+                <option value="E,F,G">E~G</option>
+                <option value="H">H</option>
+                <option value="I,J,K,L">I~L</option>
+                <option value="M0,M1,M2,M3">M0~M3</option>
+                <option value="M4,M5,M6,M7">M4~M7</option>
+                <option value="M8,M9">M8~M9</option>
+                <option value="N,O,P,Q,R">N~R</option>
+                <option value="S0">S0</option>
+                <option value="S1">S1</option>
+                <option value="S2">S2</option>
+                <option value="S3">S3</option>
+                <option value="S4">S4</option>
+                <option value="S5">S5</option>
+                <option value="S6">S6</option>
+                <option value="S7">S7</option>
+                <option value="S8">S8</option>
+                <option value="S9">S9</option>
+                <option value="T0,T2">T0~T2</option>
+                <option value="T3,T4">T3~T4</option>
+                <option value="T5,T6">T5~T6</option>
+                <option value="T7,T8">T7~T8</option>
+                <option value="U">U</option>
+                <option value="V">V</option>
+                <option value="W,X">W~X</option>
+                <option value="Y">Y</option>
+                <option value="Z">Z</option>
+            </select>
+            <label style="font-weight:bold; display:inline-block;">Name</label>
+            <input type="text" id="IcdName" name="EnglishName" class="form-control rounded" style="margin-left:10px; width:250px; display:inline-block;" />
+            <button type="button" id="IcdSearchBtn" name="btn_Search" class="btn btn-primary" style="margin-left:10px; display:inline-block;" onclick="fn_IcdSearch()">Search</button>
+        </div>
+    </div>
+    <div class="col-md-3" style="text-align:right;">
+        <a asp-action="Create" class="btn btn-info">Create New</a>
+    </div>
+</div>
+
+
+<div id="IcdDetailContain" style="0px 10px">
+    @Html.Partial("Search", Model)
+</div>
+
+<span id="loading" style="display:none;"><h4>loading...</h4></span>
+
+@section scripts{
+    <script>
+        function fn_IcdSearch() {
+            $('#IcdDetailContain').empty().html($('#loading').html());
+
+            let postData = {
+                IcdCode: $('#IcdCode').val(),
+                EnglishName: $('#IcdName').val(),
+            };
+
+            $.post('@Url.Action("Search", "KmuIcd")', postData, function (html) {
+                $('#IcdDetailContain').html(html);
+
+                $('#IcdSearchTable').DataTable({
+                    "searching": false,
+                    "ordering": false,
+                    "lengthChange": false,
+                });
+            });
+        }
+
+        function fn_Status(inIcdCode) {
+            var checked = $('input[name="' + inIcdCode + '"]').is(':checked')
+
+            let postData = {
+                inIcdCode: inIcdCode
+            };
+
+            $.post('@Url.Action("UpdateStatus", "KmuIcd")', postData, null);
+        }
+
+        $(document).ready(function () {
+
+            $('#IcdSearchTable').DataTable({
+                "searching": false,
+                "ordering": false,
+                "lengthChange": false,
+            });
+
+            $("#IcdName").keypress(function (e) {
+                var key = window.event ? e.keyCode : e.which;
+                if (key == 13) { // Enter
+                    fn_IcdSearch();
+                }
+            });
+        })
+    </script>
+}
+
+    @*<style>
+    $('.openBtn').on('click',function(){
+        $('.modal-body').load('getContent.php?id=2',function(){
+            $('#myModal').modal({show:true});
+        });});
+</style>*@
+
+
+
+
+
+

@@ -1,0 +1,60 @@
+﻿@model KMU.HisOrder.MVC.Models.KmuMedfrequency
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Delete";
+}
+<link href="~/css/style.css" rel="stylesheet" />
+
+<style>
+    .MedfreqInfo {
+        display: block;
+        margin: 15px;
+        border: 1;
+        border-bottom: 1px solid;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-6">
+        <div style="padding:10px;">
+            <h4>Are you sure you want to delete this Medicine Frequency?</h4>
+            <hr />
+            <div class="MedfreqInfo">
+                <b>Code</b>：@Html.DisplayFor(model => model.FrqCode)
+            </div>
+            <div class="MedfreqInfo">
+                <b>Desc</b>：@Html.DisplayFor(model => model.FreqDesc)
+            </div>
+            <div class="MedfreqInfo">
+                <b>For Days</b>：@Html.DisplayFor(model => model.FrqForDays)
+            </div>
+            <div class="MedfreqInfo">
+                <b>For Times</b>：@Html.DisplayFor(model => model.FrqForTimes)
+            </div>
+            <div class="MedfreqInfo">
+                <b>One Day Times</b>：@Html.DisplayFor(model => model.FrqOneDayTimes)
+            </div>
+            <div class="MedfreqInfo">
+                <b>Off/On</b>：
+                @if (Model.EnableStatus == '1')
+                {
+                    <span>True</span>
+                }
+                else if (Model.EnableStatus == '2')
+                {
+                    <span>False</span>
+                }
+            </div>
+            <div class="MedfreqInfo">
+                <b>Sequence</b>：@Html.DisplayFor(model => model.FrqSeqNo)
+            </div>
+            <div style="margin:15px;">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="FrqCode" />
+                    <input type="submit" value="Delete" class="btn btn-danger" style="width:140px; margin-right:10px;" />
+                    <a class="btn btn-default" asp-action="Index" style="width:140px; float:right;">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

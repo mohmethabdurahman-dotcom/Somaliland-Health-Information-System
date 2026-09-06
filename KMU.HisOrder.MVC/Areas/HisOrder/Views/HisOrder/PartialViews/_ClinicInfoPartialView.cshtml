@@ -1,0 +1,231 @@
+﻿@using KMU.HisOrder.MVC.Areas.HisOrder.Models;
+@using KMU.HisOrder.MVC.Areas.HisOrder.Controllers;
+@using Microsoft.AspNetCore.Http;
+@using KMU.HisOrder.MVC.Extesion;
+@inject KMU.HisOrder.MVC.Models.KMUContext _context;
+
+@model PatientDTO
+
+@{
+    bool showClinic = true;
+    bool showPrint = false;
+
+    if (ViewData["ShowClinic"] != null)
+    {
+        showClinic = (bool)ViewData["ShowClinic"];
+    }
+    if (ViewData["ShowPrint"] != null)
+    {
+        showPrint = (bool)ViewData["ShowPrint"];
+    }
+    var visitStatus = "";
+    var visitColor = "";
+    var showSaveBtn = true;
+    var fullSexDes = "unknown";
+    switch (Model.RegStatus)
+    {
+        case "N":
+
+            visitStatus = "Waiting";
+            visitColor = "badge-outline-primary";
+            break;
+        case "T":
+            visitStatus = "Examining";
+            visitColor = "badge-outline-gray";
+            break;
+        case "*":
+            showSaveBtn = false;
+            visitStatus = "Finished";
+            visitColor = "badge-outline-success";
+            break;
+    }
+
+    var clinicDto = Context.Session.GetObject<ClinicDTO>("ClinicDTO");
+    var birthday = Model.BirthDate == null ? "" : Convert.ToDateTime(Model.BirthDate).ToString("dd/MM/yyyy");
+
+
+
+    var get_user_auth_cookie = Context.User.Claims.ToList();
+    var get_session = Context.Session.GetObject<KMU.HisOrder.MVC.Areas.HisOrder.Models.LoginDTO>("LoginDTO");
+    var get_user_id = get_session.EMPCODE;
+
+    var userCategory = _context.KmuUsers.SingleOrDefault(e => e.UserIdno == get_user_id).UserCategory;
+}
+
+
+
+
+<div class=" row align-items-center justify-content-between">
+    <!--left info-->
+    <div>
+        <!-- Bg -->
+        <div class="d-flex align-items-center justify-content-between ">
+            <div class="d-flex align-items-center">
+                <div class="mr-1 position-relative d-flex justify-content-end align-items-end">
+                    <img src="~/images/avatar.png"
+                    class="avatar-xl rounded-circle border-width-4 border-white"
+                    alt=""
+                    style="width: 66px; height:66px;" />
+
+                </div>
+                <div class="ml-2">
+                    <div class="mt-2 d-block">
+                        <h5 class="d-inline-block"><strong>@Model.FirstName @Model.MidName @Model.LastName</strong></h5>
+                        <div class="d-inline-block  ml-2 ">
+                            <label class="badge rounded-pill badge-danger" hidden>@Model.Inhospid</label>
+                            <label class="badge rounded-pill badge-warning "><i class="fa far fa-star"></i></label>
+                        </div>
+                    </div>
+
+                    <div class="text-dark ">
+                        @{
+                            if (clinicDto != null && showClinic == true)
+                            {
+                                if (clinicDto.InhospType == "OPD")
+                                {
+                                    <label class="badge rounded-pill badge-outline-primary  ">@clinicDto.RegDate.ToString("dd/MM/yyyy") @clinicDto.DeptName </label>
+                                    <label class="badge rounded-pill badge-outline-primary  ">No.@Model.RegSeqNo</label>
+                                }
+                                else if (clinicDto.InhospType == "EMG")
+                                {
+                                    <label class="badge rounded-pill badge-outline-danger  ">@clinicDto.RegDate.ToString("dd/MM/yyyy") @clinicDto.DeptName </label>
+                                    <label class="badge rounded-pill badge-outline-danger  ">No.@Model.RegSeqNo</label>
+                                }
+                                else
+                                {
+                                    <label class="badge rounded-pill badge-outline-primary  ">@clinicDto.RegDate.ToString("dd/MM/yyyy") @clinicDto.DeptName </label>
+                                    <label class="badge rounded-pill badge-outline-primary  ">BedNo.@Model.bed</label>
+                                }
+
+                                <label class="badge rounded-pill @visitColor mr-2 ">@visitStatus</label>
+                            }
+                        }
+
+
+                        <h6 class="d-inline-block mr-3 pt-bl-color">
+                            <a href="#" title="Patient ID">
+                                <i class="fa-solid fa-id-card mr-2 text-primary"
+                                   data-toggle="tooltip"
+                                   data-placement="right"
+                                   data-original-title="patient id"></i>
+                            </a>@Model.RegPatientId
+                        </h6>
+                        <h6 class="d-inline-block mr-3 ">
+                            <a href="#" title="Birthday / Age">
+                                <i class="fa-solid fa-b mr-2 text-primary"
+                                   data-toggle="tooltip"
+                                   data-placement="right"
+                                   data-original-title="patient id"></i>
+                            </a>@birthday (@Model.Age.AgeFormat())
+                        </h6>
+                        <h6 class="d-inline-block mr-3">
+                            <a href="#" title="Sex">
+                                <i class="fa-solid  fas fa-venus-mars mr-2 text-primary"
+                                   data-toggle="tooltip"
+                                   data-placement="right"
+                                   data-original-title="patient id"></i>
+                            </a>
+                            @{
+
+                                if (Model.Sex == "M")
+                                {
+                                    fullSexDes = "Male";
+                                }
+                                else if (Model.Sex == "F")
+                                {
+                                    fullSexDes = "Female";
+                                }
+
+                            }
+                            @fullSexDes
+                        </h6>
+                        <h6 class="d-inline-block mr-2 ">
+                            <a href="#" title="Mobile">
+                                <i class="fa fa-phone mr-2 text-primary"
+                                   data-toggle="tooltip"
+                                   data-placement="right"
+                                   data-original-title="patient id"></i>
+                            </a>@Model.MobilePhone
+                        </h6>
+                        <h6 class="d-inline-block mr-2 pt-br-color">
+                            <a href="#" title="Address">
+                                <i class="fa far fas fa-location-dot mr-2 text-primary"
+                                   data-toggle="tooltip"
+                                   data-placement="right"
+                                   data-original-title="address"></i>
+                            </a>@Model.Address
+                        </h6>
+                    </div>
+                    <!-- <div class="mb-1 mt-2 text-dark d-flex-item-icon">
+                      <a><i class="fa fa-bullhorn radius-30-icon"></i></a>
+                      <a><i class="fa fa-circle radius-30-icon"></i></a>
+                      <a><i class="fa fa-circle radius-30-icon"></i></a>
+                      <a><i class="fa fa-circle radius-30-icon"></i></a>
+                      <a><i class="fa fa-circle radius-30-icon"></i></a>
+                      <a><i class="fa fa-circle radius-30-icon"></i></a>
+                      <a><i class="fa fa-circle radius-30-icon"></i></a>
+                      <a><i class="fa fa-circle radius-30-icon"></i></a>
+                    </div> -->
+                </div>
+                <div class=""></div>
+                <div class=""></div>
+            </div>
+        </div>
+
+    </div>
+
+    @{
+        if (showPrint == true && userCategory == "1")
+        {
+            <div class="d-flex align-items-center justify-content-between mt-4 mr-2">
+                <button id="RePrintBtn" class="btn btn-sm rounded-pill-7px btn-warning" style="width:100px
+    ">
+                    <i class="fa fas fa-print" style="font-size:20px;"></i> Print
+                </button>
+            </div>
+        }
+    }
+    <!--right info-->
+    @*<div>*@
+    <!--<div class="d-flex align-items-center justify-content-between mt-3">-->
+    @*<div class="d-flex align-items-center justify-content-between mt-2">*@
+    <!--<h6 class="d-inline-block mr-2">
+        <a href="#" title="Clinic Info">
+            <i class="fa-solid fas fa-info-circle mr-2 text-gray"
+               data-toggle="tooltip"
+               data-placement="right"
+               data-original-title="patient id"></i>
+        </a>
+    </h6>
+    <h6 class="d-inline-block mr-2">  </h6>-->
+    @*<p class="d-inline-block mr-2"> Ron-gjie Liu Jr (1050325) </p>*@
+
+    <!--</div>-->
+    @*<div class="d-flex align-items-center justify-content-end mt-0 mb-1">
+
+    <button type="button" class="cancel-btn btn btn-danger mr-3">
+    <i class="fa fa-sign-out"></i> Exit
+    </button>
+
+    <button type="button" class="completed-btn btn  btn-success  mr-3">
+    <i class="fa fa-save"></i> Completed
+    </button>
+
+
+    @{ if (showSaveBtn == true)
+    {
+    <button type="button" class="save-btn btn  btn-dark  mr-3">
+    <i class="fa fa-save"></i> Save
+    </button>
+    }
+    else
+    {
+    <button type="button" class="save-btn btn  btn-dark  mr-3 hidden" disabled="disabled">
+    <i class="fa fa-save"></i> Save
+    </button>
+    }
+    }
+
+    </div>*@
+    @*</div>*@
+</div>

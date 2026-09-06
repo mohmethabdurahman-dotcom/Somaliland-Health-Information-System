@@ -1,0 +1,389 @@
+﻿@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+<!-- Style -->
+<link href="~/css/style.css" rel="stylesheet" />
+<style>
+    input[type="checkbox"] {
+        transform: scale(1.5);
+    }
+
+    form-check-inline {
+        display: -ms-inline-flexbox;
+        display: inline-flex;
+        -ms-flex-align: center;
+        align-items: center;
+        padding-left: 0;
+        margin-right: 0.75rem;
+        padding-top: 10px;
+    }
+
+    .form-check-inline .form-check-input {
+        position: static;
+        margin-top: 10;
+        margin-right: 0.65rem;
+        margin-left: 0;
+    }
+
+    table.dataTable {
+        margin-top: -1em !important;
+        /**/
+    }
+
+    .card {
+        cursor: pointer;
+        transition: 0.3s;
+        text-align: center;
+    }
+
+    .selected {
+        border: 2px solid #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+
+    .icon {
+        font-size: 40px;
+    }
+</style>
+
+<div style="height: calc(100% - 100px)">
+    <div class="row page-titles mx-0 ">
+        <div class="col-sm-6 p-md-0">
+            <div class="welcome-text">
+                <h4 id="pageTitle">Welcome to pediatric ward</h4>
+                <span class="ml-1 mr-2">Patient List</span>
+
+                @* @{ *@
+                @*     if (_clinicDto != null) *@
+                @*     { *@
+                @*         if (@_clinicDto.InhospType == "OPD") *@
+                @*         { *@
+                @*             <label class="badge rounded-pill badge-outline-primary ">@_clinicDto.InhospType</label> *@
+                @*             <label class="badge rounded-pill badge-outline-primary ">@_clinicDto.RegDate.ToString("dd/MM/yyyy") @_clinicDto.DeptName </label> *@
+                @*             @*<label class="badge rounded-pill badge-outline-gray ">Room No.@_clinicDto.RoomNumber</label>*@ 
+                @*             <label class="badge rounded-pill badge-outline-gray ">@_clinicDto.DoctorName</label> *@
+                @*         } *@
+                @*         else *@
+                @*         { *@
+                @*             <label class="badge rounded-pill badge-outline-danger ">@_clinicDto.InhospType</label> *@
+                @*             <label class="badge rounded-pill badge-outline-danger ">@_clinicDto.RegDate.ToString("dd/MM/yyyy") @_clinicDto.DeptName </label> *@
+                @*             @*<label class="badge rounded-pill badge-outline-gray ">Room No.@_clinicDto.RoomNumber</label>*@ 
+                @*             <label class="badge rounded-pill badge-outline-gray ">@_clinicDto.DoctorName</label> *@
+                @*         } *@
+                @*     } *@
+
+                @* } *@
+
+            </div>
+        </div>
+        <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex"
+             style="align-items: center">
+            <!-- Button trigger modal -->
+            <button type="button"
+                    class="btn rounded-pill-7px btn-secondary"
+                    data-toggle="modal"
+                    data-target="#wardModal">
+                <i class="fa fa-solid fa-users"></i>
+                Switch Ward
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-2 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa fa-shapes text-info border-info"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">All Patients</div>
+                        <div class="stat-digit"><strong>10</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa fa-circle text-primary border-primary"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">Waiting</div>
+                        <div class="stat-digit"><strong>6</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa fa-square text-success border-success"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">Finished</div>
+                        <div class="stat-digit"><strong>4</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa-solid fa-bed text-primary border-primary"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">All Beds</div>
+                        <div class="stat-digit"><strong>3</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa-solid fa-bed-pulse text-danger border-danger"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">Occupied Beds</div>
+                        <div class="stat-digit"><strong>3</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6 pt-1 pb-0">
+            <div class="card p-2">
+                <div class="stat-widget-one card-body">
+                    <div class="stat-icon d-inline-block">
+                        <i class="fa-solid fa-bed text-success border-secondary"></i>
+                    </div>
+                    <div class="stat-content d-inline-block">
+                        <div class="stat-text">Available Beds</div>
+                        <div class="stat-digit"><strong>6</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card p-2">
+                <div class="card-body">
+                    <table id="patientlist_tb" class="table table-borderless table-hover">
+                        <thead>
+                            <tr>
+                                <!-- <th style="width: 20px"></th> -->
+                                <th style="width: 2%">No.</th>
+                                <!-- call-->
+                                @* @{ *@
+                                @*     if (_clinicDto != null) *@
+                                @*     { *@
+                                @*         <!-- <th style="width: 20px"></th> --> *@
+                                @*         if (@_clinicDto.InhospType == "OPD") *@
+                                @*         { *@
+                                <th style="width: 1%"></th>
+                                @*         } *@
+                                @*     } *@
+                                @* } *@
+                                <!-- lock -->
+                                @* @{ *@
+                                @*     if (Model != null && Model.Where(c => c.canVisit == false).Count() > 0) *@
+                                @*     { *@
+                                <!--lock-->
+                                <th style="width: 1%"></th>
+                                @*     } *@
+                                @* } *@
+                                <th style="width: 5%">Status</th>
+
+
+
+                                <th style="width: 10%">Patient ID</th>
+                                <th style="width: 15%">Patient Name</th>
+                                <th style="width: 10%">Sex</th>
+                                <th style="width: 10%">Age</th>
+                                <th style="width: 10%">Mobile</th>
+                                <th style="width: 10%">Date</th>
+                                <th style="width: 5%" hidden>Other</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @* @foreach (var patient in Model) *@
+                            @* { *@
+                            @* var regdate = _context.Registrations.SingleOrDefault(e => e.Inhospid == patient.Inhospid).RegCreateTime; *@
+
+                            <tr class="clickable-patient" data-inhospid="patient.Inhospid" data-patient-id="patient.RegPatientId" data-visit-status="patient.RegStatus">
+                                <td scope="row">1</td>
+
+
+                                @* @{ *@
+                                @*     if (_clinicDto != null) *@
+                                @*     { *@
+                                @*         if (@_clinicDto.InhospType == "OPD") *@
+                                @*         { *@
+                                <td class="pt-call-btn">
+                                    <span class="btn btn-sm btn-pink rounded-pill-7px">
+                                        <i class="fa-solid fa-volume-high"></i>
+                                    </span>
+                                </td>
+                                @*         } *@
+                                @*     } *@
+                                @* } *@
+                                @* @{ *@
+                                @*     <!--lock--> *@
+                                @*     if (Model != null && Model.Where(c => c.canVisit == false).Count() > 0) *@
+                                @*     { *@
+                                @*         if (patient.canVisit == false) *@
+                                @*         { *@
+                                @* } *@
+                                @* else *@
+                                @* { *@
+                                <td class=" lock-btn"><span class="badge badge-gray rounded-pill-7px"></span></td>
+                                @*         } *@
+                                @*     } *@
+                                @* } *@
+                                <td>
+                                    @* @switch (patient.RegStatus) *@
+                                    @* { *@
+                                    @*     case "N": *@
+                                    <span class="badge badge-primary rounded-pill-7px">Waiting</span>
+                                    @*         break; *@
+                                    @*     case "T": *@
+                                    @*         <span class="badge badge-secondary rounded-pill-7px">Examining</span> *@
+                                    @*         break; *@
+                                    @*     case "O": *@
+                                    @*         <span class="badge rounded-pill-7px" style="background-color:purple;">Observing</span> *@
+                                    @*         break; *@
+                                    @*     case "*": *@
+                                    @*         <span class="badge badge-success rounded-pill-7px">Finished</span> *@
+                                    @*         break; *@
+                                    @*     default: *@
+                                    @*         <span class="badge badge-primary rounded-pill-7px">N/A</span> *@
+                                    @*         break; *@
+                                    @* } *@
+                                </td>
+
+
+
+                                <td>HGH87846655</td>
+                                <td>Somaliland</td>
+                                @* <td>@string.Format("{0} {1} {2}", patient.FirstName, patient.MidName, patient.LastName) </td> *@
+
+                                @* @{ *@
+                                @*     if (patient.Sex == "M") *@
+                                @*     { *@
+                                <td>Male</td>
+                                @*     } *@
+                                @*     else if (patient.Sex == "F") *@
+                                @*     { *@
+                                @*         <td>Female</td> *@
+                                @*     } *@
+                                @*     else *@
+                                @*     { *@
+                                @*         <td>unknown</td> *@
+                                @*     } *@
+                                @* } *@
+
+
+
+                                @* // if (Age != -1) *@
+                                @* // { *@
+                                <td>29</td>
+                                @* // } *@
+                                @* // else *@
+                                @* // { *@
+                                @* //     <td>N/A</td> *@
+                                @* // } *@
+
+
+                                <td>+25263758474</td>
+                                <td>05/05/1995</td>
+
+                                <td hidden>
+                                    <span class="btn btn-sm btn-outline">
+                                        <i class="fa fa-ellipsis"></i>
+                                    </span>
+                                </td>
+                            </tr>
+
+
+                            @* } *@
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal (Ward) -->
+<div class="modal fade" id="wardModal" tabindex="-1" aria-labelledby="wardTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="wardTitle">Select a Pediatric Sub-Ward</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Sub-Ward: Neonatal Care -->
+                    <div class="col-md-4">
+                        <div class="card p-3" onclick="selectCard(this)">
+                            <i class="fas fa-baby icon text-success"></i>
+                            <div class="card-body p-2">
+                                <h5 class="card-title">Neonatal Care</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Sub-Ward: General Pediatrics -->
+                    <div class="col-md-4">
+                        <div class="card p-3" onclick="selectCard(this)">
+                            <i class="fas fa-stethoscope icon text-danger"></i>
+                            <div class="card-body p-2">
+                                <h5 class="card-title">General Pediatrics</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Sub-Ward: Pediatric ICU -->
+                    <div class="col-md-4">
+                        <div class="card p-3" onclick="selectCard(this)">
+                            <i class="fas fa-heartbeat icon text-info"></i>
+                            <div class="card-body p-2">
+                                <h5 class="card-title">Pediatric ICU</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Confirm Selection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+       const params = new URLSearchParams(window.location.search);
+       console.log(params)
+       const ward = params.get("url");// Get value of 'ward'
+       console.log(ward)
+
+
+    document.getElementById("pageTitle").textContent = `Welcome to ${ward} ward`;
+
+     function selectCard(card) {
+        document.querySelectorAll(".card").forEach(c => c.classList.remove('selected'));
+
+        card.classList.add('selected');
+    }
+
+</script>

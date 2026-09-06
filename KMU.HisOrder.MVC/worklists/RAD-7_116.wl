@@ -1,0 +1,23 @@
+{
+  "patientName": "Cabdilahi^Muse^Cumar",
+  "patientID": "HG00491372",
+  "patientBirthDate": "19590207",
+  "patientSex": "M",
+  "patientAge": "067Y",
+  "accessionNumber": "RAD-7-116",
+  "requestedProcedureID": "116",
+  "requestedProcedureDescription": "CT - Nose PNS",
+  "studyInstanceUID": "1.2.826.0.1.3680043.8.498.20260309161939237.116",
+  "modality": "CT Scan",
+  "scheduledStationAETitle": "CT Scan_ROOM_03",
+  "scheduledProcedureStepStartDate": "20260309",
+  "scheduledProcedureStepStartTime": "191938",
+  "scheduledPerformingPhysicianName": "system",
+  "scheduledProcedureStepDescription": "CT - Nose PNS",
+  "scheduledProcedureStepID": "1",
+  "requestedProcedureComments": "",
+  "sourceType": "WALKIN",
+  "ticketNumber": 1,
+  "roomNumber": "03",
+  "status": "SCHEDULED"
+}

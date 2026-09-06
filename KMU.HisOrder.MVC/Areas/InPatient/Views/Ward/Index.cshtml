@@ -1,0 +1,116 @@
+﻿@model List<KMU.HisOrder.MVC.Models.Ward>
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* ======= PAGE STYLING ======= */
+    body {
+        background-color: #f7f9fb;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #e2e8f0;
+        flex-wrap: wrap; /* allows wrapping on small screens */
+        gap: 8px;
+    }
+
+    .page-header h2 {
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-header small {
+        color: #64748b;
+    }
+
+    /* ======= WARD CARD ======= */
+    .ward-card {
+        background: linear-gradient(145deg, #ffffff, #f1f5f9);
+        border-radius: 16px;
+        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.05);
+        padding: 10px 5px;
+        text-align: center;
+        color: #1e293b;
+        font-weight: 500;
+        text-decoration: none;
+        display: block;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .ward-card:hover {
+        transform: translateY(-6px) scale(1.02);
+        background: linear-gradient(135deg, #0066ff, #00b4d8);
+        color: #fff;
+        border: none;
+        box-shadow: 0 8px 18px rgba(0, 123, 255, 0.3);
+    }
+
+    .ward-icon {
+        background-color: #e0f2ff;
+        color: #007bff;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 15px;
+        font-size: 26px;
+        transition: all 0.3s ease;
+    }
+
+    .ward-card:hover .ward-icon {
+        background-color: rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
+
+    .ward-name {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .ward-id {
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+
+    .ward-card:hover .ward-id {
+        color: #e2e8f0;
+    }
+
+  
+
+
+
+   
+</style>
+
+<div class="container m-2">
+
+
+    <div class="row g-4 p-3">
+        @foreach (var ward in Model.Where(w => w.wardid == "WI000" || w.wardid == "WI001"))
+        {
+            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 d-flex">
+                <a href="@Url.Action("Ward", "Ward", new { area = "InPatient", wardId = ward.wardid })" class="ward-card w-100">
+                    <div class="ward-icon">
+                        <i class="fa-solid fa-bed-pulse"></i>
+                    </div>
+                    <div class="ward-name">@ward.wardName</div>
+                    <div class="ward-id">ID: @ward.wardid</div>
+                </a>
+            </div>
+        }
+    </div>
+</div>

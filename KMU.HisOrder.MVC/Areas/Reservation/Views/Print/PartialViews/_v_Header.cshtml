@@ -1,0 +1,74 @@
+﻿@model KMU.HisOrder.MVC.Areas.Reservation.ViewModels.PrintClass
+@using KMU.HisOrder.MVC.Extesion;
+
+<table id="HeaderTable" style="width:50%;">
+    <tr>
+        <td colspan="12" style="text-align: center">
+            <h2 style="font-size: 32px">HARGEISA GROUP HOSPITAL</h2>
+            <h2>REPUBLIC OF SOMALILAND</h2>
+            <h2>Ministry of Health Development</h2>
+        </td>
+        @* <td colspan="3">
+        <div style="text-align:left; margin-bottom: 60px;">
+        <img src="~/images/MoHDLogo.png" style="width: 51%;; position: absolute;" />
+        </div>
+        </td>*@
+    </tr>
+    <tr>
+        <td colspan="3">
+            @*<div style="text-align:center;">
+            <img src="~/images/HospLogo.png" style="width: 35px; position: absolute; margin-left: -170px; margin-top: -5px;" />
+            <h2 style="margin:0 0">@Model.HospName</h2>
+            </div>*@
+            <div style="text-align:center;">
+                <h5 style="margin:0 0; font-size: 20px; margin-top: 15px">Reserve Ticket</h5>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td style="vertical-align:top; width: 30%;">
+            <b style="font-size: 18px; font-weight: bold;">No：</b><span style="font-size: 18px;"><b>@Model.patientInfo.PATIENTID</b></span>
+        </td>
+        <td style="vertical-align:top; width: 21%;">
+            <b style="font-size: 18px">Sex：</b><span style="font-size: 18px">@Model.patientInfo.enumGender.Value.EnumToString()</span>
+        </td>
+        <td style="vertical-align:top; width:24%;">
+            <b style="font-size: 18px">Age：</b><span style="font-size: 18px">@(DateTime.Today.Year - Model.patientInfo.BIRTHDATE.Value.Year) years</span>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" style="vertical-align:top; width:50%;">
+            <b style="font-size: 22px">Name：</b><span style="font-size: 22px">@Model.patientInfo.FIRSTNAME &nbsp;&nbsp; @Model.patientInfo.MIDNAME &nbsp;&nbsp; @Model.patientInfo.LASTNAME</span>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" style="vertical-align:top; width:50%;">
+            <b style="font-size: 22px">Reservation Id：</b><span style="font-size: 22px">@Model.AppointmentSheet.inHospID &nbsp;&nbsp; </span>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <hr style="margin-bottom:0px; border-color:#999;" />
+        </td>
+    </tr>
+</table>
+
+@*<div class="row">
+    <div class="col">
+        <div style="text-align:center;">
+            <h2>@Model.HospName</h2>
+            <h3>@Model.FormTitle</h3>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col" style="vertical-align:top;">
+        <b>ClinicInfo：</b><br />
+        @Model.GlobalVariable.Clinic.RegDate &nbsp;&nbsp;&nbsp; @Model.GlobalVariable.Clinic.DeptName
+    </div>
+    <div class="col" style="vertical-align:top;">
+        <b>PatientInfo：</b><br />
+        Age：@Model.GlobalVariable.Patient.Age &nbsp;&nbsp;&nbsp; ChartNo：@Model.GlobalVariable.Patient.RegPatientId <br />
+        PatientName：@Model.GlobalVariable.Patient.FirstName @Model.GlobalVariable.Patient.MidName @Model.GlobalVariable.Patient.LastName
+    </div>
+</div>*@

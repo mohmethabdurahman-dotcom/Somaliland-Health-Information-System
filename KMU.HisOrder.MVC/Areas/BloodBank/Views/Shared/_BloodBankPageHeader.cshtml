@@ -1,0 +1,14 @@
+@model BloodBankPageHeaderViewModel
+<div>
+    <h3>
+        @if (!string.IsNullOrEmpty(Model.Icon))
+        {
+            <i class="fa-solid @Model.Icon@(Model.IconBlood ? " bb-icon-blood" : "")"></i>
+        }
+        @Model.Title
+    </h3>
+    @if (!string.IsNullOrEmpty(Model.Subtitle))
+    {
+        <p class="bb-page-subtitle">@Model.Subtitle</p>
+    }
+</div>

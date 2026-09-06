@@ -1,0 +1,111 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.Registration>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+@{
+    Layout = null;
+    var inhospital = TempData["inhospital"];
+    var healthId = TempData["healthId"].ToString();
+    var regDate = TempData["regDate"];
+    var NmType = TempData["NmType"].ToString();
+    string[] dptCodes = { "3001", "3002", "6001", "6002", "6003" };
+
+    var get_session = Context.Session.GetObject<KMU.HisOrder.MVC.Areas.HisOrder.Models.LoginDTO>("LoginDTO");
+
+    var allDate = Model.Where(e => e.RegHealthId == healthId && dptCodes.Contains(e.RegDepartment)).ToList();
+    var Ncd1 = "Ncd Department 1";
+    var Ncd2 = "Ncd Department 2";
+    var Ncd3 = "Center for Ncd Room 1";
+    var Ncd4 = "Center for Ncd Room 2";
+    var Ncd5 = "Center for Ncd Room 3";
+}
+
+<div class="d-flex justify-content-start">
+    <table class="table table-border table-hover d-flex justify-content-start align-items-start">
+        @if (NmType == "Record")
+        {
+            @if (Model.Count() != 0)
+            {
+                foreach (var list in allDate.OrderByDescending(e => e.RegDate))
+                {
+
+                    <tr>
+                        <td colspan="4">
+                            <button onclick="ShowModal1('@Url.Action("History","Ncd", new {id = list.RegHealthId, inhospitalId = list.Inhospid, healthId = list.RegHealthId ,date = list.RegDate},Context.Request.Scheme)','Noncommunicable diseases(NCD) - History')" class="float-end btn border-none">
+                                @list.RegDate.ToString("yyyy-MM-dd")
+                                @{
+                                    if (list.RegDepartment == "3001")
+                                    {
+                                        @Ncd1
+                                    }
+                                    else if (list.RegDepartment == "3002")
+                                    {
+                                        @Ncd2
+                                    }else if (list.RegDepartment == "6001")
+                                    {
+                                        @Ncd3
+                                    }else if (list.RegDepartment == "6002")
+                                    {
+                                        @Ncd4
+                                    }else if (list.RegDepartment == "6003")
+                                    {
+                                        @Ncd5
+                                    }
+                                }
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4"><p>No History data...</p></td>
+                </tr>
+            }
+        }
+        else if (NmType == "VitalSign")
+        {
+            @if (Model.Count() != 0)
+            {
+                foreach (var list in allDate.OrderByDescending(e => e.RegDate))
+                {
+
+                    <tr>
+                        <td colspan="4">
+                            <button onclick="ShowModal1('@Url.Action("VitalSign","Ncd", new {inhospitalId = list.Inhospid, healthId = list.RegHealthId ,date = list.RegDate},Context.Request.Scheme)','Noncommunicable diseases(NCD) - History')" class="float-end btn border-none">
+                                @list.RegDate.ToString("yyyy-MM-dd")
+                                @{
+                                    if (list.RegDepartment == "3001")
+                                    {
+                                        @Ncd1
+                                    }
+                                    else if (list.RegDepartment == "3002")
+                                    {
+                                        @Ncd2
+                                    }
+                                    else if (list.RegDepartment == "6001")
+                                    {
+                                        @Ncd3
+                                    }
+                                    else if (list.RegDepartment == "6002")
+                                    {
+                                        @Ncd4
+                                    }
+                                    else if (list.RegDepartment == "6003")
+                                    {
+                                        @Ncd5
+                                    }
+                                }
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4"><p>No History data...</p></td>
+                </tr>
+            }
+        }
+    </table>
+</div>

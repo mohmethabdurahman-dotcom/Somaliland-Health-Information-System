@@ -1,0 +1,64 @@
+﻿@using KMU.HisOrder.MVC.Areas.Maintenance.ViewModels
+@using KMU.HisOrder.MVC.Models
+
+@{
+    var physicalList = ViewData["physicalList"] as List<PhysicalSignItem>;
+}
+<style>
+
+    .label {
+        background-color: inherit;
+    }
+
+    .DivContent_Red {
+        border-style: solid;
+        border-width: 0px;
+        border-color: gray;
+        border-top-color: #d60412;
+        border-top-width: 5px;
+        font-weight: bold;
+        font-style: normal;
+        font-variant: normal;
+        text-indent: .2em;
+        text-transform: none;
+        text-decoration: none;
+        vertical-align: middle
+    }
+
+    .inputStyle {
+        border-radius: 0.25rem;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+    }
+</style>
+<div class="DivContent_Red" hidden>
+    <div class="justify-content-start">
+        <div class="form-group row mx-0 align-items-center">
+            @foreach (var defaultRadio in physicalList.Where(c => c.DefaultFlag && c.InputType == "radio"))
+            {
+                <div class="col-12 py-2" style="display:flex;border-bottom:solid 1px">
+                    <label class="border-0 font-weight-bold mb-0 px-0"><font color="red">*</font>@defaultRadio.CodeName: &nbsp;</label>
+                    <div class="row">
+                        @foreach (var condition in defaultRadio.Conditions)
+                        {
+                            <div class="mx-1">
+                                <input type="@defaultRadio.InputType" id="input_physical_@defaultRadio.CodeName" name="@defaultRadio.ConditonType"
+                               data-id="@defaultRadio.CodeName" style="height:20px; width:20px; vertical-align: middle;" value="@condition.CndValue1" onclick="fn_CaculateTriage()" />
+                                <span style="font-size:14px">@condition.CndValue1</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @foreach (var defaultText in physicalList.Where(c => c.DefaultFlag && c.InputType == "text"))
+            {
+                <div class="col-4" style="display:block">
+                    <label class="border-0 font-weight-bold mb-0 px-0"><font color="red">*</font>@defaultText.CodeName:</label>
+                    <input type="text" id="input_physical_@defaultText.CodeName" name="@defaultText.ConditonType"
+                       data-id="@defaultText.CodeName" class="form-control font-weight-bold text-center" onblur="fn_CaculateTriage()" onkeyup="fn_ClearNoNum($(this),value)" />
+                </div>
+            }
+        </div>
+    </div>
+</div>

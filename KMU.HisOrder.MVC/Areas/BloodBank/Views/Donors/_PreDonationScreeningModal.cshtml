@@ -1,0 +1,102 @@
+@* Pre-donation screening dialog — vitals + deferral tables (opened from donor registration). *@
+<div id="preDonationModal" class="bb-pre-donation-modal" aria-hidden="true" role="dialog" aria-labelledby="preDonationModalTitle" hidden>
+    <div class="bb-pre-donation-modal__backdrop" data-bb-modal-dismiss></div>
+    <div class="bb-pre-donation-modal__panel">
+        <div class="bb-card__header">
+            <h2 id="preDonationModalTitle" style="margin:0;font-size:1.1rem;color:#fff;">Pre-Donation Screening</h2>
+            <button type="button" class="bb-btn bb-btn-ghost bb-btn-sm" data-bb-modal-dismiss aria-label="Close" style="color:#fff;border-color:rgba(255,255,255,.3);">×</button>
+        </div>
+        <div class="bb-pre-donation-modal__body">
+            <p class="bb-page-subtitle">Record vitals and review deferral criteria before donation type and HIS linkage unlock (pre-donation screening).</p>
+
+            <h3 class="bb-label">Vitals</h3>
+            <div class="bb-table-scroll bb-screening-table-wrap">
+                <table class="bb-table bb-table-compact bb-screening-vitals-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                            <th>Reference range</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-vital="hb">
+                            <td><strong>Hemoglobin</strong></td>
+                            <td>
+                                <div class="bb-input-unit">
+                                    <input type="number" id="modalHb" step="0.1" min="5" max="20" class="form-control form-control-sm" placeholder="g/dL" />
+                                    <span>g/dL</span>
+                                </div>
+                            </td>
+                            <td class="bb-mono">12.0 – 20.0</td>
+                            <td><span class="bb-vital-status" data-for="modalHb">—</span></td>
+                        </tr>
+                        <tr data-vital="bp">
+                            <td><strong>Blood pressure</strong></td>
+                            <td>
+                                <div class="bb-bp-inputs">
+                                    <input type="number" id="modalBpSys" placeholder="Sys" min="70" max="220" class="form-control form-control-sm" />
+                                    <span>/</span>
+                                    <input type="number" id="modalBpDias" placeholder="Dias" min="40" max="140" class="form-control form-control-sm" />
+                                    <span>mmHg</span>
+                                </div>
+                            </td>
+                            <td class="bb-mono">90–200 / 50–120</td>
+                            <td><span class="bb-vital-status" data-for="modalBp">—</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="bb-label bb-mt-4">Deferral criteria</h3>
+            <div class="bb-table-scroll bb-screening-table-wrap">
+                <table class="bb-table bb-table-compact bb-screening-deferral-table">
+                    <thead>
+                        <tr>
+                            <th style="width:3rem;">Defer</th>
+                            <th>Criterion</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox" class="bb-deferral-flag" value="Fever or active infection" aria-label="Defer fever or infection" /></td>
+                            <td><strong>Fever, infection, or feeling unwell today</strong></td>
+                            <td class="bb-page-subtitle">Defer if symptomatic</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="bb-deferral-flag" value="Recent tattoo or piercing" aria-label="Defer tattoo" /></td>
+                            <td><strong>Tattoo or piercing within last 12 months</strong></td>
+                            <td class="bb-page-subtitle">Institutional deferral window</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="bb-deferral-flag" value="Malaria-endemic travel" aria-label="Defer malaria travel" /></td>
+                            <td><strong>Travel to malaria-endemic area</strong></td>
+                            <td class="bb-page-subtitle">Per travel deferral policy</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="bb-deferral-flag" value="High-risk medication" aria-label="Defer medication" /></td>
+                            <td><strong>Medication or procedure deferral applies</strong></td>
+                            <td class="bb-page-subtitle">Check donor medication list</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="bb-deferral-flag" value="Low hemoglobin" aria-label="Defer low Hb" /></td>
+                            <td><strong>Hemoglobin below institutional threshold</strong></td>
+                            <td class="bb-page-subtitle">Typically &lt; 12.0 g/dL (♀) / 13.0 (♂)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <label class="bb-mt-4 bb-screening-attest">
+                <input type="checkbox" id="modalAttest" />
+                <span>I attest the donor meets eligibility when no deferral flags are selected and all vitals are within reference range.</span>
+            </label>
+        </div>
+        <div class="bb-pre-donation-modal__footer">
+            <button type="button" id="btnDeferDonor" class="bb-btn bb-btn-ghost" style="border-color:var(--bb-red);color:var(--bb-red);">❌ Defer / Fail Donor</button>
+            <button type="button" id="btnApproveDonor" class="bb-btn bb-btn-success">✅ Approve / Pass Donor</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,16 @@
+@{
+    var title = ViewData["Title"]?.ToString() ?? "Screening certificate";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title</title>
+    @RenderSection("head", required: false)
+</head>
+<body class="bb-print-body">
+    @RenderBody()
+    @RenderSection("scripts", required: false)
+</body>
+</html>

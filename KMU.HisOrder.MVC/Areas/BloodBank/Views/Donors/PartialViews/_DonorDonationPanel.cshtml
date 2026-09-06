@@ -1,0 +1,104 @@
+@model DonorRegistrationViewModel
+@using KMU.HisOrder.MVC.Models.BloodBank
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@{
+    var bloodTypes = ViewBag.BloodTypes as string[] ?? BloodBankLookups.BloodTypes;
+    var components = ViewBag.Components as string[] ?? BloodBankLookups.Components;
+}
+
+<div id="bbColDonation">
+    <h3 class="text-center">Donation Details</h3>
+
+    <section class="bb-mr-section">
+        <span class="bb-mr-section-title">Donation type</span>
+        <fieldset class="bb-donation-type-pills" id="donationTypeFieldset">
+            <select asp-for="DonationType" id="donationType" class="bb-sr-only">
+                <option value="@DonationTypes.Volunteer">@DonationTypes.Volunteer</option>
+                <option value="@DonationTypes.Directed">@DonationTypes.Directed</option>
+            </select>
+            <label class="bb-donation-pill">
+                <input type="radio" name="donationTypeRadio" value="@DonationTypes.Volunteer" checked />
+                <span><i class="fa-solid fa-heart"></i> Volunteer</span>
+            </label>
+            <label class="bb-donation-pill">
+                <input type="radio" name="donationTypeRadio" value="@DonationTypes.Directed" />
+                <span><i class="fa-solid fa-hospital-user"></i> Directed</span>
+            </label>
+        </fieldset>
+
+        <div id="volunteerNote" class="bb-volunteer-note">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Volunteer donation — no patient linkage required. Select blood type and register.</span>
+        </div>
+
+        <div id="directedPanel" class="bb-directed-panel">
+            <span class="bb-mr-section-title d-block mt-2">HIS patient linkage</span>
+            <label class="form-control border-0 font-weight-bold px-0 mb-1 small" for="pendingRequestSearch">Search pending blood requests</label>
+            <div class="bb-typeahead-wrap">
+                <input type="search" id="pendingRequestSearch" class="form-control rounded py-0" placeholder="Patient name, ID, ward…" autocomplete="off" disabled />
+                <ul id="pendingRequestTypeahead" class="bb-typeahead-dropdown" role="listbox"></ul>
+            </div>
+            <div id="directedRequestsBlock" class="mt-2">
+                <p class="text-muted small mb-1" id="directedRequestsHint"></p>
+                <div class="bb-table-scroll">
+                    <table class="table table-striped table-bordered table-sm mb-0" id="directedRequestsTable" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Patient</th>
+                                <th>ID</th>
+                                <th>Ward</th>
+                                <th>Component</th>
+                                <th>Urgency</th>
+                            </tr>
+                        </thead>
+                        <tbody id="directedRequestsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <input type="hidden" asp-for="PatientId" id="patientId" />
+            <input type="hidden" asp-for="Inhospid" id="inhospid" />
+            <input type="hidden" asp-for="RequestId" id="requestId" />
+            <div id="linkedRequestSummary" class="bb-linked-request-summary hidden">
+                <h5 class="font-weight-bold mb-2" style="font-size:0.9rem;">Selected request</h5>
+                <dl class="bb-review-grid">
+                    <dt>Patient</dt><dd id="linkPatientName">—</dd>
+                    <dt>Patient ID</dt><dd id="linkPatientId" class="bb-mono">—</dd>
+                    <dt>Doctor</dt><dd id="linkDoctor">—</dd>
+                    <dt>Ward / bed</dt><dd id="linkWardBed">—</dd>
+                    <dt>Component</dt><dd id="linkComponent">—</dd>
+                    <dt>Urgency</dt><dd id="linkUrgency">—</dd>
+                </dl>
+            </div>
+            <partial name="~/Areas/BloodBank/Views/Shared/_PatientPanel.cshtml" model="Model.PatientPanel" />
+        </div>
+    </section>
+
+    <section id="bbColClinical" class="bb-mr-section">
+        <span class="bb-mr-section-title">Blood product</span>
+        <div class="form-group row mx-0">
+            <label class="form-control col-lg-4 border-0 font-weight-bold px-0" for="BloodType"><font color="red">*</font>Blood type:</label>
+            <select asp-for="BloodType" id="BloodType" class="form-control col-lg-8 font-weight-bold text-center text-danger" required>
+                <option value="">— Select —</option>
+                @foreach (var bt in bloodTypes) { <option value="@bt">@bt</option> }
+            </select>
+        </div>
+        <div class="form-group row mx-0 mb-0">
+            <label class="form-control col-lg-4 border-0 font-weight-bold px-0" for="PlannedComponentType">Component:</label>
+            <select name="PlannedComponentType" id="PlannedComponentType" class="form-control col-lg-8 font-weight-bold text-center">
+                @foreach (var c in components) { <option value="@c">@c</option> }
+            </select>
+        </div>
+    </section>
+
+    <p class="text-muted small text-center mb-0">Hemoglobin &amp; CBC → <strong>Screening</strong> queue</p>
+
+    <div asp-validation-summary="All" class="text-danger small mx-2 mt-2"></div>
+
+    <div class="col-12 mt-1 row justify-content-center py-2 mx-0" style="border-top:dashed 1px black">
+        <button type="submit" id="btnRegisterDonor" class="btn btn-sm btn-primary col-6" disabled>
+            <i class="fa-solid fa-user-plus"></i> Register Donor
+        </button>
+        <a asp-action="Index" class="btn btn-sm btn-warning col-4">Donor list</a>
+    </div>
+</div>

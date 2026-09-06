@@ -1,0 +1,326 @@
+@model InventoryDispensePageViewModel
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Blood Bank → Dispense Unit";
+    var f = Model.Form;
+    var mode = (f.RecipientMode ?? "request").Trim().ToLowerInvariant();
+    if (mode != "request" && mode != "his" && mode != "manual") { mode = "request"; }
+    var hasRecipient = mode == "request" && f.RequestId.HasValue
+        || mode == "his" && !string.IsNullOrWhiteSpace(f.PatientPanel?.PatientId) && !string.Equals(f.PatientPanel.PatientId, "EXTERNAL", StringComparison.OrdinalIgnoreCase)
+        || mode == "manual";
+    var patientName = f.PatientPanel?.PatientName;
+    var heroMeta = !string.IsNullOrWhiteSpace(patientName)
+        ? $"{patientName} · {f.UnitBloodType} · {f.UnitComponentType}"
+        : $"{f.UnitBloodType} · {f.UnitComponentType} · select recipient";
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell bb-dispense-page bb-dispense-page--request bb-dispense-page--inventory">
+    <div class="bb-dispense-request-hero">
+        <div class="bb-dispense-request-hero__nav">
+            <a asp-controller="Inventory" asp-action="Index" class="bb-dispense-back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Inventory</a>
+        </div>
+        <div class="bb-dispense-request-hero__row">
+            <div>
+                <h6 class="direction mb-0"><i class="fa-solid fa-droplet"></i> Dispense — Unit <span class="bb-mono">@f.SerialNumber</span></h6>
+                <span class="bb-dispense-request-hero__meta">@heroMeta</span>
+            </div>
+            <div class="bb-dispense-request-hero__badges">
+                <span class="bb-badge bb-badge-blood">@f.UnitBloodType</span>
+                <span class="bb-badge bb-badge-routine">@f.UnitComponentType</span>
+                <span class="bb-badge bb-badge-available">@f.UnitStatus</span>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" id="inventoryDispenseForm" class="bb-dispense-form"
+          data-unit-id="@f.UnitId" data-recipient-mode="@mode">
+        @Html.AntiForgeryToken()
+        @if (TempData["Error"] != null) { <div class="bb-alert bb-alert--error bb-dispense-form-alert">@TempData["Error"]</div> }
+        <div asp-validation-summary="ModelOnly" class="text-danger bb-dispense-form-alert"></div>
+
+        <input type="hidden" asp-for="Form.UnitId" />
+        <input type="hidden" asp-for="Form.RequestId" id="dispenseRequestId" />
+        <input type="hidden" asp-for="Form.SerialNumber" />
+        <input type="hidden" asp-for="Form.DispensingStaffName" />
+        <input type="hidden" asp-for="Form.UnitsReleased" value="1" />
+        <input type="hidden" asp-for="Form.RecipientMode" id="recipientMode" />
+        <input type="hidden" asp-for="Form.WardFilter" id="wardFilter" />
+        <input type="hidden" asp-for="Form.PatientPanel.Inhospid" id="patientInhospid" />
+        <input type="hidden" asp-for="Form.WardDestination" id="wardDestination" />
+
+        <div class="bb-dispense-body">
+            <div class="bb-dispense-left bb-his-context">
+                <div class="bb-his-request-card">
+                    <div class="bb-his-request-card__header">
+                        <div class="bb-his-request-card__header-top">
+                            <span class="bb-his-request-card__lock"><i class="fa-solid fa-lock"></i> Inventory unit · locked</span>
+                            <span class="bb-badge bb-badge-available">@f.UnitStatus</span>
+                        </div>
+                        <h4 class="bb-his-request-card__title">Unit ready to dispense</h4>
+                        <p class="bb-his-request-card__subtitle">@f.UnitBloodType · @f.UnitComponentType · Exp @f.UnitExpiryDate.ToString("dd/MM/yyyy")</p>
+                    </div>
+                    <div class="bb-his-request-card__body">
+                        <div class="bb-his-request-grid">
+                            <div class="bb-his-request-id-strip">
+                                <span class="bb-his-request-id-strip__label"><i class="fa-solid fa-barcode"></i> Unit serial</span>
+                                <span class="bb-his-request-id-strip__value bb-mono">@f.SerialNumber</span>
+                            </div>
+                            <div class="bb-his-request-item bb-his-request-item--primary">
+                                <span class="bb-his-request-item__icon"><i class="fa-solid fa-droplet"></i></span>
+                                <div class="bb-his-request-item__content">
+                                    <span class="bb-his-request-item__label">Blood type</span>
+                                    <span class="bb-his-request-item__value"><span class="bb-badge bb-badge-blood">@f.UnitBloodType</span></span>
+                                </div>
+                            </div>
+                            <div class="bb-his-request-item bb-his-request-item--accent">
+                                <span class="bb-his-request-item__icon"><i class="fa-solid fa-flask"></i></span>
+                                <div class="bb-his-request-item__content">
+                                    <span class="bb-his-request-item__label">Component</span>
+                                    <span class="bb-his-request-item__value">@f.UnitComponentType</span>
+                                </div>
+                            </div>
+                            <div class="bb-his-request-item">
+                                <span class="bb-his-request-item__icon"><i class="fa-solid fa-calendar-xmark"></i></span>
+                                <div class="bb-his-request-item__content">
+                                    <span class="bb-his-request-item__label">Expiry</span>
+                                    <span class="bb-his-request-item__value">@f.UnitExpiryDate.ToString("dd/MM/yyyy")</span>
+                                </div>
+                            </div>
+                            <div class="bb-his-request-item">
+                                <span class="bb-his-request-item__icon"><i class="fa-solid fa-user-nurse"></i></span>
+                                <div class="bb-his-request-item__content">
+                                    <span class="bb-his-request-item__label">Dispensing staff</span>
+                                    <span class="bb-his-request-item__value">@f.DispensingStaffName</span>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(f.UnitDonorName))
+                            {
+                                <div class="bb-his-request-item bb-his-request-item--wide">
+                                    <span class="bb-his-request-item__icon"><i class="fa-solid fa-heart"></i></span>
+                                    <div class="bb-his-request-item__content">
+                                        <span class="bb-his-request-item__label">Donor</span>
+                                        <span class="bb-his-request-item__value">@f.UnitDonorName @(string.IsNullOrWhiteSpace(f.UnitDonorBloodType) ? "" : $"· {f.UnitDonorBloodType}")</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="bb-his-request-card__footer">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>This unit is fixed. Choose who receives it on the right, then confirm dispense.</span>
+                    </div>
+                </div>
+
+                <div id="recipientContextCard" class="bb-his-request-card bb-inventory-recipient-card @(hasRecipient && mode != "manual" && !string.IsNullOrWhiteSpace(patientName) ? "" : "hidden")" style="margin-top:1rem;">
+                    <div class="bb-his-request-card__header">
+                        <div class="bb-his-request-card__header-top">
+                            <span class="bb-his-request-card__lock"><i class="fa-solid fa-user-injured"></i> Recipient</span>
+                            @if (!string.IsNullOrWhiteSpace(f.PatientPanel?.UrgencyLevel))
+                            {
+                                var urgBadge = f.PatientPanel.UrgencyLevel == "Emergency" ? "emergency" : f.PatientPanel.UrgencyLevel == "Urgent" ? "urgent" : "routine";
+                                <span class="bb-badge bb-badge-@urgBadge">@f.PatientPanel.UrgencyLevel</span>
+                            }
+                        </div>
+                        <h4 class="bb-his-request-card__title" id="recipientContextName">@(patientName ?? "—")</h4>
+                        <p class="bb-his-request-card__subtitle" id="recipientContextSub">
+                            @(f.RequestId.HasValue ? $"Request #{f.RequestId}" : "HIS patient")
+                            @if (!string.IsNullOrWhiteSpace(f.WardDestination)) { <text> · @f.WardDestination</text> }
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bb-dispense-right">
+                <div class="bb-dispense-inventory-head">
+                    <h4 class="bb-section-title"><i class="fa-solid fa-user-check"></i> Choose recipient</h4>
+                </div>
+
+                <div class="bb-source-mode-picker bb-recipient-mode-picker" role="tablist" aria-label="Recipient source">
+                    <button type="button" class="bb-source-mode-btn bb-source-mode-btn--request @(mode == "request" ? "is-active" : "")" data-mode="request" onclick="setRecipientMode('request')" role="tab" aria-selected="@(mode == "request" ? "true" : "false")">
+                        <span class="bb-source-mode-btn__icon"><i class="fa-solid fa-user-doctor"></i></span>
+                        <span class="bb-source-mode-btn__text">
+                            <strong>Doctor request</strong>
+                            <small>Pending HIS blood order</small>
+                        </span>
+                        <span class="bb-source-count">@Model.PendingRequests.Count</span>
+                    </button>
+                    <button type="button" class="bb-source-mode-btn bb-source-mode-btn--his @(mode == "his" ? "is-active" : "")" data-mode="his" onclick="setRecipientMode('his')" role="tab" aria-selected="@(mode == "his" ? "true" : "false")">
+                        <span class="bb-source-mode-btn__icon"><i class="fa-solid fa-id-card"></i></span>
+                        <span class="bb-source-mode-btn__text">
+                            <strong>HIS patient ID</strong>
+                            <small>Look up chart directly</small>
+                        </span>
+                    </button>
+                    <button type="button" class="bb-source-mode-btn bb-source-mode-btn--manual @(mode == "manual" ? "is-active" : "")" data-mode="manual" onclick="setRecipientMode('manual')" role="tab" aria-selected="@(mode == "manual" ? "true" : "false")">
+                        <span class="bb-source-mode-btn__icon"><i class="fa-solid fa-pen-to-square"></i></span>
+                        <span class="bb-source-mode-btn__text">
+                            <strong>Not in HisOrder</strong>
+                            <small>Manual recipient entry</small>
+                        </span>
+                    </button>
+                </div>
+
+                <div id="panelRequest" class="bb-recipient-panel bb-source-panel bb-source-panel--request" data-mode="request" hidden="@(mode != "request")" style="display:@(mode == "request" ? "block" : "none")">
+                    <p class="bb-page-subtitle">Select a pending blood request matching unit type <strong>@f.UnitBloodType</strong>.</p>
+                    <div class="bb-volunteer-toolbar">
+                        <input type="text" id="requestSearch" class="form-control" placeholder="Search patient, ID, ward, doctor…" />
+                        <input type="text" id="wardFilterInput" class="form-control" placeholder="Ward (e.g. ICU)" value="@f.WardFilter" style="max-width:8rem;" />
+                        <button type="button" id="btnRefreshRequests" class="bb-btn bb-btn-primary bb-btn-sm">Refresh</button>
+                    </div>
+                    <div class="bb-pending-request-table-wrap">
+                        <table class="bb-table bb-table-compact" id="pendingRequestsTable">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Patient</th>
+                                    <th>ID</th>
+                                    <th>Ward</th>
+                                    <th>Doctor</th>
+                                    <th>Units</th>
+                                    <th>Urgency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingRequestsBody">
+                            @foreach (var r in Model.PendingRequests)
+                            {
+                                var urg = r.UrgencyLevel == "Emergency" ? "bb-badge-emergency" : r.UrgencyLevel == "Urgent" ? "bb-badge-urgent" : "bb-badge-routine";
+                                var sel = f.RequestId == r.RequestId;
+                                <tr data-request-id="@r.RequestId" class="@(sel ? "is-selected" : "")">
+                                    <td><button type="button" class="bb-btn bb-btn-sm bb-btn-primary btn-pick-request">Select</button></td>
+                                    <td><strong>@r.PatientName</strong></td>
+                                    <td class="bb-mono">@r.PatientId</td>
+                                    <td>@r.Ward</td>
+                                    <td>@r.RequestingDoctorName</td>
+                                    <td>@r.UnitsRequested</td>
+                                    <td><span class="bb-badge @urg">@r.UrgencyLevel</span></td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                    <p id="selectedRequestSummary" class="bb-linked-request-summary @(f.RequestId.HasValue ? "" : "hidden")">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <strong>Selected:</strong>
+                        <span id="selectedRequestLabel">@(f.RequestId.HasValue ? f.PatientPanel.PatientName + " (" + f.PatientPanel.PatientId + ")" : "")</span>
+                    </p>
+                </div>
+
+                <div id="panelHis" class="bb-recipient-panel bb-source-panel bb-source-panel--his" data-mode="his" hidden="@(mode != "his")" style="display:@(mode == "his" ? "block" : "none")">
+                    <p class="bb-page-subtitle">Look up a patient in HIS. Ward and destination prefill when available.</p>
+                    <div class="bb-field-wrap bb-mt-3">
+                        <label class="bb-label" asp-for="Form.PatientPanel.PatientId">HIS patient ID</label>
+                        <div class="bb-input-group-inline">
+                            <input asp-for="Form.PatientPanel.PatientId" id="dispensePatientId" class="form-control" placeholder="HIS health ID" />
+                            <button type="button" id="btnHisLookup" class="bb-btn bb-btn-primary">Lookup HIS</button>
+                        </div>
+                        <span asp-validation-for="Form.PatientPanel.PatientId" class="text-danger"></span>
+                    </div>
+                    <div id="recipientSummaryBlock" class="bb-mt-3">
+                        <partial name="~/Areas/BloodBank/Views/Shared/_PatientPanel.cshtml" model="f.PatientPanel" />
+                    </div>
+                </div>
+
+                <div id="panelManual" class="bb-recipient-panel bb-source-panel bb-source-panel--manual" data-mode="manual" hidden="@(mode != "manual")" style="display:@(mode == "manual" ? "block" : "none")">
+                    <p class="bb-page-subtitle">Blood is going to a recipient <strong>not in HisOrder</strong>. Enter who receives the unit and where it is going.</p>
+
+                    <div class="bb-manual-dispense-card">
+                        <h3 class="bb-label"><i class="fa-solid fa-user-injured"></i> Recipient (who receives the blood)</h3>
+                        <div class="bb-field-wrap">
+                            <label class="bb-label" asp-for="Form.PatientPanel.PatientName">Patient name <span class="text-danger">*</span></label>
+                            <input asp-for="Form.PatientPanel.PatientName" id="manualPatientName" class="form-control" placeholder="Full name of patient receiving blood" />
+                            <span asp-validation-for="Form.PatientPanel.PatientName" class="text-danger"></span>
+                        </div>
+                        <div class="bb-field-wrap">
+                            <label class="bb-label" for="manualWardSelect">Where is the blood going? <span class="text-danger">*</span></label>
+                            <select id="manualWardSelect" class="form-control">
+                                <option value="">— Select destination —</option>
+                                @foreach (var ward in BloodBankLookups.DispenseWardDestinations)
+                                {
+                                    <option value="@ward">@ward</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div id="manualOtherPanel" class="bb-manual-other-panel hidden">
+                            <p class="bb-page-subtitle bb-mb-2">For <strong>Other</strong>, indicate whether the patient is in this hospital or outside.</p>
+                            <div class="bb-field-wrap">
+                                <label class="bb-label" for="manualPatientSite">Patient location <span class="text-danger">*</span></label>
+                                <select id="manualPatientSite" class="form-control">
+                                    <option value="">— Inside or outside? —</option>
+                                    <option value="inside">Inside this hospital</option>
+                                    <option value="outside">Outside this hospital</option>
+                                </select>
+                            </div>
+                            <div class="bb-field-wrap hidden" id="manualOtherInsideWrap">
+                                <label class="bb-label" for="manualInsideWard">Ward / area <span class="bb-label-optional">(optional)</span></label>
+                                <select id="manualInsideWard" class="form-control">
+                                    <option value="">— Optional: ICU, Emergency, ward… —</option>
+                                    @foreach (var ward in BloodBankLookups.DispenseInsideWardOptions)
+                                    {
+                                        <option value="@ward">@ward</option>
+                                    }
+                                </select>
+                                <p class="bb-field-hint">Refine location if known — e.g. Emergency, ICU, Male Ward.</p>
+                            </div>
+                        </div>
+
+                        <div id="manualOutsideHospitalPanel" class="bb-manual-outside-hospital-panel hidden">
+                            <p class="bb-page-subtitle bb-mb-2">Blood is going to <strong>another hospital</strong>. Enter the facility and ward.</p>
+                            <div class="bb-field-wrap">
+                                <label class="bb-label" asp-for="Form.PatientPanel.Address">Hospital name <span class="text-danger">*</span></label>
+                                <input asp-for="Form.PatientPanel.Address" id="manualHospitalName" class="form-control" placeholder="Name of receiving hospital" />
+                                <span asp-validation-for="Form.PatientPanel.Address" class="text-danger"></span>
+                            </div>
+                            <div class="bb-field-wrap">
+                                <label class="bb-label" asp-for="Form.PatientPanel.Ward">Ward at hospital <span class="text-danger">*</span></label>
+                                <input asp-for="Form.PatientPanel.Ward" id="manualOutsideWard" class="form-control" placeholder="e.g. ICU, Emergency, Male Ward" />
+                                <span asp-validation-for="Form.PatientPanel.Ward" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <input type="hidden" asp-for="Form.ManualDestinationKey" id="manualDestinationKey" />
+                        <div class="bb-field-wrap" id="manualBedWrap">
+                            <label class="bb-label" asp-for="Form.PatientPanel.BedLocation">Room / bed / notes <span class="bb-label-optional">(optional)</span></label>
+                            <input asp-for="Form.PatientPanel.BedLocation" id="manualBed" class="form-control" placeholder="Bed number, room, or extra detail" />
+                        </div>
+                        <div id="manualRecipientPreview" class="bb-manual-preview hidden" aria-live="polite">
+                            <strong>Ready to dispense:</strong>
+                            <span id="manualPreviewText">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+                <h4 class="bb-section-title bb-section-title--confirm"><i class="fa-solid fa-circle-check"></i> Confirmation</h4>
+                <div class="bb-dispense-confirm-simple">
+                    <label class="bb-label" asp-for="Form.CollectorName">Collector name</label>
+                    <input asp-for="Form.CollectorName" id="collectorName" class="form-control bb-readonly-field" readonly tabindex="-1" />
+                    <span asp-validation-for="Form.CollectorName" class="text-danger"></span>
+                </div>
+                <div class="bb-field-wrap" id="wardDestinationWrap">
+                    <label class="bb-label" for="wardDestinationDisplay">Ward / destination</label>
+                    <input type="text" id="wardDestinationDisplay" class="form-control bb-readonly-field"
+                           value="@f.WardDestination"
+                           placeholder="Filled from HIS request or patient lookup" readonly tabindex="-1" />
+                    <span asp-validation-for="Form.WardDestination" class="text-danger"></span>
+                </div>
+                <p class="bb-progress-label">Unit: <strong>1</strong> of 1 ready · Recipient: <strong id="recipientReadyLabel">@(hasRecipient && mode != "manual" ? "selected" : mode == "manual" ? "manual" : "pending")</strong></p>
+                <div class="bb-fill-bar"><span id="fillBar" class="@(hasRecipient && mode != "manual" ? "is-complete" : "")" style="width:@(hasRecipient && mode != "manual" ? "100%" : "50%")"></span></div>
+            </div>
+        </div>
+
+        <div class="bb-dispense-footer bb-dispense-footer--actions">
+            <a asp-controller="Inventory" asp-action="Index" class="bb-btn bb-btn-ghost bb-dispense-footer-back"><i class="fa-solid fa-arrow-left"></i> Back</a>
+            <div class="bb-dispense-footer__center">
+                <p id="dispenseStatusHint" class="bb-dispense-status-hint">Select a recipient to dispense.</p>
+            </div>
+            <button type="submit" class="bb-btn bb-btn-success bb-btn-lg bb-dispense-submit" id="btnConfirm" disabled>
+                <i class="fa-solid fa-droplet"></i>
+                <span id="btnConfirmLabel">Dispense</span>
+            </button>
+        </div>
+    </form>
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+<partial name="~/Areas/BloodBank/Views/Dispense/_InventoryDispenseScripts.cshtml" model="f" />

@@ -1,0 +1,102 @@
+﻿@using Microsoft.EntityFrameworkCore;
+@inject KMU.HisOrder.MVC.Models.KMUContext _Context
+@model KMU.HisOrder.MVC.Models.KmuDepartment
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var departments = _Context.KmuDepartments.Distinct();
+
+}
+<div class="px-3">
+
+    <h5>Create</h5>
+
+</div>
+<hr />
+<div class="row px-3">
+    <div class="col-md-12">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="col-6">
+                <div class="form-group ">
+                    <label class="control-label">Department Type</label>
+                    <select asp-for="DptCategory" id="dptCategory" class="form-control">
+                        <option disabled selected>--Select Type--</option>
+                        <option>OPD</option>
+                        <option>EMG</option>
+                    </select>
+                    <span asp-validation-for="DptCategory" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">Department Name</label>
+                    <select asp-for="DptParent" id="DptName" class="form-control">
+                    </select>
+                    <span asp-validation-for="DptName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">Name</label>
+                    <input asp-for="DptName" class="form-control" />
+                    <span asp-validation-for="DptName" class="text-danger"></span>
+                </div>
+                <div class="row">
+
+                    <div class="col-6">
+                        <a class="btn btn-danger" asp-action="Index">Back to List</a>
+                    </div>
+
+                    <div class="form-group col-6">
+                        <input type="submit" value="Create" class="btn btn-primary form-control" />
+                    </div>
+                </div>
+
+            </div>
+
+
+
+
+
+
+        </form>
+    </div>
+</div>
+
+
+
+
+<script src="~/lib/jquery1.min.js"></script>
+<script>
+    var department = $("#dptCategory option:selected").val();
+    $("#dptCategory").on("change", function () {
+        var cDpName = $("#dptCategory").val();
+
+        var items = '<option disabled selected>--Select Name--</option>';
+        $.ajax({
+            type:"post",
+            url: "/Maintenance/KmuDepartments/Department?CDpName=" + cDpName,
+            success:function(response){
+                $.each(response, function(key, value){
+
+                    items += "<option value=" + value.dptCode + ">" + value.dptName + "</option>";
+
+                    console.log(value.dptName);
+                })
+                $("#DptName").html(items);
+
+
+            }
+        })
+
+    })
+
+</script>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }

@@ -1,0 +1,257 @@
+@model List<Hisorderplan>
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@using KMU.HisOrder.MVC.Models.BloodBank
+@{
+    List<KmuCoderef> locationItem = (List<KmuCoderef>)ViewData["NonMedLocation"];
+    KMU.HisOrder.MVC.Areas.HisOrder.Models.PatientDTO _PatientDTO = (KMU.HisOrder.MVC.Areas.HisOrder.Models.PatientDTO)ViewData["PatientDTO"];
+    var bloodTypes = BloodBankLookups.BloodTypes;
+    var urgencyLevels = BloodBankLookups.UrgencyLevelOptions;
+
+    string UrgencyLabel(char? flag) => flag switch
+    {
+        '3' => UrgencyLevels.Emergency,
+        '2' => UrgencyLevels.Urgent,
+        _ => UrgencyLevels.Routine
+    };
+
+    string UrgencyCss(char? flag) => flag switch
+    {
+        '3' => "nonmed-urgency-emergency",
+        '2' => "nonmed-urgency-urgent",
+        _ => "nonmed-urgency-routine"
+    };
+
+    string BloodRowClass(string hplanType, char? urgFlag) =>
+        hplanType == "Blood" ? $"blood-order-row {UrgencyCss(urgFlag)}" : "";
+}
+
+<div class="card-title pt-1 pr-1 pl-1">
+    <h6>Other</h6>
+
+    <span class=" ml-1 d-inline-block ">
+        <span id="nonmedorder_count" class="badge badge-pill badge-gray" style="font-size:13px;"></span>
+        <button class="ml-3 btn btn-sm btn-dark delete_nonmedorders"><i class="fa fas fas fa-trash"></i></button>
+        <button id="NonMedModalBtn" class="btn btn-sm  btn-primary" data-toggle="modal" data-target="#MedicalCategoryList"><i class="fa fas fa-plus"></i></button>
+        <button class="btn btn-sm  btn-primary add_nonmedorders" hidden><i class="fa fas fa-plus"></i> New</button>
+    </span>
+
+    @{
+        if (_PatientDTO != null && _PatientDTO.RegStatus != "N")
+        {
+            <span class=" ml-1 d-inline-block">
+                <span class="pt-function-column-br-color"></span>
+                <button id="NonMedPrint" class="btn btn-sm  btn-warning"><i class="fa fas fa-print"></i></button>
+            </span>
+        }
+    }
+</div>
+<div class="card mt-0 nonmed-order-card" style="height: calc( 100% - 35px); ">
+    <div class="card-body card-body-border nonmed-order-card-body">
+        <div id="nonmedorder_table" class="table-responsive table-sticky-wrapper nonmed-order-table" style="border-radius:3px;">
+            <table class=" table table-sm table-hover table-sticky">
+                <thead class=" tr-sticky">
+                    <tr class="text-center th-green" style="font-size: 13px;">
+                        <th style="width: 20px;"> <input type="checkbox" class="all" data-type="order_checkboxAll" data-child_name="nonMed_checkbox" /></th>
+                        <th style="width:3%">Status</th>
+                        <th style="width:3%" hidden></th>
+                        <th style="width:5%"></th>
+                        <th style="width:3%">ID</th>
+                        <th>Name</th>
+                        <th style="width:8%">Qty</th>
+                        <th style="width:8%">Blood Type</th>
+                        <th style="width:10%">Urgency</th>
+                        <th style="width:12%">Location</th>
+                        <th>Remarks</th>
+                        <th style="width:9%">Date</th>
+                        <th hidden>Seq</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @*//nonmedorder templete*@
+                    <tr class="text-center nonmedorder_tr_templete" data-orderplan-id="-1" data-modify-type="" hidden>
+                        <td class="align-middle">
+                            <input type="checkbox" class="check nonmedorder_tr_templete" data-type="order_SingleCheckbox" name="nonMed_checkbox" />
+                        </td>
+                        <td class="align-middle"><span class="badge" data-status=""></span></td>
+                        <td class="align-middle lock-btn " hidden><span class="badge badge-success"><i class="fa fa-unlock"></i></span></td>
+                        <td class="align-middle" data-hplan-type=""><span class="badge"></span></td>
+                        <td class="align-middle" data-plan-code=""></td>
+                        <td class="align-middle text-left" data-plan-des=""></td>
+                        <td class="align-middle"><input type="text" class="form-control form-control-sm text-center" data-plan-qty="" value=""></td>
+                        <td class="align-middle blood-type-cell">
+                            <select class="custom-select custom-select-sm nonmed-blood-type-select" data-blood-type="" disabled>
+                                <option value="">—</option>
+                                @foreach (var bt in bloodTypes)
+                                {
+                                    <option value="@bt">@bt</option>
+                                }
+                            </select>
+                        </td>
+                        <td class="align-middle urgency-cell">
+                            <select class="custom-select custom-select-sm nonmed-urgency-select nonmed-urgency-routine" data-urgency="@UrgencyLevels.Routine" data-urgency-flag="1" disabled>
+                                @foreach (var u in urgencyLevels)
+                                {
+                                    <option value="@u">@u</option>
+                                }
+                            </select>
+                        </td>
+                        <td class="align-middle">
+                            <select class="custom-select custom-select-sm" aria-placeholder="set location" data-location-code="">
+                                @{
+                                    <option value=""></option>
+                                    foreach (var option in locationItem)
+                                    {
+                                        <option value="@option.RefCode">@option.RefName</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+                        <td class="align-middle">
+                            <input type="text" class="form-control form-control-sm" placeholder="..." data-remark="" value="">
+                        </td>
+                        <td class="align-middle nonmed-order-date"></td>
+                        <td class="align-middle" data-seq-no="" hidden></td>
+                        <td class="align-middle" data-plan-type="" hidden></td>
+                    </tr>
+
+                    @{
+                        if (Model != null && Model.Count > 0)
+                        {
+                            foreach (var hplan in Model)
+                            {
+                                var orderStats = "";
+                                var orderStatsClass = "";
+                                var isBlood = hplan.HplanType == "Blood";
+                                var bloodType = isBlood ? (hplan.DosePath ?? "").Trim() : "";
+                                var urgencyLabel = isBlood ? UrgencyLabel(hplan.UrgFlag) : "";
+                                var urgencyFlag = isBlood ? (hplan.UrgFlag?.ToString() ?? "1") : "";
+
+                                @switch (hplan.Status)
+                                {
+                                    case '0':
+                                        orderStats = "Examining";
+                                        orderStatsClass = "badge-gray";
+                                        break;
+                                    case '2':
+                                        orderStats = "Cfm";
+                                        orderStatsClass = "badge-success";
+                                        break;
+                                }
+
+                                <tr class="text-center @BloodRowClass(hplan.HplanType, hplan.UrgFlag)" data-orderplan-id="@hplan.Orderplanid" data-modify-type="">
+                                    <td class="align-middle">
+                                        <input type="checkbox" class="check" data-type="order_SingleCheckbox" name="nonMed_checkbox" />
+                                    </td>
+                                    <td class="align-middle"><span class="badge @orderStatsClass" data-status="@hplan.Status">@orderStats</span></td>
+                                    <td class="align-middle lock-btn" hidden><span class="badge badge-success"><i class="fa fa-unlock"></i></span></td>
+                                    <td class="align-middle" data-hplan-type="@hplan.HplanType.Trim()">
+                                        @if (hplan.HplanType == "Lab")
+                                        {
+                                            <span class="badge badge-purple">Laboratory</span>
+                                        }
+                                        else if (hplan.HplanType == "Exam")
+                                        {
+                                            <span class="badge badge-info">Radiology</span>
+                                        }
+                                        else if (hplan.HplanType == "Path")
+                                        {
+                                            <span class="badge badge-master">Pathology</span>
+                                        }
+                                        else if (isBlood)
+                                        {
+                                            <span class="badge badge-danger">Blood</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-warning">Material</span>
+                                        }
+                                    </td>
+                                    <td class="align-middle" data-plan-code="@hplan.PlanCode.Trim()">@hplan.PlanCode.Trim()</td>
+                                    <td class="align-middle text-left" data-plan-des="@hplan.PlanDes.Trim()">
+                                        @hplan.PlanDes.Trim()
+                                        @if (isBlood)
+                                        {
+                                            <div class="nonmed-blood-route-hint text-muted">Route IV</div>
+                                        }
+                                    </td>
+                                    <td class="align-middle"><input type="text" class="form-control form-control-sm text-center" data-plan-qty="@hplan.QtyDose" value="@hplan.QtyDose"></td>
+                                    <td class="align-middle blood-type-cell">
+                                        @if (isBlood)
+                                        {
+                                            <select class="custom-select custom-select-sm nonmed-blood-type-select" data-blood-type="@bloodType">
+                                                <option value="">Select</option>
+                                                @foreach (var bt in bloodTypes)
+                                                {
+                                                    if (bt == bloodType)
+                                                    {
+                                                        <option value="@bt" selected="selected">@bt</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@bt">@bt</option>
+                                                    }
+                                                }
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td class="align-middle urgency-cell">
+                                        @if (isBlood)
+                                        {
+                                            <select class="custom-select custom-select-sm nonmed-urgency-select @UrgencyCss(hplan.UrgFlag)" data-urgency="@urgencyLabel" data-urgency-flag="@urgencyFlag">
+                                                @foreach (var u in urgencyLevels)
+                                                {
+                                                    if (u == urgencyLabel)
+                                                    {
+                                                        <option value="@u" selected="selected">@u</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@u">@u</option>
+                                                    }
+                                                }
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td class="align-middle">
+                                        <select class="custom-select custom-select-sm" aria-placeholder="set location" data-location-code="@hplan.LocationCode">
+                                            @{
+                                                <option value=""></option>
+                                                foreach (var option in locationItem)
+                                                {
+                                                    if (option.RefCode == hplan.LocationCode)
+                                                    {
+                                                        <option selected="selected" value="@option.RefCode">@option.RefName</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@option.RefCode">@option.RefName</option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                    </td>
+                                    <td class="align-middle">
+                                        <input type="text" class="form-control form-control-sm" placeholder="..." data-remark="@hplan.Remark" value="@hplan.Remark">
+                                    </td>
+                                    <td class="align-middle nonmed-order-date">@Convert.ToDateTime(hplan.CreateDate).ToString("dd/MM/yyyy")</td>
+                                    <td class="align-middle" data-seq-no="@hplan.SeqNo" hidden></td>
+                                    <td class="align-middle" data-plan-type="@hplan.HplanType" hidden></td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

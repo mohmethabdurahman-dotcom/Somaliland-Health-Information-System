@@ -1,0 +1,21 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.Registration>
+
+@{
+    Layout = null;
+ }
+
+ <div class="d-flex justify-content-start">
+    <table class="table table-border table-hover d-flex justify-content-start">
+
+  @foreach (var item in Model.OrderByDescending(m=> m.physign_time)) {
+        <tr>
+            <td>
+                <button onclick="ShowModal('@Url.Action("Details","Registrations", new {id = item.Inhospid},Context.Request.Scheme)',' Physical Sign')" class="float-end btn border-none">@item.physign_time</button>
+            </td>
+            <td>
+                <button onclick="ShowModal('@Url.Action("Details","Registrations", new {id = item.Inhospid},Context.Request.Scheme)',' Physical Sign')" class="float-end btn">Triage Level: <span class="text-info">@item.RegTriage (<span class="text-dark">@item.score</span>)</span></button>
+            </td>
+        </tr>
+}
+</table>
+</div>

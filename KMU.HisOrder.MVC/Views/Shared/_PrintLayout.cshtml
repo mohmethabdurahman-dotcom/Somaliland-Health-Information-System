@@ -1,0 +1,48 @@
+﻿
+@{
+#nullable enable
+    string? PageTitle = ViewData["Title"]?.ToString();
+#nullable restore
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@PageTitle</title>
+    <!-- Bootstrap -->
+    @*<link href="~/lib/bootstrap-4.6.2-dist/css/bootstrap.min.css" rel="stylesheet" />*@
+    <!-- Font Awesome -->
+    <link href="~/lib/font-awesome/css/all.min.css" rel="stylesheet" />
+    <!--jQueryUI-->
+    @*<link href="~/lib/jqueryui/jquery-ui.css" rel="stylesheet" />*@
+    <!--Pagedjs-->
+    @*<link href="~/lib/paged/interface.css" rel="stylesheet" />*@
+    <!--OrderPrintStyle-->
+    <link href="~/css/hisorderPrint.css" rel="stylesheet" />
+
+
+    <!-- jQuery -->
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    <!--QrCodeJS-->
+    <script src="~/lib/qrcodejs/qrcode.min.js"></script>
+
+
+    <!-- Bootstrap -->
+    @*<script src="~/lib/bootstrap-4.6.2-dist/js/bootstrap.bundle.js"></script>*@
+    <!--jQueryUI-->
+    @*<script src="~/lib/jqueryui/jquery-ui.min.js"></script>*@
+    <!--Pagedjs-->
+    @*<script src="~/lib/paged/paged.polyfill.js"></script>*@
+    @*<script src="https://unpkg.com/pagedjs/dist/paged.polyfill.js"></script>*@  <!-- Paged.js CDN -->
+</head>
+
+<body style="margin:0px;">
+    @RenderBody()
+    @RenderSection("scripts",required:false)
+</body>
+</html>

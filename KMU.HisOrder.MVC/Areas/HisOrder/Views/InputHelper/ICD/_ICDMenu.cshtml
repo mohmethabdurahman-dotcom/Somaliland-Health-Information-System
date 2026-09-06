@@ -1,0 +1,39 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.VKmuIcd>
+
+<div id="ICDMenu" class="row">
+    <div id="CategoryCol" class="col-md-5 TabMenuColumn" style="border-right:5px solid #ccc; border-left: 1px solid #ccc;">
+        <ul id="Categoryul" class="table Categoryul">
+            <li class="headli">
+                <span><a><i class="fa-solid fa-folder-open" style="color:transparent;"></i></a></span> <!-- Align hidden Column -->
+                <span>@Html.DisplayNameFor(model => model.IcdCode)</span>
+                <span>@Html.DisplayNameFor(model => model.IcdEnglishName)</span>
+            </li>
+            @foreach (var item in Model)
+            {
+                <li>
+                    <span><a><i class="fa-solid fa-folder-open" style="color:grey;"></i></a></span>
+                    <span class="IcdCode">@Html.DisplayFor(modelItem => item.IcdCode)</span>
+                    <span class="IcdEnglishName">@Html.DisplayFor(modelItem => item.IcdEnglishName)</span>
+                </li>
+            }
+           
+            <li id="SearchICDCategory" class="SelectedNoteRecord" style="display:none;">
+                <span><a><i class="fa-solid fa-folder-open" style="color:grey;"></i></a></span>
+                <span class="IcdCode">Search ICD</span>
+                <span class="IcdEnglishName"></span>
+            </li>
+        </ul>
+    </div>
+    <div id="CategoryitemCol" class="col-md-7 TabMenuColumn" style="padding:0px;">
+        <ul class="Categoryitemul Categoryul" style="margin-bottom:0px;">
+            <li class="headli">
+                <span><a><i class="fa-solid fa-folder-open" style="visibility:hidden;"></i></a></span> <!-- Align hidden Column -->
+                <span>@Html.DisplayNameFor(model => model.IcdCode)</span>
+                <span>@Html.DisplayNameFor(model => model.IcdEnglishName)</span>
+            </li>
+            <!-- MenuNodes or SearchNodes-->
+        </ul>
+    </div>
+</div>
+
+

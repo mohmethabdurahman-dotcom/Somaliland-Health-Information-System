@@ -1,0 +1,77 @@
+﻿@model KMU.HisOrder.MVC.Models.KmuNonMedicine
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Delete";
+}
+
+<link href="~/css/style.css" rel="stylesheet" />
+
+<style>
+    .NonMedInfo {
+        display: block;
+        margin: 15px;
+        border: 1;
+        border-bottom: 1px solid;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-6">
+        <div style="padding:10px;">
+            <h4>Are you sure you want to delete this item?</h4>
+            <hr />
+            <div class="NonMedInfo">
+                <b>ID</b>：@Html.DisplayFor(model => model.ItemId)
+            </div>
+            <div class="NonMedInfo">
+                <b>Name</b>：@Html.DisplayFor(model => model.ItemName)
+            </div>
+            <div class="NonMedInfo">
+                <b>Type</b>：@Html.DisplayFor(model => model.ItemType)
+            </div>
+            <div class="NonMedInfo">
+                <b>Spec</b>：@Html.DisplayFor(model => model.ItemSpec)
+            </div>
+               <div class="NonMedInfo">
+                <b>StartDate</b>：@Html.DisplayFor(model => model.StartDate)
+            </div>
+            <div class="NonMedInfo">
+                <b>EndDate</b>：@Html.DisplayFor(model => model.EndDate)
+            </div>
+            <div class="NonMedInfo">
+                <b>Off/On</b>：
+                @if (Model.Status == '1')
+                {
+                    <span>True</span>
+                }
+                else if (Model.Status == '2')
+                {
+                    <span>False</span>
+                }
+            </div>
+            <div class="NonMedInfo">
+                <b>Created by</b>：@Html.DisplayFor(model => model.CreateUser)
+            </div>
+            <div class="NonMedInfo">
+                <b>Created Date</b>：@Html.DisplayFor(model => model.CreateDate)
+            </div>
+            <div class="NonMedInfo">
+                <b>Remarks</b>：@Html.DisplayFor(model => model.Remark)
+            </div>
+            <div class="NonMedInfo">
+                <b>ShowSeq</b>：@Html.DisplayFor(model => model.ShowSeq)
+            </div>
+            <div class="NonMedInfo">
+                <b>GroupCode</b>：@Html.DisplayFor(model => model.GroupCode)
+            </div>
+            <div style="margin:15px;">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="ItemId" />
+                    <input type="submit" value="Delete" class="btn btn-danger" style="width:140px; margin-right:10px;" />
+                    <a class="btn btn-default" asp-action="Index" style="width:140px; float:right;">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

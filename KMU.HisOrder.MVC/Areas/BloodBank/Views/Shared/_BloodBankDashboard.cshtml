@@ -1,0 +1,64 @@
+<div class="bb-dashboard-grid mx-2">
+    <div class="bb-kpi-row">
+        <a asp-area="BloodBank" asp-controller="Requests" asp-action="Index" class="bb-kpi-card bb-kpi-card--amber bb-card--hover">
+            <i class="fa-solid fa-clock bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@ViewBag.PendingRequests</p>
+            <p class="bb-kpi-card__label">Pending Requests</p>
+            <span class="bb-kpi-card__link">Dr Queue →</span>
+        </a>
+        <a asp-area="BloodBank" asp-controller="Inventory" asp-action="Index" class="bb-kpi-card bb-kpi-card--emerald bb-card--hover">
+            <i class="fa-solid fa-droplet bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@ViewBag.AvailableUnits</p>
+            <p class="bb-kpi-card__label">Available Units</p>
+            <span class="bb-kpi-card__link">Inventory →</span>
+        </a>
+        <a asp-area="BloodBank" asp-controller="Screening" asp-action="Index" class="bb-kpi-card bb-kpi-card--sky bb-card--hover">
+            <i class="fa-solid fa-microscope bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@ViewBag.PendingScreening</p>
+            <p class="bb-kpi-card__label">Screening Queue</p>
+            <span class="bb-kpi-card__link">Screen →</span>
+        </a>
+        <a asp-area="BloodBank" asp-controller="BagAssignment" asp-action="Index" class="bb-kpi-card bb-kpi-card--navy bb-card--hover">
+            <i class="fa-solid fa-tag bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@ViewBag.PendingBagAssignment</p>
+            <p class="bb-kpi-card__label">Bag Assignment</p>
+            <span class="bb-kpi-card__link">Assign Bags →</span>
+        </a>
+    </div>
+
+    <div class="bb-row-2">
+        <div class="bb-card bb-warning-card">
+            <div class="bb-card__header">
+                <h4><i class="fa-solid fa-triangle-exclamation"></i> Units Expiring in 7 Days</h4>
+            </div>
+            <div class="bb-card__body">
+                <div>
+                    <p class="bb-warning-card__count">@ViewBag.ExpiringSoon</p>
+                    <p class="bb-page-subtitle bb-page-subtitle--flush">Requires attention before expiry</p>
+                </div>
+                <a asp-area="BloodBank" asp-controller="Inventory" asp-action="Index" class="bb-btn bb-btn-ghost">View Inventory <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="bb-card">
+            <div class="bb-card__header">
+                <h4>Donation Pipeline</h4>
+            </div>
+            <div class="bb-card__body">
+                <div class="bb-pipeline">
+                    <span class="bb-pipeline__step">Register</span>
+                    <i class="fa-solid fa-chevron-right bb-pipeline__arrow"></i>
+                    <span class="bb-pipeline__step">Screen <span>@ViewBag.PendingScreening</span></span>
+                    <i class="fa-solid fa-chevron-right bb-pipeline__arrow"></i>
+                    <span class="bb-pipeline__step">Assign <span>@ViewBag.PendingBagAssignment</span></span>
+                    <i class="fa-solid fa-chevron-right bb-pipeline__arrow"></i>
+                    <span class="bb-pipeline__step">Inventory <span>@ViewBag.AvailableUnits</span></span>
+                    <i class="fa-solid fa-chevron-right bb-pipeline__arrow"></i>
+                    <span class="bb-pipeline__step">Dispense <span>@ViewBag.PendingRequests</span></span>
+                </div>
+                <p class="bb-page-subtitle">Register → Screen → Assign → Inventory → Dispense via Dr Requests</p>
+                <p class="bb-page-subtitle bb-mt-4">Use <strong>Find Donor</strong> to search by donor ID, mobile phone, or name (HIS MRFind style) before registering repeat visitors.</p>
+            </div>
+        </div>
+    </div>
+</div>

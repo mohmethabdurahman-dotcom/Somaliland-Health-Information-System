@@ -1,0 +1,88 @@
+<script src="~/js/Ajax.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var bbDonorSearchPath = '@Url.Action("DonorSearch", "Donors", new { area = "BloodBank" })';
+    var initialBloodType = '@(Context.Request.Query["bloodType"].ToString())';
+
+    function fn_DonorSearch() {
+        $("#DonorDataContent").html("");
+        $("#DonorDataContent").removeClass("show");
+
+        var DonorID = $("#Txt_DonorID").val();
+        var MobilePhone = $("#Txt_MobilePhone").val();
+        var DonorName = $("#Txt_DonorName").val();
+        var BloodType = $("#Txt_BloodType").val() || initialBloodType;
+
+        if ((DonorID == "" || DonorID == null) && (MobilePhone == "" || MobilePhone == null) && (DonorName == "" || DonorName == null) && (BloodType == "" || BloodType == null)) {
+            layer.alert('Please choose one of Condition to Search', {
+                skin: 'layui-layer-lan',
+                closebtn: 1,
+                anim: 5,
+                icon: 1,
+                btn: ['OK'],
+                title: 'Error Message'
+            }, function (index) {
+                layer.close(index);
+            });
+            return;
+        }
+
+        ajax(bbDonorSearchPath, {
+            donorId: DonorID,
+            phone: MobilePhone,
+            name: DonorName,
+            bloodType: BloodType
+        }, function (html) {
+            $("#DonorDataContent").html(html);
+            $("#DonorDataContent").addClass("show");
+            if ($.fn.DataTable && $('#donorInfo_tb').length && $('#donorInfo_tb tbody tr[id^="tr_donor_"]').length > 0) {
+                if ($.fn.DataTable.isDataTable('#donorInfo_tb')) {
+                    $('#donorInfo_tb').DataTable().destroy();
+                }
+                $('#donorInfo_tb').DataTable({ scrollX: true, pageLength: 25, order: [[6, 'desc']], columnDefs: [{ orderable: false, targets: 0 }] });
+                $(".dataTables_info").css("width", "100%");
+            }
+        }, function () {
+            layer.alert('Donor search failed. Please refresh the page and try again.', {
+                skin: 'layui-layer-lan',
+                closebtn: 1,
+                anim: 5,
+                icon: 2,
+                btn: ['OK'],
+                title: 'Search Error'
+            });
+        });
+    }
+
+    function fn_SelectRow(trRow) {
+        var trID = trRow.id;
+        $('tr[id^="tr_donor_"]').removeClass("trHighlight");
+        $("#" + trID).addClass("trHighlight");
+    }
+
+    window.bbFindOpenProfile = function (tr) {
+        var url = tr && tr.getAttribute('data-profile-url');
+        if (url) window.location.href = url;
+    };
+
+    $(document).ready(function () {
+        if (initialBloodType) {
+            $("#Txt_BloodType").val(initialBloodType);
+        }
+
+        $("#Txt_DonorID, #Txt_MobilePhone, #Txt_DonorName, #Txt_BloodType").keyup(function (event) {
+            if (event.which === 13) fn_DonorSearch();
+        });
+        $("#btnDonorSearch").on("click", function (e) {
+            e.preventDefault();
+            fn_DonorSearch();
+        });
+
+        if ($("#Txt_DonorID").val() || $("#Txt_MobilePhone").val() || $("#Txt_DonorName").val() || initialBloodType) {
+            fn_DonorSearch();
+        }
+    });
+})();
+</script>

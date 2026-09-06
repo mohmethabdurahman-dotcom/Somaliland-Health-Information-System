@@ -1,0 +1,125 @@
+<script>
+(function () {
+  'use strict';
+  var cfg = window.bbFindDonorConfig || {};
+  var form = document.getElementById('bbFindDonorForm');
+  var input = document.getElementById('bbFindDonorInput');
+  var btn = document.getElementById('bbFindDonorBtn');
+  var loading = document.getElementById('bbFindDonorLoading');
+  var errEl = document.getElementById('bbFindDonorError');
+  var resultEl = document.getElementById('bbFindDonorResult');
+  var listEl = document.getElementById('bbFindDonorList');
+  if (!form || !input || !cfg.lookupUrl) return;
+
+  function hideAll() {
+    if (loading) loading.classList.add('hidden');
+    if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+    if (resultEl) { resultEl.classList.add('hidden'); resultEl.innerHTML = ''; }
+    if (listEl) { listEl.classList.add('hidden'); listEl.innerHTML = ''; }
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+
+  function statusBadge(status) {
+    if (status === 'Passed') return 'bb-badge-passed';
+    if (status === 'Failed') return 'bb-badge-failed';
+    return 'bb-badge-pending';
+  }
+
+  function renderSingle(d) {
+    if (!resultEl) return;
+    resultEl.innerHTML =
+      '<div class="bb-find-donor__card">' +
+        '<div class="bb-find-donor__card-head">' +
+          '<div class="bb-find-donor__card-bt">' + escapeHtml(d.bloodType) + '</div>' +
+          '<div>' +
+            '<strong class="bb-find-donor__card-name">' + escapeHtml(d.fullName) + '</strong>' +
+            '<p class="bb-find-donor__card-meta">' +
+              '<span class="bb-mono">' + escapeHtml(d.bloodBankDonorId) + '</span>' +
+              ' · <span class="bb-mono">' + escapeHtml(d.phone) + '</span>' +
+            '</p>' +
+          '</div>' +
+          '<span class="bb-badge ' + statusBadge(d.lastStatus) + '">' + escapeHtml(d.lastStatus) + '</span>' +
+        '</div>' +
+        '<div class="bb-find-donor__card-stats">' +
+          '<div><span class="bb-find-donor__stat-n">' + d.lifetimeVisits + '</span><span class="bb-find-donor__stat-l">Times came</span></div>' +
+          '<div class="bb-find-donor__stat-ok"><span class="bb-find-donor__stat-n">' + d.successfulDonations + '</span><span class="bb-find-donor__stat-l">Successful</span></div>' +
+          '<div><span class="bb-find-donor__stat-l">Last visit</span><span class="bb-find-donor__stat-d">' + escapeHtml(d.lastVisit || '—') + '</span></div>' +
+        '</div>' +
+        '<div class="bb-find-donor__card-actions">' +
+          '<a href="' + escapeHtml(d.profileUrl) + '" class="bb-btn bb-btn-primary"><i class="fa-solid fa-clock-rotate-left"></i> Donor history</a>' +
+          '<a href="' + escapeHtml(d.profileUrl) + '" class="bb-btn bb-btn-ghost">Full profile</a>' +
+        '</div>' +
+      '</div>';
+    resultEl.classList.remove('hidden');
+  }
+
+  function renderList(items) {
+    if (!listEl) return;
+    var html = '<p class="bb-find-donor__list-title">Multiple donors — select one</p><ul class="bb-find-donor__matches">';
+    items.forEach(function (d) {
+      html += '<li><a href="' + escapeHtml(d.profileUrl) + '" class="bb-find-donor__match">' +
+        '<span class="bb-find-donor__match-bt">' + escapeHtml(d.bloodType) + '</span>' +
+        '<span class="bb-find-donor__match-body">' +
+          '<strong>' + escapeHtml(d.fullName) + '</strong>' +
+          '<span class="bb-mono">' + escapeHtml(d.bloodBankDonorId) + ' · ' + escapeHtml(d.phone) + '</span>' +
+        '</span>' +
+        '<span class="bb-find-donor__match-stats">' + d.lifetimeVisits + ' visits · ' + d.successfulDonations + ' OK</span>' +
+        '<i class="fa-solid fa-chevron-right"></i></a></li>';
+    });
+    html += '</ul>';
+    listEl.innerHTML = html;
+    listEl.classList.remove('hidden');
+  }
+
+  function runLookup(e) {
+    if (e) e.preventDefault();
+    var q = input.value.trim();
+    hideAll();
+    if (q.length < 1) {
+      if (errEl) {
+        errEl.textContent = 'Enter BB-DONOR id or phone number.';
+        errEl.classList.remove('hidden');
+      }
+      return;
+    }
+    if (loading) loading.classList.remove('hidden');
+    if (btn) btn.disabled = true;
+
+    fetch(cfg.lookupUrl + '?term=' + encodeURIComponent(q), { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (loading) loading.classList.add('hidden');
+        if (btn) btn.disabled = false;
+        if (!data.success) {
+          if (errEl) {
+            errEl.textContent = data.message || 'Donor not found.';
+            errEl.classList.remove('hidden');
+          }
+          if (window.bbShowToast) window.bbShowToast(data.message || 'Donor not found.', 'error');
+          return;
+        }
+        if (data.single && data.data) {
+          renderSingle(data.data);
+          if (window.bbShowToast) window.bbShowToast('Donor found: ' + data.data.fullName, 'success');
+        } else if (data.items && data.items.length) {
+          renderList(data.items);
+        }
+      })
+      .catch(function () {
+        if (loading) loading.classList.add('hidden');
+        if (btn) btn.disabled = false;
+        form.submit();
+      });
+  }
+
+  form.addEventListener('submit', runLookup);
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') runLookup(e);
+  });
+})();
+</script>

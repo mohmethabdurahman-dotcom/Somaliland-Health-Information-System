@@ -1,0 +1,219 @@
+﻿@using KMU.HisOrder.MVC.Models;
+@using KMU.HisOrder.MVC.Extesion;
+@{
+    Layout = null;
+
+    var _week = ViewData["VD_week"] as List<SelectListItem>;
+    var _area = ViewData["VD_area"] as List<SelectListItem>;
+    var _noon = ViewData["VD_noon"] as List<SelectListItem>;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HISCall</title>
+
+    <!-- Bootstrap -->
+    <link href="~/lib/bootstrap-4.6.2-dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/lib/font-awesome/css/all.min.css" asp-append-version="true" rel="stylesheet">
+
+    <style>
+        body {
+            margin-top: 4.5rem;
+            font-family: Verdana;
+            background-color: #00A681;
+            font-size: 2rem;
+        }     
+
+        .btn-group {
+            display: block !important;
+        }
+
+        label.btn {
+            min-width: 7rem;
+            font-size: 1.2rem;
+            border-radius: 0 !important;
+        }
+
+        i {
+            font-size: 1.2rem;
+            color: #00A681;
+        }
+
+        h1 {
+            font-size: 4rem !important;
+        }
+
+        .card {
+            border-radius: 0.5rem !important;
+        }
+
+        #gear {
+            position: absolute !important;
+            top: 0px;
+            left: 10px;
+            z-index: -1;
+            color: #474c53; 
+            font-size: 55rem;
+            opacity: 0.3;
+        }
+
+        footer, footer > a {
+ 
+            font-size: 1rem;
+            color: #474c53!important; 
+        }
+
+        footer::before {
+            content: "\2014\00A0";
+        }
+
+        #divMask {
+            width: 100%;
+            height: 35vh;
+            top: 30vh;
+            position: absolute;
+            background-color: #3C3C3C;
+            opacity: 0.9;
+            z-index: 99;
+            text-align: center;
+        }
+
+            #divMask > h1 {
+                    color: #FFF;
+                    line-height: 35vh;
+            }
+
+    </style>
+</head>
+<body>
+    <div id="divMask"><h1>Page Loading....</h1></div>
+
+    <div class="container">
+
+        <i id="gear" class="fa-solid fa-gears"></i>
+
+        <form id="DivSetCalling">
+
+            <h1 class="text-center">
+                - HIS Setting -
+            </h1>
+
+            <div class="card mt-5">
+                <div class="card-body">
+                    <div class="mb-1"><i class="fa-solid fa-ellipsis-vertical"></i> Choose the day ?</div>
+                    <div class="btn-group btn-group-toggle pl-4" data-toggle="buttons">
+                        @foreach (var w in _week)
+                        {
+                            var color = "btn-outline-success";
+                            if (_week.IndexOf(w) == 5) { color = "btn-outline-danger"; }
+
+                            <label class="btn @color">
+                                <input type="radio" name="week" value="@w.Value" autocomplete="off" checked="@w.Selected" required> @w.Text
+                            </label>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="mb-1"><i class="fa-solid fa-ellipsis-vertical"></i> Choose the area ?</div>
+                    <div class="btn-group btn-group-toggle pl-4 " data-toggle="buttons">
+                        @foreach( var a in _area)
+                        {
+                            <label class="btn btn-outline-success">
+                                <input type="radio" name="area" value="@a.Value" autocomplete="off" checked="@a.Selected" required> @a.Text
+                            </label>
+                        }
+                    </div>
+                </div> 
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="mb-1"><i class="fa-solid fa-ellipsis-vertical"></i> Morning or Afternoon ?</div>
+                    <div class="btn-group btn-group-toggle pl-4" data-toggle="buttons">
+                        @foreach (var n in _noon)
+                        {
+                            <label class="btn btn-outline-success">
+                                <input type="radio" name="noon" value="@n.Value" autocomplete="off" checked="@n.Selected" required> @n.Text
+                            </label>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <span class="btn btn-lg btn-warning" id="btnSignalR" data-mode="SignalR">
+                    If the page is not turn automatically, please click
+                    <i class="fa-solid fa-arrow-pointer"></i>
+                </span>
+            </div>
+
+        </form>
+        
+        <footer class="float-right mt-5">
+            2022 © KMU HIS. by <a href="https://www.kmuh.org.tw/"><u>Kaohsiung Medical University Hospital</u></a>
+        </footer>
+        <footer class="float-right" id="uagent"></footer>
+    </div>
+    
+    <!-- jQuery -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="~/lib/bootstrap-4.6.2-dist/js/bootstrap.bundle.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            //2023.3.20 remove mask!! by elain.
+            $('#divMask').remove();
+
+            //2023.3.20 請求的軟體類型或版本號 by elain.
+            $('#uagent').text(navigator.userAgent);
+
+            //2023.3.20 網頁下載即autoSubmit by elain.
+            autoSubmit();
+
+            //2023.3.20 按鈕點選即autoSubmit by elain.
+            $('input:radio').on('change', function(){
+                autoSubmit();
+            });
+
+            //2023.3.20 click button, 顯示radio點選訊息 by elain.
+            $('#btnSignalR, #btnNormal').on('click', function(){ 
+                var _params = 'iweek=' + $('input[name="week"]:checked').val() +
+                              ' ; iarea=' + $('input[name="area"]:checked').val() +
+                              ' ; inoon=' + $('input[name="noon"]:checked').val();
+                alert(_params);
+
+                if ($('input:radio:checked').length != 3){
+                    alert('Choose the area ?');
+                } else{
+                    autoSubmit();
+                }
+            });
+
+            function autoSubmit(){
+                //2023.3.20 必須radio button皆有點點選才可換頁 by elain.
+                if ($('input:radio:checked').length == 3){
+                    //go to 叫號燈
+                    location.href = '@Url.Action("View", "Call", new { Area = "HisCalling" })' +
+                        '?iweek=' + $('input[name="week"]:checked').val() +
+                        '&iarea=' + $('input[name="area"]:checked').val() +
+                        '&inoon=' + $('input[name="noon"]:checked').val();
+                }
+            }
+            
+        });
+    </script>
+</body>
+</html>

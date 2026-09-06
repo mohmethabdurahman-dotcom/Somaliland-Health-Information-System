@@ -1,0 +1,337 @@
+﻿@using KMU.HisOrder.MVC.Extesion;
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Maintain → ClinicSchedule";
+    var Title = ViewData["Title"] as string;
+}
+<script src="~/js/Ajax.js"></script>
+<style>
+    .direction {
+        font-weight: bold
+    }
+
+        .direction:hover {
+            text-decoration: underline;
+            font-weight: bold
+        }
+</style>
+<h6 class="direction mx-2" style="">@Title</h6>
+<div class="form-group row mx-0 border-bottom">
+    <div class="input-group col-3">
+        <div class="input-group-prepend align-items-center">
+            <span class="font-weight-bold border-0 text-center mx-1" style="background-color:inherit;">SearchType:</span>
+        </div>
+        <select id="Select_Type" class="form-control font-weight-bold text-danger text-center" onchange="fn_ChangeSearchType(false)">
+            <option value="Week">By Week</option>
+            <option value="Room">By Clinic</option>
+        </select>
+    </div>
+    <div id="WeekBlock" class="input-group col-3" hidden>
+        <div class="input-group-prepend align-items-center">
+            <span class="font-weight-bold border-0 text-center mx-1" style="background-color:inherit;">By Week:</span>
+        </div>
+        <select id="Select_Week" class="form-control font-weight-bold text-primary rounded-left">
+            <option value=""></option>
+            @foreach (DayOfWeek week in Enum.GetValues(typeof(DayOfWeek)))
+            {
+                if (DateTime.Today.DayOfWeek == week)
+                {
+                    <option value="@week.ToString("d")" selected>@week.EnumToString()</option>
+                }
+                else
+                {
+                    <option value="@week.ToString("d")">@week.EnumToString()</option>
+                }
+            }
+        </select>
+        <div class="input-group-append">
+            <i class="fa-solid fa-magnifying-glass fa-xl rounded-right" style="color:white;line-height:1;background:#6B728E;padding:5px;cursor:pointer" onclick="fn_Search('Week')"></i>
+        </div>
+    </div>
+    <div id="RoomBlock" class="input-group col-3" hidden>
+        <div class="input-group-prepend align-items-center">
+            <span class="font-weight-bold border-0 text-center mx-1" style="background-color:inherit;">By Room:</span>
+        </div>
+        <input type="text" id="Txt_Room" class="form-control font-weight-bold text-primary rounded-left">
+        <div class="input-group-append">
+            <i class="fa-solid fa-magnifying-glass fa-xl rounded-right" style="color:white;line-height:1;background:#6B728E;padding:5px;cursor:pointer" onclick="fn_Search('Room')"></i>
+        </div>
+    </div>
+    <div class="col-6">
+        <button type="button" class="btn btn-primary float-right" onclick="fn_ShowModal('Create','')">Create</button>
+    </div>
+</div>
+
+<div class="form-group row mx-0">
+    <div class="col-12" id="ClinicContent">
+    </div>
+</div>
+<!--Model-->
+<div class="modal fade" id="ScheduleModal" tabindex="1" role="dialog" aria-labelledby="ScheduleModal" aria-hidden="true" style="overflow:hidden">
+    <div class="modal-dialog modal-lg" style="width:85%;height:75%">
+        <div class="modal-content" style="background-color:#d9edf7;">
+            <div class="modal-title">
+            </div>
+
+            <!--<div class="modal-header" style="background-color:#d9edf7;border-radius:5px 5px"></div>-->
+            <div class="modal-body" style="padding-bottom:0;">
+                <div id="ModalScheduleHeader" class="col-md-12">
+                    <div class="text-center"><h3>Clinic Schedule Detail</h3></div>
+                </div>
+                <div id="ModalScheduleBody" class="col-md-12">
+                </div>
+            </div>
+            <div class="modal-footer hidden" style="padding-top:0;margin-top:0;">
+                @*<button class="btn btn-info" style="float:right;width:120px;" onclick="fn_CloseModal()">Close</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+    {
+    <script>
+
+        var APPLICATION_ROOT = '@Url.Content("~/Maintenance/")';
+
+        $(document).ready(function () {
+
+            $("#Txt_Room").keyup(function (event) {
+                if (event.which === 13) {
+
+                    var roomNo = $("#Txt_Room").val();
+
+                    fn_Search('Room');
+                }
+            });
+
+            fn_ChangeSearchType(true);
+
+        });
+
+        function fn_ShowModal(ModalType, Key) {
+
+            var Type = $("#Select_Type").val();
+            var Value = "";
+            if (Type == "Week") {
+                Value = $("#Select_Week").val();
+            }
+            else if (Type == "Room") {
+                Value = $("#Txt_Room").val();
+            }
+
+            $("#ScheduleModal").modal({ backdrop: 'true', keyboard: false });
+            $("#ScheduleModal").on('shown.bs.modal', function () {
+                var $this = $(this);
+                var $modal_dialog = $this.find('.modal-dialog');
+                var m_top = ($(window).height() - $modal_dialog.height()) / 2;
+                $modal_dialog.css({ 'margin': m_top + 'px auto' });
+            });
+
+            var inUrl = "ClinicSchedule/OpenModalContent";
+            var inData = {
+                Type: ModalType,
+                Key: Key,
+                Search: Type,
+                Value: Value
+            };
+
+            var inSuccessFunc = function (responseData) {
+                $("#ModalScheduleBody").html(responseData);
+            }
+            ajax(inUrl, inData, inSuccessFunc, null);
+        }
+
+        function fn_ChangeSearchType(firstTime) {
+
+            $("#WeekBlock").attr("hidden", true);
+            $("#RoomBlock").attr("hidden", true);
+
+            var Type = $("#Select_Type").val();
+
+            if (Type == "Week") {
+                $("#WeekBlock").removeAttr("hidden");
+
+                if (firstTime) {
+
+                    fn_Search(Type);
+                }
+            }
+            else if (Type == "Room") {
+                $("#Select_Week").val("");
+                $("#RoomBlock").removeAttr("hidden");
+            }
+        }
+
+        function fn_Search(type) {
+
+            var Week = $("#Select_Week").val();
+            var Room = $("#Txt_Room").val();
+
+            //if (type == "Week") {
+            //    Week = value;
+            //}
+            //else if (type == "Room") {
+            //    Room = value;
+            //}
+
+            if ((type == "Week" && Week == "") || (type == "Room" && Room == "")) {
+                layer.alert('Please select week/type room code', {
+                    skin: 'layui-layer-lan',
+                    closebtn: 1,
+                    anim: 5,
+                    icon: 2,
+                    btn: ['OK'],
+                    title: 'Warning'
+                }, function (index) {
+                    layer.close(index);
+                });
+                return;
+            }
+
+            var inUrl = "ClinicSchedule/ScheduleSearch";
+            var inData = {
+                Week: Week,
+                Room: Room,
+                Type: type
+            };
+
+            var inSuccessFunc = function (responseData) {
+                $("#ClinicContent").html(responseData);
+            }
+            ajax(inUrl, inData, inSuccessFunc, null);
+        }
+
+
+
+        function fn_ModifyScheduleData(action, type, value, oldweek, oldshift, oldnoon, oldroom, olddepartment, olddoctor) {
+
+            var Week = $("#SelectModalWeek").val();
+            var Shift = $("#SelectModalShift").val();
+            var Noon = $("#SelectModalNoon").val();
+            var Room = $("#Txt_ModalRoom").val();
+            var Dpt = $("#Txt_ModalDpt").val();
+            var DptName = $("#Txt_ModalDptName").val();
+            var Doctor = $("#Txt_ModalDoctor").val();
+            var DoctorName = $("#Txt_ModalDoctorName").val();
+            //var Dpt = $("#Txt_ModalDpt").val().split('-')[0];
+            //var DptName = $("#Txt_ModalDpt").val().split('-')[1];
+            //var Doctor = $("#Txt_ModalDoctor").val().split('-')[0];
+            //var DoctorName = $("#Txt_ModalDoctor").val().split('-')[1];
+            var openFlag = $("#Select_ModalFlag").val();
+            var remark = $("#Txt_ModalRemark").val();
+
+
+            var inUrl = "ClinicSchedule/ModifySchedule";
+            var inData = {
+                Week: Week,
+                Shift: Shift,
+                Noon: Noon,
+                Room: Room,
+                Dpt: Dpt,
+                DptName: DptName,
+                Doctor: Doctor,
+                DoctorName: DoctorName,
+                openFlag: openFlag,
+                remark: remark,
+                action:action,
+                oldweek: oldweek,
+                oldshift:oldshift,
+                oldnoon:oldnoon,
+                oldroom:oldroom,
+                olddepartment:olddepartment,
+                olddoctor:olddoctor
+
+            };
+
+            var inSuccessFunc = function (responseData) {
+                var msg = JSON.parse(responseData);
+                if (msg["isSuccess"]) {
+                    $("#ScheduleModal").modal('hide');
+
+                    //$('#Select_Type option[value=Room]').prop('selected', true);
+                    //fn_ChangeSearchType(false);
+
+                    if (type == "Week") {
+                        //$("#Select_Week  option[value=" + value + "]'").prop('selected', true);
+                        fn_Search('Week', value);
+                    }
+                    else if (type == "Room") {
+                        $("#Txt_Room").val(Room);
+                        fn_Search('Room', value);
+                    }
+
+                    //if (Type == "Room") {
+                    //    $("#Txt_Room").val(Room);
+                    //    fn_Search('Room');
+                    //}
+                }
+                else {
+                    layer.alert(msg["StatusMessage"], {
+                        skin: 'layui-layer-lan',
+                        closebtn: 1,
+                        anim: 5,
+                        icon: 2,
+                        btn: ['OK'],
+                        title: 'Error Message'
+                    }, function (index) {
+                        layer.close(index);
+                    });
+                }
+            }
+            ajax(inUrl, inData, inSuccessFunc, null);
+        }
+
+        function fn_SwitchOpenFlag(obj, Key, Flag) {
+
+            var icon = obj.children[0];
+
+            var KeyArr = Key.split("_");
+            var Week = KeyArr[0];
+            var Noon = KeyArr[1];
+            var Room = KeyArr[2];
+            var Shift = KeyArr[3];
+        
+            var inUrl = "ClinicSchedule/UpdateOpenFlag";
+            var inData = {
+                Week: Week,
+                Noon: Noon,
+                Room: Room,
+                Shift:Shift,
+                OpenFlag: Flag
+            };
+
+            var inSuccessFunc = function (responseData) {
+                var msg = JSON.parse(responseData);
+                if (msg["ReturnT"]["isSuccess"]) {
+
+                    icon.classList.remove("fa-toggle-on");
+                    icon.classList.remove("fa-toggle-off");
+
+                    if (msg["NewFlag"] == "Y") {
+                        icon.classList.add("fa-toggle-on");
+                        icon.style.color = "green";
+                    }
+                    else {
+                        icon.classList.add("fa-toggle-off");
+                        icon.style.color = "black";
+                    }
+                }
+                else {
+                    layer.alert(msg["ReturnT"]["StatusMessage"], {
+                        skin: 'layui-layer-lan',
+                        closebtn: 1,
+                        anim: 5,
+                        icon: 2,
+                        btn: ['OK'],
+                        title: 'Error Message'
+                    }, function (index) {
+                        layer.close(index);
+                    });
+                }
+            }
+            ajax(inUrl, inData, inSuccessFunc, null);
+        }
+
+    </script>
+    }

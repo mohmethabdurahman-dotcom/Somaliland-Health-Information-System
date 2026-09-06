@@ -1,0 +1,84 @@
+﻿@model KMU.HisOrder.MVC.Areas.Reservation.ViewModels.PrintClass
+
+@{
+    Layout = "/Views/Shared/_PrintLayout.cshtml";
+}
+
+<style>
+    .pageborderOne {
+        border: 0px solid #777;
+        width: 105mm;
+        height: 50%;
+        position: absolute;
+        top: 0;
+        /*margin: 5mm;*/ /* the same .page margin */
+        margin-left: 7mm;
+        margin-top: 5mm;
+        margin-bottom: 5mm;
+        margin-right: 14mm;
+    }
+
+    .headerone {
+        position: fixed;
+        width: 195mm;
+        top: 0;
+        font-size: 1rem;
+        margin-top: 8mm;
+        margin-left: 10mm;
+    }
+
+    .footer-Er {
+        position: fixed;
+        width: 97mm;
+        bottom: 30%;
+        font-size: 1rem;
+        margin: 0mm 5mm 0mm 10mm; /* the same .page margin */
+    }
+    .footer-Opd{
+        position: fixed;
+        width: 97mm;
+        bottom: 45%;
+        font-size: 1rem;
+        margin: 0mm 5mm 0mm 10mm; /* the same .page margin */
+    }
+</style>
+
+<!-- Render Border -->
+<div>
+    <div class="pageborderOne"></div>
+
+    <div class="headerone">
+        @Html.Partial("~/Areas/Reservation/Views/Print/PartialViews/_v_Header.cshtml",Model)
+    </div>
+    @if (Model.reserveType == "OPD")
+    {
+        <div class="footer-Opd">
+            @Html.Partial("~/Areas/Reservation/Views/Print/PartialViews/_v_Footer.cshtml",Model)
+        </div>
+    }
+    else
+    {
+        <div class="footer-Er">
+            @Html.Partial("~/Areas/Reservation/Views/Print/PartialViews/_v_Footer.cshtml",Model)
+        </div>
+    }
+</div>
+
+<!-- Medical Record Page -->
+@Html.Partial("~/Areas/Reservation/Views/Print/PartialViews/_ReserveSheet.cshtml", Model);
+
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            // window.print();
+            // hubinlabaad
+            setTimeout(function () { window.print(); }, 400);
+
+            // Print done close window.
+            window.addEventListener('afterprint', function () {
+                setTimeout(function () { window.close(); }, 10);
+            })
+        });
+    </script>
+}

@@ -1,0 +1,185 @@
+@model KMU.HisOrder.MVC.Controllers.ShowUserAuths
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+	var obj_one = Model.user_detail;
+}
+
+@if( TempData["Show_User_Messages"] != null)
+{
+<table align="center">
+				<tr>
+								<td>
+	<h2>
+		<center>
+			<div class="alert alert-primary" role="alert">
+			@TempData["Show_User_Messages"]
+			</div>
+		</center>
+	</h2>
+								</td>
+				</tr>
+</table>
+}
+
+
+
+
+
+<div class="container p-3">
+    <div class="row -4">
+		<div class="col-4"></div>
+        <div class="col-4">
+            <h1 class="text-center">You Choose User Profile</h1>
+        </div>
+        <div class="col-4 text-end"></div>
+    </div>
+
+    <br /><br />
+
+<table align="center"><tr><td>
+    <table class="table table-bordered table-striped" ><!--style="width:100%"-->
+        <thead>
+            <tr>
+                <th>
+                    <font color="red">*</font>Account ID
+                </th>
+
+
+                <th>
+                    <font color="red">*</font>Name
+                </th>
+				<th>
+                    <font color="red">*</font>Create Time
+                </th>
+
+              
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <td style="vertical-align: middle;">
+
+                        @obj_one.UserIdno
+
+                    </td>
+
+
+
+                    <td style="vertical-align: middle;">
+                        @obj_one.UserNameFirstname　@obj_one.UserNameMidname　@obj_one.UserNameLastname
+                    </td>
+					<td style="vertical-align: middle;">
+                        @obj_one.CreateTime
+                    </td>
+
+
+                  
+                </tr>
+        </tbody>
+    </table>
+</td></tr></table>
+</div>
+
+@*
+@if( obj_one.UserPassword == obj_one.UserMobilePhone)
+{
+<table align="center">
+				<tr>
+								<td>
+	<h2>
+		<center>
+			<div class="alert alert-danger" role="alert">
+This Account ID not finish to change the password when logging in for the first time.<br>
+The authority will not be activated until the user changes the password.
+			</div>
+		</center>
+	</h2>
+								</td>
+				</tr>
+</table>
+}
+*@
+
+
+
+<div class="container p-3">
+    <div class="row -4">
+		<div class="col-4"></div>
+        <div class="col-4">
+            <h1 class="text-center">User Auth Setting</h1>
+        </div>
+        <div class="col-4 text-end"></div>
+    </div>
+
+    <br /><br />
+
+	<form method="post" asp-area="" asp-controller="Login" asp-action="DoUserAuthSetting">
+<table align="center"><tr><td>
+    <table class="table table-bordered table-striped" ><!--style="width:100%"-->
+        <thead>
+            <tr>
+                <th style="text-align: center;">
+                    Set Authorization
+                </th>
+                @*
+                <th>
+                    <font color="red">*</font>Project ID
+                </th>
+                *@
+				<th>
+                    <font color="red">*</font>System Name
+                </th>
+				@*
+				<th>
+                    Authorization time (authorizer)
+                </th>
+				*@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var project_one in Model.all_project_list)
+            {var checked_string ="";
+			var Authorization_info ="";
+			
+				if(project_one.auth_create_time != null)
+				{
+						checked_string = "checked=\"checked\"";
+						Authorization_info = project_one.auth_create_time.Value.ToString("yyyy-MM-dd HH:mm:ss") +" (" + project_one.auth_create_user + ")";
+				}
+			
+			
+				
+                <tr>                   
+                    <td style="text-align: center;">
+						<input type="checkbox"  name="Setting_Auth_Project_ID" style="transform: scale(1.5)" value="@project_one.db_KmuProject.ProjectId" @checked_string>
+                    </td>
+                    @*
+					<td>
+                        @project_one.db_KmuProject.ProjectId
+                    </td>
+                    *@
+					<td>
+                        @project_one.db_KmuProject.ProjectName
+                    </td>
+					@*
+                    <td>
+                        @Authorization_info
+                    </td>
+					*@
+                </tr>
+            }
+        </tbody>
+    </table>
+</td></tr></table>
+	<input type="hidden" name="Setting_User_ID" value="@obj_one.UserIdno">
+	<div class="row justify-content-center">
+	<button type="submit" class="btn btn-primary">Change Authorization</button>
+	</div>
+	</form>
+<h2>
+	<center>
+			<span style="color:#FF0000">Notice</span> :  After changing the Authorization, the <span style="color:#FF0000">user need to log in again to take effect</span>.
+	</center>
+</h2>
+</div>

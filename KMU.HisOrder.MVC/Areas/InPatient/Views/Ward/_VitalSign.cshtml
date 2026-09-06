@@ -1,0 +1,384 @@
+﻿<style>
+    .infoCard {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        background: #fff;
+        padding: 25px;
+        margin-top: 20px;
+    }
+
+    .form-label {
+        font-weight: 600;
+    }
+
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 5px rgba(13, 110, 253, 0.2);
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: 0;
+    }
+
+    .badge-loss {
+        background-color: #dc3545;
+        color: #fff;
+        font-size: 0.85rem;
+        padding: 4px 8px;
+        border-radius: 8px;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+
+    .vitaltbl thead {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+
+    .modal-footer {
+        justify-content: flex-end;
+    }
+
+    .icon-input {
+        width: 45px;
+        text-align: center;
+        background-color: #f8f9fa;
+        border-right: 0;
+    }
+
+    .text-red {
+        background-color: #f8d7da !important;
+        color: #842029;
+    }
+</style>
+
+<div class="infoCard" id="inbadan">
+    <p hidden id="inhospId">@ViewBag.Reservation.inhospId</p>
+
+    <!-- Patient Info -->
+    <div class="d-flex align-items-center mb-3">
+        <img src="/images/avatar.png" class="rounded-circle me-3" alt="Patient Avatar" style="width: 70px; height: 70px;">
+        <div>
+            <h5 class="mb-1">
+                <strong>@ViewBag.Patient.ChrPatientFirstname @ViewBag.Patient.ChrPatientMidname @ViewBag.Patient.ChrPatientLastname</strong>
+                <span class="badge bg-warning ms-2"><i class="fa fa-star"></i></span>
+            </h5>
+            <div class="text-muted small">
+                <span class="me-3"><i class="fa fa-id-card text-primary me-1"></i>@ViewBag.Patient.ChrHealthId</span>
+                <span class="me-3"><i class="fa fa-birthday-cake text-primary me-1"></i>@ViewBag.Patient.ChrBirthDate</span>
+                <span class="me-3"><i class="fa fa-venus-mars text-primary me-1"></i>@ViewBag.Patient.ChrSex</span>
+                <span class="me-3"><i class="fa fa-phone text-primary me-1"></i>@ViewBag.Patient.ChrMobilePhone</span>
+                <span><i class="fa fa-location-dot text-primary me-1"></i>@ViewBag.Patient.ChrAddress</span>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Vital Sign Inputs -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">RR</label>
+            <div class="input-group">
+                <span class="input-group-text icon-input"><i class="fa fa-lungs text-primary"></i></span>
+                <input id="RR" name="Physical_RR" type="number" class="form-control input_physical" placeholder="Respiratory Rate">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Oxygen</label>
+            <div class="input-group">
+                <span class="input-group-text icon-input"><i class="fa fa-lungs-virus text-primary"></i></span>
+                <input id="Oxygen" name="Physical_Oxygen" type="number" class="form-control input_physical" placeholder="O2 Saturation">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">HR</label>
+            <div class="input-group">
+                <span class="input-group-text icon-input"><i class="fa fa-heartbeat text-primary"></i></span>
+                <input id="PhysicalHR" name="Physical_HR" type="number" class="form-control input_physical" placeholder="Heart Rate">
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-md-4">
+            <label class="form-label">Input</label>
+            <div class="input-group">
+                <input id="INput" name="INput" type="number" class="form-control" placeholder="Fluid Intake">
+                <div class="input-group-text ml-3 border border-danger">
+                    <input type="checkbox" class="form-check-input mt-0" id="InputLoss">
+                    <label class="ms-1 small text-danger" for="InputLoss">Loss</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Output</label>
+            <div class="input-group">
+                <input id="OUTput" name="OUTput" type="number" class="form-control" placeholder="Fluid Output">
+                <div class="input-group-text ml-3 border border-danger">
+                    <input type="checkbox" class="form-check-input mt-0" id="OutputLoss">
+                    <label class="ms-1 small text-danger" for="OutputLoss">Loss</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Temperature</label>
+            <div class="input-group">
+                <span class="input-group-text icon-input"><i class="fa fa-thermometer-half text-primary"></i></span>
+                <input id="Temperature" name="Physical_Temp" type="number" class="form-control input_physical" placeholder="°C">
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-md-3">
+            <label class="form-label">RBS</label>
+            <div class="input-group">
+                <span class="input-group-text icon-input"><i class="fa fa-vial text-primary"></i></span>
+                <input id="PhysicalRBS" name="Physical_RBS_Glucose" type="number" class="form-control input_physical" placeholder="mg/dL">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Systolic BP</label>
+            <div class="input-group">
+                <span class="input-group-text icon-input"><i class="fa fa-arrow-up text-primary"></i></span>
+                <input id="Systolic_BP" name="Systolic_BP" type="number" class="form-control input_physical" placeholder="mmHg">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Diastolic BP</label>
+            <div class="input-group">
+                <span class="input-group-text icon-input"><i class="fa fa-arrow-down text-primary"></i></span>
+                <input id="Diastolic_BP" name="Diastolic_BP" type="number" class="form-control input_physical" placeholder="mmHg">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Pain Score (0–10)</label>
+            <div class="input-group">
+                <span class="input-group-text icon-input"><i class="fa fa-face-frown text-primary"></i></span>
+                <input id="PainScore" name="PainScore" type="number" min="0" max="10" class="form-control" placeholder="Pain Score">
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-md-3">
+            <label class="form-label">Date</label>
+            <div class="input-group">
+                <span class="input-group-text icon-input"><i class="fa fa-calendar-day text-primary"></i></span>
+                <input id="date" type="datetime-local" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")">
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer mt-3">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times me-1"></i>Close</button>
+        <button type="submit" id="vatalSubmit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+        <h5 class="mb-3"><i class="fa fa-notes-medical me-1 text-primary"></i>Recent Vital Signs</h5>
+        <table class="vitaltbl table table-hover table-striped table-bordered align-middle text-center">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Time</th>
+                    <th>RR</th>
+                    <th>Oxygen</th>
+                    <th>HR</th>
+                    <th>Input</th>
+                    <th>Output</th>
+                    <th>Temp</th>
+                    <th>RBS</th>
+                    <th>Systolic</th>
+                    <th>Diastolic</th>
+                    <th>Pain</th>
+                    <th>Shift</th>
+                    <th>By</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.vitalSign != null)
+                {
+                    foreach (var vital in ViewBag.vitalSign)
+                    {
+                        <tr>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-sm mx-2"
+                                        onclick="confirmDelete('@Url.Action("Delete", "Ward", new { healthid = @ViewBag.Patient.ChrHealthId, inhospid = @ViewBag.Reservation.inhospId, date = @vital.at })')">
+                                    <i class="fa-solid fa-delete-left me-1"></i>
+                                </button>
+
+                            </td>
+                            <td>@vital.at</td>
+                            <td>@vital.RR</td>
+                            <td>@vital.Oxygen</td>
+                            <td>@vital.HR</td>
+                            <td class="@((vital.Input?.ToString().Contains("LOSS") ?? false) ? "text-red" : "")">@vital.Input</td>
+                            <td class="@((vital.Output?.ToString().Contains("LOSS") ?? false) ? "text-red" : "")">@vital.Output</td>
+                            <td>@vital.Temperature</td>
+                            <td>@vital.RBS</td>
+                            <td>@vital.Systolic</td>
+                            <td>@vital.Diastolic</td>
+                            <td @vital.PainScore>@vital.PainScore</td>
+                            <td>@vital.Shift</td>
+                            <td>@vital.by</td>
+                            <td>
+                                @* <a class="btn btn-danger btn-sm" asp-controller="Ward" asp-action="Delete" asp-route-healthid="@ViewBag.Patient.ChrHealthId" asp-route-inhospid="@ViewBag.Reservation.inhospId" asp-route-date="@vital.at"><i class="fa fa-delete">Delete </i></a> *@
+                               
+                                <button type="button" class="btn btn-warning btn-sm editVital"
+                                        data-time="@vital.at"
+                                        data-rr="@vital.RR"
+                                        data-oxygen="@vital.Oxygen"
+                                        data-hr="@vital.HR"
+                                        data-input="@vital.Input"
+                                        data-output="@vital.Output"
+                                        data-temp="@vital.Temperature"
+                                        data-rbs="@vital.RBS"
+                                        data-systolic="@vital.Systolic"
+                                        data-diastolic="@vital.Diastolic"
+                                        data-pain="@vital.PainScore">
+                                    <i class="fa fa-edit"></i> Edit
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+
+
+
+
+        let editMode = false;
+        let editDate = null;
+
+        function parseValue(val, checkboxId) {
+            if (!val) return '';
+            if (val.toString().includes('LOSS')) {
+                $('#' + checkboxId).prop('checked', true);
+                return val.toString().replace('+LOSS', '').replace('LOSS', '');
+            } else {
+                $('#' + checkboxId).prop('checked', false);
+                return val;
+            }
+        }
+
+        $('#vatalSubmit').on('click', function() {
+            var inhospId = $("#inhospId").text();
+            var value = [];
+            var type = [];
+
+            var fields = [
+                { id: "RR", label: "RR" },
+                { id: "Oxygen", label: "Oxygen" },
+                { id: "PhysicalHR", label: "HR" },
+                { id: "INput", label: "INput" },
+                { id: "OUTput", label: "OUTput" },
+                { id: "Temperature", label: "Temperature" },
+                { id: "PhysicalRBS", label: "RBS" },
+                { id: "Systolic_BP", label: "Systolic BP" },
+                { id: "Diastolic_BP", label: "Diastolic BP" },
+                { id: "PainScore", label: "PainScore" }
+            ];
+
+            fields.forEach(function(field) {
+                var val = $("#" + field.id).val()?.trim() || '';
+
+                if (field.id === "INput") {
+                    if ($("#InputLoss").is(":checked") && val) val += '+LOSS';
+                    else if ($("#InputLoss").is(":checked")) val = 'LOSS';
+                }
+
+                if (field.id === "OUTput") {
+                    if ($("#OutputLoss").is(":checked") && val) val += '+LOSS';
+                    else if ($("#OutputLoss").is(":checked")) val = 'LOSS';
+                }
+
+                value.push(val);
+                type.push(field.label);
+            });
+
+            if (value.every(v => v === "")) {
+                layer.alert('Please enter at least one vital sign!', { skin: 'layui-layer-lan', icon: 2, btn: ['OK'], title: 'Error' });
+                return;
+            }
+
+            var url = editMode ? "/Inpatient/Ward/EditVital" : "/Inpatient/Ward/SaveVital";
+            var dateVal = $("#date").val();
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: { inhospId, types: type, values: value, date: dateVal },
+                success: function(response) { location.reload(); },
+                error: function() { layer.alert("Error saving or editing vital signs.", { skin: 'layui-layer-lan', icon: 2, btn: ['OK'], title: 'Error' }); }
+            });
+        });
+
+        $(document).on('click', '.editVital', function() {
+            editMode = true;
+            editDate = $(this).data('time');
+
+            $("#RR").val($(this).data('rr'));
+            $("#Oxygen").val($(this).data('oxygen'));
+            $("#PhysicalHR").val($(this).data('hr'));
+            $("#INput").val(parseValue($(this).data('input'), 'InputLoss'));
+            $("#OUTput").val(parseValue($(this).data('output'), 'OutputLoss'));
+            $("#Temperature").val($(this).data('temp'));
+            $("#PhysicalRBS").val($(this).data('rbs'));
+            $("#Systolic_BP").val($(this).data('systolic'));
+            $("#Diastolic_BP").val($(this).data('diastolic'));
+            $("#PainScore").val($(this).data('pain'));
+
+            const dt = new Date(editDate);
+            const offset = dt.getTimezoneOffset() * 60000;
+            const localISO = new Date(dt - offset).toISOString().slice(0,16);
+            $("#date").val(localISO);
+
+            $("#vatalSubmit").html('<i class="fa fa-save me-1"></i> Update');
+            layer.msg('Edit mode activated', { time: 1800, icon: 0 });
+        });
+    });
+
+        function confirmDelete(deleteUrl) {
+        // Use Layer.js if you already have it loaded, otherwise fallback to default confirm()
+        if (typeof layer !== "undefined") {
+            layer.confirm('Are you sure you want to delete this vital sign?', {
+                icon: 3,
+                title: 'Confirm Deletion',
+                btn: ['Yes', 'No']
+            }, function (index) {
+                layer.close(index);
+                // Call your existing function if confirmed
+                ShowModalVitalSign(deleteUrl, 'Vital Sign');
+            });
+        } else {
+            // Fallback if layer is not loaded
+            if (confirm("Are you sure you want to delete this vital sign?")) {
+                ShowModalVitalSign(deleteUrl, 'Vital Sign');
+            }
+        }
+    }
+
+</script>

@@ -1,0 +1,115 @@
+﻿
+@{
+    ViewBag.Title = "TW-SOL HIS";//KMU HIS System
+    Layout = null;
+    var VersionText = "ver 2.0.1";
+}
+
+<!DOCTYPE html>
+<html lang="en" style="height:100%;">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>@(ViewBag.Title) Login </title>
+
+    <!-- Bootstrap -->
+    <link href="~/lib/bootstrap-4.6.2-dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link href="~/lib/font-awesome/css/all.min.css" rel="stylesheet" />
+
+    <!-- NProgress -->
+    <link href="~/lib/nprogress/nprogress.min.css" rel="stylesheet" />
+    <!-- Animate.css -->
+    <link href="~/css/animate.css/animate.min.css" rel="stylesheet" />
+
+    <!-- Custom Theme Style -->
+    <link href="~/css/custom.css" rel="stylesheet" />
+
+    <style>
+
+        #ui-header {
+            font-family: "Segoe UI";
+        }
+
+        #somaflag_index {
+            width: 389px;
+            height: 260px;
+            overflow: hidden;
+        }
+
+        .form-group {
+            margin-bottom: 3px;
+        }
+    </style>
+</head>
+
+<body class="" style="background-color:#ffffff;background-image:url(../images/Cover-20230224.jpg);background-size: cover;background-repeat: no-repeat;">
+
+    <div class="align-self-end" style="border-radius: 5px;width:25vw;position: fixed;margin: 0px auto;bottom: 5vh;left: 37vw;">
+
+        @if (TempData["User_Login_Fail"] != null)
+        {
+            <div class="align-self-end" style="">
+                <div class="alert alert-danger" role="alert">
+                    @TempData["User_Login_Fail"]
+                </div>
+            </div>
+        }
+
+        <form method="post" asp-area="" asp-controller="Login" asp-action="doLogin">
+            <div class="form-group row mx-0 ">
+                <label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"><font color="red">*</font>Username:</label>
+                <input type="text" name="username" class="form-control col-lg-8 font-weight-bold text-center rounded" placeholder="Username" required="" />
+            </div>
+            <div class="form-group row mx-0 ">
+                <label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"><font color="red">*</font>Password:</label>
+                <input type="password" name="password" id="password" class="form-control col-lg-8 font-weight-bold text-center rounded" placeholder="Password" required="" />
+
+		<div style="position: relative;">
+			<div style="color:black;position: absolute;left: -40px; top: 0px;">
+
+				<label class="form-control col-lg-2 border-0 px-2" style="text-align: center; background-color:transparent;"><i class="fa-solid text-info fa-eye-slash" onclick="ShowPassowrdText(this,'password')"></i></label>
+
+			</div>
+		</div>
+
+            </div>
+            <div class="form-group row mx-0 ">
+                <button type="submit" class="btn btn-block btn-primary">Log in </button>
+            </div>
+            <div class="form-group row mx-0 justify-content-center">
+                <a class="reset_pass" asp-controller="Login" asp-action="forgot_password" style="color:white">Forgot your password?</a>
+            </div>
+        </form>
+    </div>
+    <div>
+        @*target="_blank" asp-action="version_histoy"*@
+        <a asp-controller="Login"  style=" position: fixed;  bottom: 10px;  right: 10px; color:white; font-size: 12px;">@VersionText</a>
+    </div>
+
+	<div style="width:15vw;height:8vh"></div>
+
+
+<!-- jQuery -->
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script>
+function ShowPassowrdText(ctrl_obj,password_id) {
+	var x = document.getElementById(password_id);
+	if ($(ctrl_obj).hasClass('fa-eye-slash')) {
+		$(ctrl_obj).removeClass('fa-eye-slash').addClass('fa-eye');
+		x.type = "text";
+	} else {
+		$(ctrl_obj).removeClass('fa-eye').addClass('fa-eye-slash');
+		x.type = "password";
+  }
+}
+</script>
+
+</body>
+</html>
+
+

@@ -1,0 +1,315 @@
+﻿@model List<Hisorderplan>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    List<KmuMedfrequency> FreqOption = (List<KmuMedfrequency>)ViewData["MedFreq"];
+
+    List<KmuMedfrequencyInd> IndicationOption = (List<KmuMedfrequencyInd>)ViewData["MedIndication"];
+
+    List<KmuMedpathway> PathOption = (List<KmuMedpathway>)ViewData["MedPathWay"];
+
+    KMU.HisOrder.MVC.Areas.HisOrder.Models.PatientDTO _PatientDTO = (KMU.HisOrder.MVC.Areas.HisOrder.Models.PatientDTO)ViewData["PatientDTO"];
+
+
+    var _FreqOption = FreqOption.OrderBy(c => c.FrqSeqNo).ToList();
+
+    var _PathOption = PathOption.OrderBy(c => c.Showseq).ToList();
+
+
+    var _indicationOption = IndicationOption.GroupBy(c => c.IndCode)
+    .Select(c => new
+    {
+        IndCode = c.Key,
+    }).ToList();
+}
+
+
+<div class="card-title pt-1 pr-1 pl-1">
+    <h6>Medicine</h6>
+
+    <span class=" ml-1 d-inline-block">
+        <span id="medorder_count" class="badge badge-pill badge-gray" style="font-size:13px;"></span>
+        <button class="ml-3 btn btn-sm btn-dark delete_medorders"><i class="fa fas fas fa-trash"></i> </button>
+        <button id="MedModalBtn" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#MedicalCategoryList"><i class="fa fas fa-plus"></i></button>
+        <button class="btn btn-sm  btn-primary add_medorders" hidden><i class="fa fas fa-plus"></i> New</button>
+
+        @*<button class="btn btn-primary med_collapse_btn" type="button" data-toggle="collapse" data-target="#medorder_table" aria-expanded="true" aria-controls="medorder_table">
+        <i class="fa fas fa-arrow-up"></i>
+        </button>*@
+    </span>
+
+    @{
+        if (_PatientDTO != null && _PatientDTO.RegStatus == "*")
+        {
+            <span class=" ml-1 d-inline-block">
+                <span class="pt-function-column-br-color"></span>
+                <button id="MedPrint" class="btn btn-sm  btn-warning"><i class="fa fas fa-print"></i></button>
+            </span>
+        }
+    }
+
+
+</div>
+<div class="card mt-0" style="height: calc( 100% - 35px); ">
+
+    <div class="card-body card-body-border">
+
+        <div id="medorder_table" class="table-responsive table-sticky-wrapper" style="height: 100%;  border-radius: 3px;">
+            <table class="table table-sm table-hover table-sticky">
+                <thead class="tr-sticky" style="background-color: #0E5CA7;">
+                    <tr class="text-center" style="font-size: 13px;">
+                        <th scope="col" style="width: 20px">
+                            <input type="checkbox" class="all" />
+                        </th>
+                        <th style="width: 3% ">Status</th>
+                        <th style="width: 3% "></th>
+                        <th hidden style="width: 3% ">bg.</th>
+
+                        <th style="width: 19%">Generic Name</th>
+                        <th style="width: 10%">BrandName</th>
+                        <th style="width: 5% ">SingleDose</th>
+                        <th style="width: 5% ">Unit</th>
+                        <th style="width: 12%">Route</th>
+                        <th style="width: 10%">Freq.</th>
+                        <th hidden style="width: 10%">Indic.</th>
+                        <th hidden style="width: 10%">DailyDose</th>
+                        <th style="width: 5%">Days</th>
+                        <th style="width: 6%">Qty.</th>
+                        <th style="width: 15%">Remarks</th>
+                        <th style="width: 10%">Date</th>
+                        <th hidden>Seq</th>
+                        <th hidden>MedID</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr class="text-center medorder_tr_templete" data-orderplan-id="-1" data-modify-type="" hidden>
+                        <td class="align-middle" scope="row">
+                            <input type="checkbox" class="check medorder_tr_templete" data-type="order_SingleCheckbox" name="Med_checkbox" />
+                        </td>
+                        <!-- 狀態 -->
+                        <td class="align-middle"><span class="badge " data-status=""></span></td>
+                        <!-- lock/unlock -->
+                        <td class="align-middle lock-btn"><span class="badge badge-success"><i class="fa fa-unlock"></i></span></td>
+                        <!-- bg. -->
+                        <td hidden class="align-middle"><input style="min-width:35px" type="text" class="form-control form-control-sm align-middle" data-med-bag="" value=""></td>
+                        <!-- name -->
+                        <td class="align-middle text-left autoCut" data-plan-des=""></td> 
+                        <!-- Brandname -->
+                        <td class="align-middle text-left autoCut" data-plan-gen=""></td>
+                        <!-- SgDose 次量 -->
+                        <td class="align-middle"><input type="text" class="form-control form-control-sm" data-qty-dose="" value=""></td>
+                        <!-- unit 單位-->
+                        <td class="align-middle color-primary" data-unit-dose=""></td>
+                        <!-- path 途徑-->
+                        <td class="align-middle autoCut">
+                            <select class="custom-select custom-select-sm" aria-placeholder="" data-dose-path="">
+                                <option value=""></option>
+                                @{
+                                    foreach (KmuMedpathway option in _PathOption)
+                                    {
+                                        <option value="@option.PathCode">@option.PathDesc</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+                        <!-- freq 頻次-->
+                        <td class="align-middle autoCut">
+                            <select class="custom-select custom-select-sm" aria-placeholder="" data-freq-code="">
+                                <option value=""></option>
+                                @{
+                                    foreach (KmuMedfrequency option in _FreqOption)
+                                    {
+                                        <option value="@option.FrqCode">@option.FrqCode</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+                        <!-- inidcation 指示-->
+                        <td hidden class="align-middle">
+                            <select class="custom-select custom-select-sm" aria-placeholder="" data-dose-indication="">
+                                <option value=""></option>
+                                @{
+                                    foreach (var ind_opiton in _indicationOption)
+                                    {
+                                        <option value="@ind_opiton.IndCode">@ind_opiton.IndCode</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+
+                        <!-- DailyDose 日量 -->
+                        <td hidden class="align-middle"><input type="text" class="form-control form-control-sm" data-qty-daily="" value="" readonly="readonly"></td>
+                        <!-- Days 天數 -->
+                        <td class="align-middle"><input type="text" class="form-control form-control-sm" data-plan-days="" value=""></td>
+                        <!-- TotalDose 總量-->
+                        <td class="align-middle"><input type="text" class="form-control form-control-sm" data-total-qty="" value="" readonly="readonly"></td>
+                        <!-- Remark 備註-->
+                        <td class="align-middle autoCut"><input type="text" class="form-control form-control-sm" placeholder="..." data-remark="" value=""></td>
+                        <!-- Date 開立日期-->
+                        <td class="align-middle"></td>
+                        <!-- ShowSeqNo hidden -->
+                        <td class="align-middle" data-seq-no="" hidden></td>
+                        <!-- medid  hidden-->
+                        <td class="align-middle autoCut" data-plan-code="" hidden></td>
+                    </tr>
+
+
+                    @{
+                        if (Model != null && Model.Count > 0)
+                        {
+                            foreach (var hplan in Model)
+                            {
+                                var orderStats = "";
+                                var orderStatsClass = "";
+                                @switch (hplan.Status)
+                                {
+                                    case '0':
+                                        orderStats = "Examining";
+                                        orderStatsClass = "badge-gray";
+                                        break;
+                                    case '2':
+                                        orderStats = "Cfm";
+                                        orderStatsClass = "badge-success";
+                                        break;
+                                }
+
+                                <tr class="text-center" data-orderplan-id="@hplan.Orderplanid" data-modify-type="">
+                                    <td class="align-middle" scope="row">
+                                        <input type="checkbox" class="check" data-type="order_SingleCheckbox" name="Med_checkbox" />
+                                    </td>
+                                    <!-- 狀態 -->
+                                    <td class="align-middle"><span class="badge @orderStatsClass" data-status="@hplan.Status">@orderStats</span></td>
+                                    <!-- lock/unlock -->
+                                    <td class="align-middle lock-btn"><span class="badge badge-success"><i class="fa fa-unlock"></i></span></td>
+                                    <!-- bg. -->
+                                    <td hidden class="align-middle"><input style="min-width:35px" type="text" class="form-control form-control-sm" data-med-bag=" @hplan.MedBag" value="@hplan.MedBag"></td>
+                                    <!-- name -->
+                                    <td class="align-middle text-left autoCut" data-plan-des="@hplan.PlanDes.Trim()">@hplan.PlanDes.Trim()</td>
+                                    <!-- brand name — always render one cell so columns stay aligned with the template row -->
+                                    @{
+                                        var brandText = "";
+                                        if (!string.IsNullOrWhiteSpace(hplan.PlanCode))
+                                        {
+                                            var byCode = _context.KmuMedicines.FirstOrDefault(e => e.MedId == hplan.PlanCode);
+                                            if (byCode != null)
+                                            {
+                                                brandText = (byCode.BrandName ?? "").Trim();
+                                            }
+                                        }
+                                        if (string.IsNullOrEmpty(brandText) && !string.IsNullOrWhiteSpace(hplan.PlanDes))
+                                        {
+                                            var byName = _context.KmuMedicines.FirstOrDefault(e => e.GenericName == hplan.PlanDes.Trim());
+                                            if (byName != null)
+                                            {
+                                                brandText = (byName.BrandName ?? "").Trim();
+                                            }
+                                        }
+                                    }
+                                    <td class="align-middle text-left autoCut" data-plan-gen="@brandText">@brandText</td>
+                                    <!-- SgDose 次量 -->
+                                    <td class="align-middle"><input type="text" class="form-control form-control-sm" data-qty-dose="@hplan.QtyDose" value="@hplan.QtyDose"></td>
+                                    <!-- unit 單位-->
+                                    @{
+                                        if (hplan.PlanDes == "Others")
+                                        {
+                                            <td class="align-middle color-primary text-center" data-unit-dose="@hplan.UnitDose"><input type="text" class="form-control form-control-sm text-center text-primary" data-unit-dose-input="@hplan.UnitDose" value="@hplan.UnitDose"></td>
+                                        }
+                                        else
+                                        {
+                                            <td class="align-middle color-primary text-center" data-unit-dose="@hplan.UnitDose">@hplan.UnitDose</td>
+                                        }
+                                    }
+                                    <!-- path 途徑-->
+                                    <td class="align-middle autoCut">
+                                        <select class="custom-select custom-select-sm" aria-placeholder="" data-dose-path="@hplan.DosePath">
+                                            @{
+                                                <option value=""></option>
+                                                foreach (KmuMedpathway option in _PathOption)
+                                                {
+                                                    if (option.PathCode == hplan.DosePath)
+                                                    {
+                                                        <option selected="selected" value="@option.PathCode">@option.PathDesc</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@option.PathCode">@option.PathDesc</option>
+                                                    }
+
+                                                }
+                                            }
+                                        </select>
+                                    </td>
+                                    <!-- freq 頻次-->
+                                    <td class="align-middle autoCut">
+                                        <select class="custom-select custom-select-sm" aria-placeholder="" data-freq-code="@hplan.FreqCode">
+                                            @{
+                                                <option value=""></option>
+                                                foreach (KmuMedfrequency option in _FreqOption)
+                                                {
+                                                    if (option.FrqCode == hplan.FreqCode)
+                                                    {
+                                                        <option selected="selected" value="@option.FrqCode">@option.FrqCode</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@option.FrqCode">@option.FrqCode</option>
+                                                    }
+
+                                                }
+
+                                            }
+                                        </select>
+                                    </td>
+                                    <!-- inidcation 指示-->
+                                    <td hidden class="align-middle">
+                                        <select class="custom-select custom-select-sm" aria-placeholder="" data-dose-indication="@hplan.DoseIndication">
+                                            @{
+                                                <option value=""></option>
+                                                foreach (var ind_opiton in _indicationOption)
+                                                {
+                                                    if (ind_opiton.IndCode == hplan.DoseIndication)
+                                                    {
+                                                        <option selected="selected" value="@ind_opiton.IndCode">@ind_opiton.IndCode</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@ind_opiton.IndCode">@ind_opiton.IndCode</option>
+                                                    }
+
+                                                }
+                                            }
+                                        </select>
+                                    </td>
+
+                                    <!-- DailyDose 日量 -->
+                                    <td hidden class="align-middle"><input type="text" class="form-control form-control-sm" data-qty-daily="@hplan.QtyDaily" value="@hplan.QtyDaily" readonly="readonly"></td>
+                                    <!-- Days 天數 -->
+                                    <td class="align-middle"><input type="text" class="form-control form-control-sm" data-plan-days="@hplan.PlanDays" value="@hplan.PlanDays"></td>
+                                    <!-- TotalDose 總量-->
+                                    <td class="align-middle"><input type="text" class="form-control form-control-sm" data-total-qty="@hplan.TotalQty" value="@hplan.TotalQty" readonly="readonly"></td>
+                                    <!-- Remark 備註-->
+                                    <td class="align-middle autoCut"><input type="text" class="form-control form-control-sm" placeholder="..." data-remark="@hplan.Remark" value="@hplan.Remark"></td>
+                                    <!-- Date 開立日期-->
+                                    <td class="align-middle">@Convert.ToDateTime(hplan.CreateDate).ToString("dd/MM/yyyy")</td>
+                                    <td class="align-middle" data-seq-no="@hplan.SeqNo" hidden></td>
+                                    <!-- medid -->
+                                    <td class="align-middle autoCut" data-plan-code="@hplan.PlanCode" hidden>@hplan.PlanCode</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+
+            </table>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+

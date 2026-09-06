@@ -1,0 +1,411 @@
+<script>
+/**
+ * Donor registration — demographics, registration vitals (BP), donation details, HIS linkage.
+ */
+(function () {
+  'use strict';
+
+  var form = document.getElementById('donorWizardForm');
+  if (!form) return;
+
+  var state = { selectedRequest: null, pendingItems: [] };
+  var btnRegister = document.getElementById('btnRegisterDonor');
+  var searchUrl = form.getAttribute('data-pending-search-url');
+  var phoneCheckUrl = form.getAttribute('data-phone-check-url');
+  var isReturnVisit = form.getAttribute('data-is-return-visit') === 'true';
+
+  function $(id) { return document.getElementById(id); }
+
+  function composePhone() {
+    var national = ($('Select_NationalPhone') && $('Select_NationalPhone').value.trim()) || '';
+    var area = ($('Txt_AreaPhone') && $('Txt_AreaPhone').value.trim()) || '';
+    var mobile = ($('Txt_MobilePhone') && $('Txt_MobilePhone').value.trim()) || '';
+    var parts = [];
+    if (national) parts.push(national);
+    if (area) parts.push(area);
+    if (mobile) parts.push(mobile);
+    var phone = parts.join(' ');
+    if ($('Phone')) $('Phone').value = phone;
+    return phone;
+  }
+
+  function syncGenderHidden() {
+    var sel = $('Select_Gender');
+    var hidden = $('Gender');
+    if (!sel || !hidden) return;
+    var code = sel.value;
+    hidden.value = code === 'M' ? 'Male' : code === 'F' ? 'Female' : code;
+  }
+
+  function syncAgeHidden() {
+    var ageType = $('Select_AgeType');
+    var ageHidden = $('Age');
+    if (!ageType || !ageHidden) return;
+    if (ageType.value === 'Age') {
+      var sel = $('Select_Age');
+      ageHidden.value = sel && sel.value ? sel.value : '';
+      return;
+    }
+    var birth = $('Txt_Birth');
+    if (!birth || !birth.value) { ageHidden.value = ''; return; }
+    var d = new Date(birth.value);
+    if (isNaN(d.getTime())) { ageHidden.value = ''; return; }
+    var today = new Date();
+    var age = today.getFullYear() - d.getFullYear();
+    var m = today.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+    ageHidden.value = age > 0 ? String(age) : '1';
+  }
+
+  function toggleBirthAgeUI() {
+    var ageType = $('Select_AgeType');
+    var selAge = $('Select_Age');
+    var birth = $('Txt_Birth');
+    if (!ageType) return;
+    var byAge = ageType.value === 'Age';
+    if (selAge) selAge.style.display = byAge ? '' : 'none';
+    if (birth) birth.style.display = byAge ? 'none' : '';
+    syncAgeHidden();
+  }
+
+  function demographicsValid() {
+    composePhone();
+    syncGenderHidden();
+    syncAgeHidden();
+    return !!(
+      ($('FirstName') && $('FirstName').value.trim()) &&
+      ($('LastName') && $('LastName').value.trim()) &&
+      ($('Gender') && $('Gender').value) &&
+      ($('Phone') && $('Phone').value.trim())
+    );
+  }
+
+  function valNum(el) {
+    if (!el || el.value === '') return NaN;
+    return parseFloat(el.value, 10);
+  }
+
+  function setVitalStatus(key, ok, empty) {
+    var span = document.querySelector('.bb-vital-status[data-for="' + key + '"]');
+    if (!span) return;
+    if (empty) { span.textContent = '—'; span.className = 'bb-vital-status'; return; }
+    span.textContent = ok ? 'OK' : 'Out of range';
+    span.className = 'bb-vital-status ' + (ok ? 'is-ok' : 'is-fail');
+  }
+
+  function composeBloodPressure() {
+    var sysEl = $('regBpSys');
+    var diasEl = $('regBpDias');
+    var hidden = $('PreDonationBloodPressure');
+    if (!hidden) return '';
+    var sys = sysEl ? sysEl.value.trim() : '';
+    var dias = diasEl ? diasEl.value.trim() : '';
+    hidden.value = sys && dias ? sys + '/' + dias : '';
+    return hidden.value;
+  }
+
+  function bloodPressureValid() {
+    var sys = valNum($('regBpSys'));
+    var dias = valNum($('regBpDias'));
+    return !isNaN(sys) && !isNaN(dias) && sys >= 90 && sys <= 200 && dias >= 50 && dias <= 120;
+  }
+
+  function refreshBpStatus() {
+    var sys = valNum($('regBpSys'));
+    var dias = valNum($('regBpDias'));
+    var bpOk = !isNaN(sys) && !isNaN(dias) && sys >= 90 && sys <= 200 && dias >= 50 && dias <= 120;
+    setVitalStatus('regBp', bpOk, isNaN(sys) && isNaN(dias));
+    composeBloodPressure();
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function updateSubmitState() {
+    if (!btnRegister) return;
+    var ok = demographicsValid() && bloodPressureValid();
+    if ($('donationType') && $('donationType').value === 'Directed') {
+      ok = ok && $('requestId') && $('requestId').value;
+    }
+    var bt = $('BloodType');
+    ok = ok && bt && bt.value;
+    btnRegister.disabled = !ok;
+  }
+
+  function clearDirectedLinkage() {
+    state.selectedRequest = null;
+    ['patientId', 'inhospid', 'requestId'].forEach(function (id) {
+      var el = $(id);
+      if (el) el.value = '';
+    });
+    var summary = $('linkedRequestSummary');
+    if (summary) summary.classList.add('hidden');
+    var tbody = $('directedRequestsBody');
+    if (tbody) tbody.innerHTML = '';
+    var table = $('directedRequestsTable');
+    if (table) table.style.display = 'none';
+    var hint = $('directedRequestsHint');
+    if (hint) hint.textContent = '';
+    var search = $('pendingRequestSearch');
+    if (search) search.value = '';
+    var panel = document.getElementById('patientPanelBlock');
+    if (panel) panel.remove();
+  }
+
+  function syncDonationType(val) {
+    var isDirected = val === 'Directed';
+    var sel = $('donationType');
+    if (sel) sel.value = val;
+    document.querySelectorAll('input[name="donationTypeRadio"]').forEach(function (r) {
+      r.checked = r.value === val;
+    });
+
+    var panel = $('directedPanel');
+    var volunteerNote = $('volunteerNote');
+    var searchInput = $('pendingRequestSearch');
+
+    if (panel) panel.classList.toggle('is-open', isDirected);
+    if (volunteerNote) volunteerNote.style.display = isDirected ? 'none' : '';
+    if (searchInput) searchInput.disabled = !isDirected;
+
+    if (isDirected) {
+      PendingTypeahead.loadPendingRequests(searchInput ? searchInput.value.trim() : '');
+    } else {
+      clearDirectedLinkage();
+    }
+    updateSubmitState();
+  }
+
+  var PendingTypeahead = {
+    debounceTimer: null,
+    bind: function () {
+      var input = $('pendingRequestSearch');
+      var list = $('pendingRequestTypeahead');
+      if (!input || !searchUrl) return;
+      input.addEventListener('input', function () {
+        clearTimeout(PendingTypeahead.debounceTimer);
+        PendingTypeahead.debounceTimer = setTimeout(function () {
+          PendingTypeahead.loadPendingRequests(input.value.trim());
+        }, 280);
+      });
+      if (list) {
+        document.addEventListener('click', function (e) {
+          if (!input.contains(e.target) && !list.contains(e.target)) list.classList.remove('is-open');
+        });
+      }
+    },
+    urgencyClass: function (u) {
+      if (u === 'Emergency') return 'bb-badge-emergency';
+      if (u === 'Urgent') return 'bb-badge-urgent';
+      return 'bb-badge-routine';
+    },
+    renderTable: function (items) {
+      var tbody = $('directedRequestsBody');
+      var hint = $('directedRequestsHint');
+      var table = $('directedRequestsTable');
+      if (!tbody) return;
+      if (!items || !items.length) {
+        tbody.innerHTML = '';
+        if (hint) hint.textContent = 'No pending HIS blood requests found.';
+        if (table) table.style.display = 'none';
+        return;
+      }
+      if (hint) hint.textContent = items.length + ' pending request(s) — click Select or use search to filter.';
+      if (table) table.style.display = '';
+      tbody.innerHTML = '';
+      items.forEach(function (item) {
+        var tr = document.createElement('tr');
+        tr.setAttribute('data-request-id', item.requestId);
+        tr.innerHTML =
+          '<td><button type="button" class="bb-btn bb-btn-sm bb-btn-primary btn-select-his-request">Select</button></td>' +
+          '<td><strong>' + escapeHtml(item.patientName) + '</strong></td>' +
+          '<td class="bb-mono">' + escapeHtml(item.patientId) + '</td>' +
+          '<td>' + escapeHtml(item.ward || '—') + '</td>' +
+          '<td>' + escapeHtml(item.componentType || '—') + '</td>' +
+          '<td><span class="bb-badge ' + PendingTypeahead.urgencyClass(item.urgencyLevel) + '">' + escapeHtml(item.urgencyLevel || '—') + '</span></td>';
+        tr.querySelector('.btn-select-his-request').addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation(); PendingTypeahead.select(item);
+        });
+        tr.addEventListener('click', function (e) {
+          if (e.target.closest('.btn-select-his-request')) return;
+          PendingTypeahead.select(item);
+        });
+        tbody.appendChild(tr);
+      });
+    },
+    renderTypeahead: function (items) {
+      var list = $('pendingRequestTypeahead');
+      if (!list || !items.length) return;
+      list.innerHTML = '';
+      items.slice(0, 8).forEach(function (item) {
+        var li = document.createElement('li');
+        li.innerHTML = '<strong>' + escapeHtml(item.patientName) + '</strong> <span class="bb-mono">' + escapeHtml(item.patientId) + '</span>';
+        li.addEventListener('click', function () { PendingTypeahead.select(item); });
+        list.appendChild(li);
+      });
+      list.classList.add('is-open');
+    },
+    loadPendingRequests: function (term) {
+      if (!searchUrl) return;
+      if ($('donationType') && $('donationType').value !== 'Directed') return;
+      var hint = $('directedRequestsHint');
+      if (hint) hint.textContent = 'Loading pending requests…';
+      fetch(searchUrl + '?term=' + encodeURIComponent(term || ''))
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.success) { if (hint) hint.textContent = 'Could not load HIS requests.'; return; }
+          state.pendingItems = d.items || [];
+          PendingTypeahead.renderTable(state.pendingItems);
+          if (term) PendingTypeahead.renderTypeahead(state.pendingItems);
+          var autoId = form.getAttribute('data-initial-request-id');
+          if (autoId && !state.selectedRequest) {
+            var match = state.pendingItems.find(function (x) { return String(x.requestId) === autoId; });
+            if (match) PendingTypeahead.select(match);
+          }
+        })
+        .catch(function () { if (hint) hint.textContent = 'Network error loading HIS requests.'; });
+    },
+    select: function (item) {
+      state.selectedRequest = item;
+      if ($('patientId')) $('patientId').value = item.patientId || '';
+      if ($('inhospid')) $('inhospid').value = item.inhospid || '';
+      if ($('requestId')) $('requestId').value = item.requestId || '';
+      if ($('linkPatientName')) $('linkPatientName').textContent = item.patientName || '—';
+      if ($('linkPatientId')) $('linkPatientId').textContent = item.patientId || '—';
+      if ($('linkDoctor')) $('linkDoctor').textContent = item.requestingDoctorName || '—';
+      if ($('linkWardBed')) $('linkWardBed').textContent = (item.ward || '—') + ' / ' + (item.bedLocation || '—');
+      if ($('linkComponent')) $('linkComponent').textContent = item.componentType || '—';
+      if ($('linkUrgency')) $('linkUrgency').textContent = item.urgencyLevel || '—';
+      var summary = $('linkedRequestSummary');
+      if (summary) summary.classList.remove('hidden');
+      var list = $('pendingRequestTypeahead');
+      if (list) list.classList.remove('is-open');
+      if (item.bloodType && $('BloodType')) $('BloodType').value = item.bloodType;
+      if ($('pendingRequestSearch')) $('pendingRequestSearch').value = (item.patientName || '') + ' (' + (item.patientId || '') + ')';
+      updateSubmitState();
+    }
+  };
+
+  var DonorPhoneChecker = {
+    lastMobile: '',
+    genderRowClass: function (gender) {
+      if (gender === 'Male' || gender === 'M') return 'text-primary';
+      if (gender === 'Female' || gender === 'F') return 'text-danger';
+      return '';
+    },
+    check: function () {
+      if (!phoneCheckUrl || isReturnVisit) return;
+      var mobile = ($('Txt_MobilePhone') && $('Txt_MobilePhone').value.trim()) || '';
+      if (mobile.length < 5 || mobile === DonorPhoneChecker.lastMobile) return;
+      DonorPhoneChecker.lastMobile = mobile;
+      composePhone();
+      var national = ($('Select_NationalPhone') && $('Select_NationalPhone').value.trim()) || '';
+      var area = ($('Txt_AreaPhone') && $('Txt_AreaPhone').value.trim()) || '';
+      var qs = '?mobilePhone=' + encodeURIComponent(mobile)
+        + '&nationalPhone=' + encodeURIComponent(national)
+        + '&areaPhone=' + encodeURIComponent(area)
+        + '&phone=' + encodeURIComponent(composePhone());
+      fetch(phoneCheckUrl + qs)
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.success || !d.items || !d.items.length) return;
+          DonorPhoneChecker.showModal(d.items);
+        })
+        .catch(function () { });
+    },
+    showModal: function (items) {
+      var tbody = document.querySelector('#bbDonorPhoneTable tbody');
+      var trigger = $('bbDonorPhoneModalTrigger');
+      if (!tbody || !trigger) return;
+      tbody.innerHTML = '';
+      items.forEach(function (item) {
+        var tr = document.createElement('tr');
+        tr.className = DonorPhoneChecker.genderRowClass(item.gender);
+        tr.innerHTML =
+          '<td class="font-weight-bold bb-mono">' + escapeHtml(item.bloodBankDonorId) + '</td>' +
+          '<td class="font-weight-bold">' + escapeHtml(item.fullName) + '</td>' +
+          '<td class="font-weight-bold">' + escapeHtml(item.phone) + '</td>' +
+          '<td class="font-weight-bold text-center">' + escapeHtml(item.gender) + '</td>' +
+          '<td class="font-weight-bold text-center">' + escapeHtml(item.bloodType) + '</td>' +
+          '<td class="font-weight-bold text-center">' + escapeHtml(String(item.lifetimeVisits || 0)) + '</td>' +
+          '<td class="text-nowrap">' +
+            '<a href="' + escapeHtml(item.profileUrl) + '" class="btn btn-sm btn-outline-primary">History</a> ' +
+            '<a href="' + escapeHtml(item.newVisitUrl) + '" class="btn btn-sm btn-success">New visit</a>' +
+          '</td>';
+        tbody.appendChild(tr);
+      });
+      trigger.click();
+    },
+    bind: function () {
+      if (!phoneCheckUrl || isReturnVisit) return;
+      var mobileEl = $('Txt_MobilePhone');
+      if (!mobileEl) return;
+      mobileEl.addEventListener('change', function () { DonorPhoneChecker.check(); });
+      mobileEl.addEventListener('blur', function () { DonorPhoneChecker.check(); });
+    }
+  };
+
+  function init() {
+    PendingTypeahead.bind();
+    DonorPhoneChecker.bind();
+    ['regBpSys', 'regBpDias'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener('input', function () { refreshBpStatus(); updateSubmitState(); });
+      el.addEventListener('change', function () { refreshBpStatus(); updateSubmitState(); });
+    });
+
+    var ageType = $('Select_AgeType');
+    if (ageType) ageType.addEventListener('change', toggleBirthAgeUI);
+    var selAge = $('Select_Age');
+    if (selAge) selAge.addEventListener('change', syncAgeHidden);
+    var birth = $('Txt_Birth');
+    if (birth) birth.addEventListener('change', syncAgeHidden);
+    var genderSel = $('Select_Gender');
+    if (genderSel) genderSel.addEventListener('change', function () { syncGenderHidden(); updateSubmitState(); });
+    ['Select_NationalPhone', 'Txt_AreaPhone', 'Txt_MobilePhone'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener('input', function () { composePhone(); updateSubmitState(); });
+      el.addEventListener('change', function () { composePhone(); updateSubmitState(); });
+    });
+    toggleBirthAgeUI();
+    syncGenderHidden();
+    composePhone();
+
+    ['FirstName', 'LastName', 'Gender', 'Phone', 'BloodType'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener('input', updateSubmitState);
+      el.addEventListener('change', updateSubmitState);
+    });
+
+    document.querySelectorAll('input[name="donationTypeRadio"]').forEach(function (r) {
+      r.addEventListener('change', function () { syncDonationType(r.value); });
+    });
+
+    var initialType = form.getAttribute('data-initial-donation-type') || 'Volunteer';
+    document.querySelectorAll('input[name="donationTypeRadio"]').forEach(function (r) {
+      r.checked = r.value === initialType;
+    });
+    if ($('donationType')) $('donationType').value = initialType;
+    syncDonationType(initialType);
+
+    form.addEventListener('submit', function () {
+      composePhone();
+      syncGenderHidden();
+      syncAgeHidden();
+      composeBloodPressure();
+    });
+
+    updateSubmitState();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>

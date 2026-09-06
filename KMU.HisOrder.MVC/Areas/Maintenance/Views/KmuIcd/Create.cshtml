@@ -1,0 +1,122 @@
+﻿@model KMU.HisOrder.MVC.Models.KmuIcd
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Create";
+    IEnumerable<Dhis2Disease> Dhis2Data = ViewData["Dhis2Data"] as IEnumerable<Dhis2Disease>;
+
+}
+
+<link href="~/css/style.css" rel="stylesheet" />
+
+<div style="padding:10px;">
+    <h4>Create new ICD.</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <font color="red">*</font>
+                            @*<label asp-for="IcdCode" class="control-label"></label>*@
+                            ICD10
+                            <input asp-for="IcdCode" class="form-control" required="" maxlength="8" />
+                            <span asp-validation-for="IcdCode" class="text-danger"></span>
+                            <font color="red">@ViewData["Msg"]</font>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="form-group">
+                            <font color="red">*</font>
+                            NAME
+                            @*<label asp-for="IcdEnglishName" class="control-label"></label>*@
+                            <input asp-for="IcdEnglishName" class="form-control" required="" maxlength="350" />
+                            <span asp-validation-for="IcdEnglishName" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="ParentCode" class="control-label"></label>
+                            <input asp-for="ParentCode" class="form-control" maxlength="8" />
+                            <span asp-validation-for="ParentCode" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <font color="red">*</font>
+                            @Html.Label("Type")
+                            @*<label asp-for="IcdType" class="control-label"></label>*@
+                            <input asp-for="IcdType" class="form-control" required="" maxlength="10" />
+                            <span asp-validation-for="IcdType" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <font color="red">*</font>
+                            <label asp-for="ShowMode" class="control-label"></label>
+                            <select asp-for="ShowMode" class="form-control" required="">
+                                <option value="Right">Right</option>
+                                <option value="Left">Left</option>
+                            </select>
+                            <span asp-validation-for="ShowMode" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <font color="red">*</font>
+                            <label asp-for="Versioncode" class="control-label"></label>
+                            <select asp-for="Versioncode" class="form-control" required="" maxlength="2">
+                                <option value="10">10</option>
+                            </select>
+                            <span asp-validation-for="Versioncode" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <font color="red">*</font>
+                            @*<label asp-for="Status" class="control-label"></label>*@
+                            @Html.Label("Off/On")
+                            <select asp-for="Status" class="form-control" required="">
+                                <option value="1">True</option>
+                                <option value="2">False</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                @*   <div class="form-group">
+                <font color="red">*</font>
+                <label asp-for="Dhis2Code" class="control-label"></label>
+                <input asp-for="Dhis2Code" class="form-control" required=""/>
+                <span asp-validation-for="Dhis2Code" class="text-danger"></span>
+                </div>*@
+                <div class="form-group">
+                    <font color="red">*</font>
+                    <label asp-for="Dhis2Code" class="control-label"></label>
+                    <select asp-for="Dhis2Code" class="form-control" required="">
+                        <option value=""></option>
+                        @foreach (Dhis2Disease item in Dhis2Data)
+                        {
+                            <option value="@item.Dhis2Code">@item.Dhis2Code. @item.Diseases</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Dhis2Code" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input id="IcdSubmitBtn" type="submit" value="Create" class="btn btn-primary" style="width:140px; margin-right:10px;" />
+                    <a class="btn btn-default" asp-action="Index" style="width:140px; float:right;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}

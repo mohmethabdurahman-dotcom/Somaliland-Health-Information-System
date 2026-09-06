@@ -1,0 +1,121 @@
+﻿
+<div id="MedicalCategoryList" class="modal fade" role="dialog">
+    <div class="modal-dialog" style="margin-left:5%;">
+        <!-- Modal content-->
+        <div class="modal-content" style="width:90vw;">
+            <div class="modal-header" style="padding:5px 10px;">
+                <h5 class="modal-title" style="font-weight:bold;">Add Item</h5>
+                <a style="width:30px; height:30px; text-align:center; position: absolute; right: 40px; background-color: #7ae3ff; border-radius: 7px; padding: 4px; cursor: pointer;" class="Reload-btn">
+                    <i class="fa fa-arrows-rotate" style="color: #005095; font-size:20px;"></i>
+                </a>
+                <button type="button" class="close" data-dismiss="modal" style="font-size:30px;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding-top:0px;">
+                <div class="x_content col-md-12" style="margin-top:0px; padding-top:0px;">
+                    <div class="col-lg-8">
+                        <ul class="nav nav-tabs bar_tabs col-md-8 MenuTabs" id="nav-tab" role="tablist" style="padding:0px;">
+                            <li class="nav-item" data-menutype="ICD">
+                                <a class="nav-link active" id="nav-ICD-tab" style="user-select:none;" data-search="ICDSearch" data-toggle="tab" href="#nav-ICD" role="tab" aria-controls="nav-ICD" aria-selected="true">ICD</a>
+                            </li>
+                            <li class="nav-item" data-menutype="Med">
+                                <a class="nav-link" id="nav-Med-tab" style="user-select:none;" data-search="MedSearch" data-toggle="tab" href="#nav-Med" role="tab" aria-controls="nav-Med" aria-selected="false">Med</a>
+                            </li>
+                            <li class="nav-item" data-menutype="NonMed">
+                                <a class="nav-link" id="nav-Lab-tab" style="user-select:none;" data-search="NonMedSearch" data-toggle="tab" href="#nav-Lab" role="tab" aria-controls="nav-Lab" aria-selected="false">Laboratory</a>
+                            </li>
+                            <li class="nav-item" data-menutype="NonMed">
+                                <a class="nav-link" id="nav-Exam-tab" style="user-select:none;" data-search="NonMedSearch" data-toggle="tab" href="#nav-Exam" role="tab" aria-controls="nav-Exam" aria-selected="false">Radiology</a>
+                            </li>
+                            <li class="nav-item" data-menutype="NonMed">
+                                <a class="nav-link" id="nav-Path-tab" style="user-select:none;" data-search="NonMedSearch" data-toggle="tab" href="#nav-Path" role="tab" aria-controls="nav-Path" aria-selected="false">Pathology</a>
+                            </li>
+                            <li class="nav-item" data-menutype="NonMed">
+                                <a class="nav-link" id="nav-Supply-tab" style="user-select:none;" data-search="NonMedSearch" data-toggle="tab" href="#nav-Supply" role="tab" aria-controls="nav-Supply" aria-selected="false">Material</a>
+                            </li>
+                            <li class="nav-item" data-menutype="NonMed">
+                                <a class="nav-link" id="nav-Blood-tab" style="user-select:none;" data-search="NonMedSearch" data-toggle="tab" href="#nav-Blood" role="tab" aria-controls="nav-Blood" aria-selected="false">Blood</a>
+                            </li>
+                        </ul>
+                        <ul class="nav bar_tabs col-md-4" style="padding:0px;">
+                            <li id="SearchGroups" style="width:100%; border:none; background-color:transparent;">
+                                <div id="ICDSearch" class="top_search" style="width:100%;">
+                                    <div class="input-group">
+                                        <input type="text" id="ICDMenuSearch" style="height:auto;" class="form-control" placeholder="At least three characters long">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-secondary" type="button"><i class="fa-solid fa-magnifying-glass" style="color:white;"></i></button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div id="MedSearch" class="top_search" style="width:100%; display:none;">
+                                    <div class="input-group">
+                                        <input type="text" id="MedMenuSearch" style="height:auto;" class="form-control" placeholder="Search for...">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-secondary" type="button"><i class="fa-solid fa-magnifying-glass" style="color:white;"></i></button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div id="NonMedSearch" class="top_search" style="width:100%; display:none;">
+                                    <div class="input-group">
+                                        <input type="text" id="NonMedMenuSearch" style="height:auto;" class="form-control" placeholder="Search for...">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-secondary" type="button"><i class="fa-solid fa-magnifying-glass" style="color:white;"></i></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-ICD" role="tabpanel" aria-labelledby="nav-ICD-tab">
+                                <div id="ICD"></div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-Med" role="tabpanel" aria-labelledby="nav-Med-tab">
+                                <div id="Med"></div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-Lab" role="tabpanel" aria-labelledby="nav-Lab-tab">
+                                <div id="Lab"></div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-Exam" role="tabpanel" aria-labelledby="nav-Exam-tab">
+                                <div id="Exam"></div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-Path" role="tabpanel" aria-labelledby="nav-Path-tab">
+                                <div id="Path"></div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-Supply" role="tabpanel" aria-labelledby="nav-Supply-tab">
+                                <div id="Supply"></div>
+                            </div>             
+                            <div class="tab-pane fade" id="nav-Blood" role="tabpanel" aria-labelledby="nav-Blood-tab">
+                                <div id="Blood"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4" style="padding-left:0px;">
+                        <div class="row" style="justify-content:right; margin:3px;">
+                            <div class="col-md-6" style="padding-bottom:0px;">
+                                <button type="button" data-dismiss="modal" aria-label="Close" onclick="ClearItem(false)" class="btn btn-secondary MenuBtn">Quit</button>
+                            </div>
+                            <div class="col-md-6" style="padding-bottom:0px;">
+                                <button type="button" onclick="BringBackOrder()" class="btn btn-primary MenuBtn">Save</button>
+                            </div>
+                        </div>
+                        <div id="BringOrderColumn" class="TabMenuColumn" style="margin-left:5px; background-color:#f6faff; overflow:auto;">
+                            <div class="row">
+                                <table id="BringOrderTable" class="table table-striped jambo_table">
+                                    <thead style="height:42px;">
+                                        <tr>
+                                            <th><a href="#" class="RemoveBtn" onclick="ClearItem(true)">&times;</a></th>
+                                            <th>Code</th>
+                                            <th>Name</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

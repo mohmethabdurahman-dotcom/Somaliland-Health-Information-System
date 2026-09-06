@@ -1,0 +1,825 @@
+﻿@addTagHelper *,Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration _Configuration//參考資料 https://stackoverflow.com/a/71151666
+@{
+    ViewBag.Title = _Configuration.GetSection("WebsiteSettings")["HtmlTitle"];
+    var show_soma_system_title = _Configuration.GetSection("WebsiteSettings")["SystemTitle"];
+    var get_user_auth_cookie = Context.User.Claims.ToList();
+    var get_session = LoginSessionHelper.GetOrRestore(Context);
+    var get_user_id = "";
+    var get_user_name = "";
+    if (get_session == null)
+    {   //參考資料比照：\KMU.HisOrder.MVC\Areas\HisOrder\Controllers\HisOrderController.cs 類別 CheckSessionTimeOutAttribute 中的 OnActionExecuting
+        Context.Response.Redirect(Url.Action("NotLogin", "Login", new { Area = "" }));
+    }
+    else
+    {
+        get_user_id = get_session.EMPCODE;
+        get_user_name = get_session.EMPNAME;
+    }
+    var show_user_id__and__name = get_user_name + "(" + get_user_id + ")";
+
+    var htmlbody = Context.Session.GetString("htmlBody") != null ? Context.Session.GetString("htmlBody") : "nav-sm";
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="~/images/somaliland_his_logo.png" type="image/x-icon" />
+    <!--<title>KMU HIS System</title>-->
+    <title>@ViewBag.Title</title>
+    <!--DataTables-Bootstrap-Themes-->
+    <link href="~/lib/datatables.net-bs4/dataTables.bootstrap4.css" rel="stylesheet" />
+    <!-- Bootstrap -->
+    <link href="~/lib/bootstrap-4.6.2-dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link href="~/lib/font-awesome/css/all.min.css" rel="stylesheet" />
+    <!-- NProgress -->
+    <link href="~/lib/nprogress/nprogress.min.css" rel="stylesheet" />
+    <!-- jQuery custom content scroller -->
+    <link href="~/lib/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet" />
+    <!-- iCheck -->
+    <link href="~/lib/iCheck/skins/all.css" rel="stylesheet" />
+    <!-- DateRangePicker -->
+    <link href="~/lib/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet" />
+    <!-- animate-->
+    <link href="~/css/animate.css/animate.css" rel="stylesheet" />
+    <!--jQueryUI-->
+    <link href="~/lib/jqueryui/jquery-ui.css" rel="stylesheet" />
+    <!--Bootstrap-select -->
+    <link href="~/lib/bootstrap-select-1.13.14/dist/css/bootstrap-select.min.css" rel="stylesheet" />
+    <!-- Tagify -->
+    <link href="~/css/tagify.css" rel="stylesheet" />
+    <!--DragSort-->
+    <link href="~/lib/dragsort/dragsort.css" rel="stylesheet" />
+    <!-- Custom Theme Style -->
+    <link href="~/css/custom.css" rel="stylesheet" />
+    @*    <link rel="stylesheet" href="~/css/datatables.min.css" />*@
+
+    <link href="~/lib/Select-dropdown-menu/css/dropdown-submenu-dist.css" rel="stylesheet" />
+    <link href="~/lib/Select-dropdown-menu/css/dropdown-submenu-engine.css" rel="stylesheet" />
+    <link href="~/lib/Select-dropdown-menu/css/dropdown-submenu-skin.css" rel="stylesheet" />
+
+    <style>
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "＞";
+        }
+
+        .verybig {
+            max-width: 90%;
+        }
+    </style>
+
+
+    @RenderSection("head", required: false)
+</head>
+
+<body class="@htmlbody">
+    <div class="container body">
+        <div class="main_container">
+            <div class="col-md-3 left_col ">
+                <div class="left_col scroll-view">
+                    <div class="navbar nav_title" style="border: 0;">
+                        @*<a asp-area="" asp-controller="Home" asp-action="Index" class="site_title"><i class="fa-solid fa-house" style="color:#A2B7CC"></i> <span> @(ViewBag.Title)</span></a>*@
+                        <a asp-area="" asp-controller="Home" asp-action="Index" class="site_title">
+                            <img src="~/images/somaliland_his_logo.png" width="45" height="45" /><span style="margin-left: 5px;"> @(ViewBag.Title)</span>
+                        </a>
+                        @*<a asp-area="" asp-controller="Home" asp-action="Index" class="site_title"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Flag_of_Somaliland.svg/640px-Flag_of_Somaliland.svg.png" width="25" height="17" /><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Flag_of_the_Republic_of_China.svg/640px-Flag_of_the_Republic_of_China.svg.png" width="25" height="17" /> <span> @(ViewBag.Title)</span></a>*@
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <!-- menu profile quick info -->
+                    @*<div class="profile clearfix">
+                    <div class="profile_pic ">
+                    <img src="~/images/img.jpg" alt="..." class="img-circle profile_img">
+                    </div>
+                    <div class="profile_info">
+                    <span>Welcome,</span>
+                    <h2>@(show_user_id__and__name)</h2>
+                    </div>
+                    </div>*@
+                    <!-- /menu profile quick info -->
+
+                    <br />
+
+                    <!-- sidebar menu -->
+                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+                        @{
+                            if (get_user_auth_cookie.Where(t => t.Type == "User_auth_page_Name「" + "Frist_Login" + "」").Count() > 0)
+                            {
+                                <TEXT>
+                                    <div class="menu_section">
+                                        <h3><span style="color:#FF0000;">Frist Login</span></h3>
+                                        <ul class="nav side-menu">
+                                            <li>
+                                                <a asp-area="" asp-controller="Login" asp-action="change_password"><span style="color:#00FFFF;">Please change your password</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </TEXT>
+                            }
+                        }
+                        <div class="menu_section">
+                            <h3>Function Menu</h3>
+                            <ul class="nav side-menu">
+                                <li>
+                                    <a><i class="fa-solid fa-chart-line"></i> Statistics <span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+                                        <li><a asp-area="" asp-controller="Home" asp-action="Index">Statistic Board</a></li>
+                                        @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Statistic" + "」").Count() > 0)
+                                        {
+                                            <li><a asp-area="Statistic" asp-controller="Daily" asp-action="index">Daily Statistics</a> </li>
+                                            <li><a asp-area="Statistic" asp-controller="Monthly" asp-action="Index">Monthly Statistics</a> </li>
+                                            <li><a asp-area="" asp-controller="ChartReports" asp-action="Index">Departments Statistics</a> </li>
+                                            <li><a asp-area="Statistic" asp-controller="DHIS2" asp-action="index">DHIS2</a> </li>
+                                            <li><a asp-area="Maintenance" asp-controller="Report" asp-action="index">Report</a> </li>
+                                            @*<li><a asp-area="Maintenance" asp-controller="KmuNonMedicines" asp-action="index">NonMedicines</a> </li>*@
+                                        }
+                                    </ul>
+
+                                </li>
+
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "MedicalRecord" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a><i class="fa fa-file-medical"></i> Patients <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            <li><a asp-area="MedicalRecord" asp-controller="MedRecord" asp-action="MRFind">Find Medical Record</a> </li>
+                                            <li><a asp-area="Maintenance" asp-controller="MergePatients" asp-action="index">Merge</a></li>
+                                            <li><a asp-area="MedicalRecord" asp-controller="MedRecord" asp-action="MRCreate">Create New Medical Record</a></li>
+                                        </ul>
+                                    </li>
+                                }
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "OPDReserve" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a asp-area="Reservation" asp-controller="Reserve" asp-action="Reserve" asp-route-reserveType="OPD">
+                                            <i class="fa fa-hospital"></i> Appoint.
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a><i class="fas fa-radiation"></i> Radiology <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+
+                                            <li>
+                                                <a asp-area="Radiology" asp-controller="Recieption" asp-action="Index">
+                                                    Reception
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a asp-area="Radiology" asp-controller="Technicians" asp-action="Index">
+                                                    Technician
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a asp-area="Radiology" asp-controller="Interpretation" asp-action="Index">
+                                                    Radiologist
+                                                </a>
+                                            </li>
+                                        </ul>
+
+                                    </li>
+
+                                }
+                                @* @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "OPDReserve" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a asp-area="Reservation" asp-controller="Reserve" asp-action="Reserve" asp-route-reserveType="OPD">
+                                            <i class="fa fa-hospital"></i> Appoint.
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Radiology" asp-controller="Recieption" asp-action="Index">
+                                            <i class="fa fa-calendar-check-o"></i> Reception.
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a asp-area="Radiology" asp-controller="Technicians" asp-action="Index">
+                                            <i class="fa fa-search"></i> Technician.
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Radiology" asp-controller="Interpretation" asp-action="Index">
+                                            <i class="fa fa-user-md"></i> Radiologist.
+                                        </a>
+                                    </li>
+                                } *@
+
+
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "EMGReserve" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a asp-area="Reservation" asp-controller="Reserve" asp-action="Reserve" asp-route-reserveType="EMG">
+                                            <i class="fa fa-truck-medical"></i> ER
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="VitalSign" asp-controller="PhysicalSigns" asp-action="NurseFunction" asp-route-reserveType="ENR">
+                                            <i class="fa fa-notes-medical"></i>VitalSign
+                                        </a>
+                                    </li>
+                                }
+
+                                @*NCD Vital Sign*@
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Vital_Sign" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a asp-area="VitalSign" asp-controller="PhysicalSigns" asp-action="NurseFunction" asp-route-reserveType="NR">
+                                            <i class="fa fa-stethoscope"></i>VitalSign
+                                        </a>
+                                    </li>
+                                }
+
+                                @*Er Vital Sign*@
+                                @*   @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "ErVital_Sign" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a asp-area="VitalSign" asp-controller="PhysicalSigns" asp-action="NurseFunction" asp-route-reserveType="ENR">
+                                            <i class="fa fa-notes-medical"></i>VitalSign
+                                        </a>
+                                    </li>
+                                } *@
+
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "CBCDataEntry" + "」").Count() > 0)
+                                {
+
+                                    <li>
+                                        <a asp-area="CBC" asp-controller="CBC" asp-action="CreateCBC">
+                                            <i class="fa-solid fa-droplet"></i>CBC
+                                        </a>
+                                    </li>
+                                }
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "CBCDataEntry" + "」").Count() > 0)
+                                {
+
+                                    <li>
+                                        <a asp-area="CBC" asp-controller="CBC" asp-action="ApprovedCBC">
+                                            <i class="fa-solid fa-vial-circle-check"></i>Approv.
+                                        </a>
+                                    </li>
+                                }
+
+                                @if (get_user_auth_cookie.Where(c =>
+                                        c.Type == "User_auth_page_Name「" + "BloodBank_Admin" + "」"
+                                        || c.Type == "User_auth_page_Name「" + "BloodBank_Staff" + "」").Count() > 0)
+                                {
+                                <li data-sidebar-area="BloodBank">
+                                    <a><i class="fa-solid fa-fill-drip" style="color:#e74c3c;"></i> Blood Bank <span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+                                        <li><a asp-area="BloodBank" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                                        <li><a asp-area="BloodBank" asp-controller="Patients" asp-action="Find">Find Patient</a></li>
+                                        <li><a asp-area="BloodBank" asp-controller="Donors" asp-action="Find">Find Donor</a></li>
+                                        <li><a asp-area="BloodBank" asp-controller="Requests" asp-action="Index">Dr Requests</a></li>
+                                        <li><a asp-area="BloodBank" asp-controller="Requests" asp-action="Create">New Request</a></li>
+                                        <li><a asp-area="BloodBank" asp-controller="Donors" asp-action="Create">Donor Registration</a></li>
+                                        <li><a asp-area="BloodBank" asp-controller="Screening" asp-action="Index">Screening Queue</a></li>
+                                        <li><a asp-area="BloodBank" asp-controller="BagAssignment" asp-action="Index">Bag Assignment</a></li>
+                                        <li><a asp-area="BloodBank" asp-controller="Inventory" asp-action="Index">Inventory</a></li>
+                                        @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "BloodBank_Admin" + "」").Count() > 0)
+                                        {
+                                            <li><a asp-area="BloodBank" asp-controller="Audit" asp-action="Index">Staff Audit</a></li>
+                                        }
+                                    </ul>
+                                </li>
+                                }
+                                @if (get_user_auth_cookie.Where(t => t.Type == "User_auth_page_Name「" + "HisOrder" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a><i class="fa fa-user-md"></i> Doctors <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            @*<li><a asp-area="HisOrder" asp-controller="HisOrder" asp-action="Index">Enter Clinic</a></li>*@
+                                            <li><a asp-area="HisOrder" asp-controller="HisOrder" asp-action="Enter_opd_clinic">OPD</a></li>
+                                            <li><a asp-area="HisOrder" asp-controller="HisOrder" asp-action="Enter_emg_clinc">Emergency</a></li>
+                                            @if (get_user_auth_cookie.Where(t => t.Type == "User_auth_page_Name「" + "InpatientMedications" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="InPatient" asp-controller="InPatientDoctor" asp-action="WardList">Inpatient</a></li>
+                                            }
+                                        </ul>
+                                    </li>
+
+                                }
+                                @if (get_user_auth_cookie.Where(t => t.Type == "User_auth_page_Name「" + "InpatientMedications" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a><i class="fa fa-heartbeat"></i> Nurses <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            <li><a asp-area="InPatient" asp-controller="Reception" asp-action="Index">Reception</a></li>
+                                            <li><a asp-area="InPatient" asp-controller="Ward" asp-action="index">Medication</a></li>
+                                        </ul>
+                                    </li>
+                                }
+
+                                @*
+                                @{string Maintain_list =null;}
+
+
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain" + "」").Count() > 0)
+                                {
+                                Maintain_list += "<li><a asp-area = \"Maintenance\" asp-controller = \"ClinicSchedule\" asp-action = \"ClinicSchedule\" > Clinic Schedule </a ></li>";
+
+                                <li><a asp-area="Maintenance" asp-controller="KmuMedicines" asp-action="index">Medicines</a> </li>
+                                <li><a asp-area="Maintenance" asp-controller="KmuNonMedicines" asp-action="index">NonMedicines</a> </li>
+                                <li><a asp-area="Maintenance" asp-controller="KmuIcd" asp-action="index">ICD</a> </li>
+                                <li><a asp-area="Maintenance" asp-controller="KmuMedfrequency" asp-action="index">Med Frequency</a> </li>
+                                }
+
+
+
+
+
+                                @if (Maintain_list != null)
+                                {
+                                <li>
+                                <a><i class="fa fa-screwdriver-wrench"></i> Maintain <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu">
+                                @Html.Raw(@Maintain_list)@Maintain_list
+                                </ul>
+                                </li>
+                                }
+                                *@
+
+                                @if (get_user_auth_cookie.Where(c => c.Type.Contains("User_auth_page_Name「" + "Maintain_")).Count() > 0)
+                                {
+                                    <li>
+                                        <a><i class="fa fa-screwdriver-wrench"></i> Maintain <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+
+                                            @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain_ClinicSchedule" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="Maintenance" asp-controller="ClinicSchedule" asp-action="ClinicSchedule">Clinic Schedule</a> </li>
+                                            }
+                                            @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain_CallingSetting" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="Maintenance" asp-controller="CallingSettings" asp-action="index">Calling Setting</a> </li>
+                                            }
+
+                                            @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain_KmuMedicines" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="Maintenance" asp-controller="KmuMedicines" asp-action="index">Medicines</a> </li>
+                                            }
+                                            @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain_KmuMedfrequency" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="Maintenance" asp-controller="KmuMedfrequency" asp-action="index">Med Frequency</a> </li>
+                                            }
+                                            @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain_KmuNonMedicines" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="Maintenance" asp-controller="KmuNonMedicines" asp-action="index">NonMedicines</a> </li>
+                                            }
+                                            @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain_KmuDepartments" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="Maintenance" asp-controller="Bed" asp-action="index">Bed Management</a> </li>
+                                            } @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain_KmuDepartments" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="Maintenance" asp-controller="Ward" asp-action="index">Ward Management</a> </li>
+                                            }
+
+                                            @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain_KmuDepartments" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="Maintenance" asp-controller="KmuDepartments" asp-action="index">Clinic Rooms</a> </li>
+                                            }
+                                            @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain_KmuIcd" + "」").Count() > 0)
+                                            {
+                                                <li><a asp-area="Maintenance" asp-controller="KmuIcd" asp-action="index">ICD</a> </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+
+                                @*
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "Maintain" + "」").Count() > 0)
+                                {
+                                <li>
+                                <a><i class="fa fa-screwdriver-wrench"></i> Maintain <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu">
+                                <li><a asp-area="Maintenance" asp-controller="ClinicSchedule" asp-action="ClinicSchedule">Clinic Schedule</a> </li>
+                                <li><a asp-area="Maintenance" asp-controller="KmuMedicines" asp-action="index">Medicines</a> </li>
+                                <li><a asp-area="Maintenance" asp-controller="KmuNonMedicines" asp-action="index">NonMedicines</a> </li>
+                                <li><a asp-area="Maintenance" asp-controller="KmuIcd" asp-action="index">ICD</a> </li>
+                                <li><a asp-area="Maintenance" asp-controller="KmuMedfrequency" asp-action="index">Med Frequency</a> </li>
+                                </ul>
+                                </li>
+                                }
+                                *@
+
+                                @*  <li>
+                                <a><i class="fa fa-capsules"></i> Pharmacy <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu">
+                                <li><a href="index.html">Charge</a></li>
+
+                                </ul>
+                                </li>
+
+                                <li>
+                                <a><i class="fa fa-chart-column"></i> Examination <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu">
+                                <li><a href="index.html">Charge</a></li>
+
+                                </ul>
+                                </li>*@
+
+                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "UserManagement" + "」").Count() > 0)
+                                {
+                                    <li>
+                                        <a><i class="fa fa-solid fa-user"></i>Users Mgmt.<span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            <li><a asp-area="" asp-controller="Login" asp-action="user_list">Users List</a> </li>
+                                            <li><a asp-area="" asp-controller="Login" asp-action="new_account">New Account</a> </li>
+                                        </ul>
+                                    </li>
+                                }
+
+
+
+                                <li>
+                                    <a asp-area="" asp-controller="Home" asp-action="Help">
+                                        <i class="fa fa-hand"></i> Support
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </div>
+
+                        @*<div class="menu_section">
+                        <h3>External Link</h3>
+                        <ul class="nav side-menu">
+                        <li>
+                        <a href="https://www.roc-taiwan.org/smd/index.html" target="_blank"><i class="fa fa-external-link "></i>Taiwan Representative Office </a>
+                        </li>
+                        <li>
+                        <a href="https://www.icdf.org.tw/wSite/mp?mp=1" target="_blank"><i class="fa fa-external-link"></i>Taiwan I.C.D.F </a>
+                        </li>
+                        <li>
+                        <a href="https://www.kmu.edu.tw/" target="_blank"><i class="fa fa-external-link"></i>Kaohsiung Medical University </a>
+                        </li>
+                        <li>
+                        <a><i class="fa fa-sitemap"></i> Multilevel Menu </a>
+                        <ul class="nav child_menu">
+                        <li><a href="#level1_1">Level One</a>
+                        <li>
+                        <a>Level One<span class="fa fa-chevron-down"></span></a>
+                        <ul class="nav child_menu">
+                        <li class="sub_menu">
+                        <a href="level2.html">Level Two</a>
+                        </li>
+                        <li>
+                        <a href="#level2_1">Level Two</a>
+                        </li>
+                        <li>
+                        <a href="#level2_2">Level Two</a>
+                        </li>
+                        </ul>
+                        </li>
+                        <li>
+                        <a href="#level1_2">Level One</a>
+                        </li>
+                        </ul>
+                        </li>
+                        <li><a href="javascript:void(0)"><i class="fas fa-yin-yang"></i> Landing Page <span class="label label-success pull-right">Coming Soon</span></a></li>
+                        </ul>
+                        </div>*@
+
+                    </div>
+                    <!-- /sidebar menu -->
+                    <!-- /menu footer buttons -->
+                    <div class="sidebar-footer hidden-small">
+                        @*<a data-toggle="tooltip" data-placement="top" title="Settings">
+                        <span aria-hidden="true"><i class="fa fa-gear"></i></span>
+                        </a>
+                        <a data-toggle="tooltip" data-placement="top" title="FullScreen">
+                        <span aria-hidden="true"><i class="fa fa-maximize"></i></span>
+                        </a>
+                        <a data-toggle="tooltip" data-placement="top" title="Lock">
+                        <span aria-hidden="true"><i class="fa fa-lock"></i></span>
+                        </a>
+                        <a asp-area="" asp-controller="Login" asp-action="logout" data-toggle="tooltip" data-placement="top" title="Logout">
+                        <span aria-hidden="true"><i class="fa fa-sign-out-alt"></i></span>
+                        </a>*@
+                    </div>
+                    <!-- /menu footer buttons -->
+                </div>
+            </div>
+
+            <!-- top navigation -->
+            <div class="top_nav">
+                <div class="nav_menu">
+                    <div class="nav toggle mr-0">
+                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                    </div>
+                    <div class="nav toggle mr-2">
+                        <a id="">
+                            <img src="~/images/logos/Picture1.png" width="41" height="28" style="border-radius: 3px;">
+                        </a>
+                    </div>
+                    <div class="nav toggle mr-2">
+                        <a id=""><img src="~/images/logos/Picture2.jpg" width="41" height="28" style="border-radius: 3px;"></a>
+                    </div>
+                    <div class="nav toggle mr-2">
+                        <a id=""><img src="~/images/logos/Picture3.png" width="38" height="28" style="border-radius: 3px;"></a>
+                    </div>
+                    <div class="nav toggle">
+                        <a id=""><img src="~/images/logos/Picture4.png" width="30" height="30" style="border-radius: 3px;"></a>
+                    </div>
+                    <div class="nav toggle">
+                        <a id=""><img src="~/images/logos/Picture5.png" width="30" height="30" style="border-radius: 3px;"></a>
+                    </div>
+                    <div class="nav toggle">
+                        <a id=""><img src="~/images/HospLogo.png" width="30" height="32" style="border-radius: 3px;"></a>
+                    </div>
+
+                    <div class="nav toggle" style="width:auto; padding-top:0px">
+                        <a id="soma_system_title">@(show_soma_system_title)</a>
+                    </div>
+
+                    <nav class="nav navbar-nav">
+                        <ul class=" navbar-right">
+                            <li class="nav-item dropdown open" style="padding-left: 15px;">
+                                <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true" id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">
+                                    @*<img src="~/images/img.jpg" alt="">*@@(show_user_id__and__name)
+                                </a>
+                                <div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">
+                                    @*<a class="dropdown-item" href="javascript:;">
+                                    <span class="badge bg-red pull-right">50%</span>
+                                    <span>Settings</span>
+                                    </a>
+                                    <a class="dropdown-item" href="javascript:;">Help</a>*@
+                                    <a asp-area="" asp-controller="Login" asp-action="show_account" class="dropdown-item"> Profile</a>
+                                    <a asp-area="" asp-controller="Login" asp-action="edit_account" class="dropdown-item"> Edit Profile</a>
+                                    <a asp-area="" asp-controller="Login" asp-action="change_password" class="dropdown-item"> Change Password</a>
+                                    <a asp-area="" asp-controller="Login" asp-action="change_mobile_phone" class="dropdown-item"> Change Mobile Phone</a>
+                                    <a asp-area="" asp-controller="Login" asp-action="logout" class="dropdown-item"><i class="fa fa-sign-out pull-right"></i> Log Out</a>
+                                </div>
+                            </li>
+
+                            <li role="presentation" class="nav-item dropdown open">
+                                @*<a href="javascript:;" class="dropdown-toggle info-number" id="navbarDropdown1" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-bell" style="margin-top:5px; font-size:20px"></i>
+                                <span class="badge bg-green">6</span>
+                                </a>*@
+                                <ul class="dropdown-menu list-unstyled msg_list" role="menu" aria-labelledby="navbarDropdown1">
+                                    <li class="nav-item">
+                                        <a class="dropdown-item">
+                                            @*<span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>*@
+                                            <span>
+                                                <span>John Smith</span>
+                                                <span class="time">3 mins ago</span>
+                                            </span>
+                                            <span class="message">
+                                                Film festivals used to be do-or-die moments for movie makers. They were where...
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="dropdown-item">
+                                            @*<span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>*@
+                                            <span>
+                                                <span>John Smith</span>
+                                                <span class="time">3 mins ago</span>
+                                            </span>
+                                            <span class="message">
+                                                Film festivals used to be do-or-die moments for movie makers. They were where...
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="dropdown-item">
+                                            @*<span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>*@
+                                            <span>
+                                                <span>John Smith</span>
+                                                <span class="time">3 mins ago</span>
+                                            </span>
+                                            <span class="message">
+                                                Film festivals used to be do-or-die moments for movie makers. They were where...
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="dropdown-item">
+                                            @*<span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>*@
+                                            <span>
+                                                <span>John Smith</span>
+                                                <span class="time">3 mins ago</span>
+                                            </span>
+                                            <span class="message">
+                                                Film festivals used to be do-or-die moments for movie makers. They were where...
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <div class="text-center">
+                                            <a class="dropdown-item">
+                                                <strong>See All Alerts</strong>
+                                                <i class="fa fa-angle-right"></i>
+                                            </a>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <!--<div class="container-fluid nav_menu_breadcrumb">
+                    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                        <ol class="breadcrumb" style="margin-bottom:0px;">-->
+                @*<li class="breadcrumb-item">
+                <a href="#">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                <a href="#">Theme</a>
+                </li>
+                <li class="breadcrumb-item active"><span>Typography</span></li>*@
+                <!--</ol>
+                    </nav>
+                </div>-->
+            </div>
+            <!-- /top navigation -->
+            <!-- page content -->
+
+            <div id="page_content" class="right_col" role="main">
+
+                @RenderBody()
+            </div>
+            <!-- /page content -->
+            <!-- footer content -->
+            @*<footer>
+            <div class="float-right">
+
+            2022 © KMU HIS. by <a href="https://www.kmuh.org.tw/">Kaohsiung Medical University Hospital</a>
+            </div>
+            <div class="clearfix"></div>
+            </footer>*@
+            <!-- /footer content -->
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade p-0" tabindex="-1" role="dialog" id="form-modal">
+        <div class="modal-dialog  " role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*Large Modal*@
+    <div class="modal fade" tabindex="-1" role="dialog" id="form-modal1">
+        <div class="modal-dialog  modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+
+    @*Extra Large Modal*@
+    <div class="modal fade"  role="dialog" id="form-modal3">
+        <div class="modal-dialog  modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" tabindex="-1" role="dialog" id="form-modal4">
+        <div class="modal-dialog" role="document" style="max-width: 70%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="form-modal101">
+        <div class="modal-dialog" role="document" style="max-width: 100%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loaderbody" id="loaderbody">
+        <div class="loader"></div>
+    </div>
+    <div class="loaderbody" id="loaderbody">
+        <div class="loader"></div>
+    </div>
+    <!-- jQuery -->
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <!-- Bootstrap -->
+    <script src="~/lib/bootstrap-4.6.2-dist/js/bootstrap.bundle.js"></script>
+    <!-- FastClick -->
+    <script src="~/lib/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="~/lib/nprogress/nprogress.js"></script>
+    <!-- jQuery custom content scroller -->
+    <script src="~/lib/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
+    <!-- iCheck -->
+    <script src="~/lib/iCheck/icheck.js"></script>
+    <!-- Layer -->
+    <script src="~/lib/layer/layer.js"></script>
+    <!-- Daterangepicker -->
+    <script src="~/lib/bootstrap-daterangepicker/moment.min.js"></script>
+    <script src="~/lib/bootstrap-daterangepicker/daterangepicker.min.js"></script>
+    <!-- DataTables -->
+    <script type="text/javascript"
+            language="javascript"
+            src="~/lib/datatables.net/jquery.dataTables.min.js"></script>
+    <script type="text/javascript"
+            language="javascript"
+            src="~/lib/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+    <!--jQueryUI-->
+    <script src="~/lib/jqueryui/jquery-ui.min.js"></script>
+
+    <script src="~/lib/qrcodejs/qrcode.min.js"></script>
+
+    <script src="~/lib/bootstrap-select-1.13.14/dist/js/bootstrap-select.min.js"></script>
+    <!-- Tagify -->
+    <script src="~/lib/tagify/dist/jQuery.tagify.min.js"></script>
+    <!--DragSort-->
+    <script src="~/lib/dragsort/dragsort.js"></script>
+    <script src="~/js/site.js"></script>
+
+    <!-- History transfer handlers (move from partial -> global so injected partials work) -->
+    <script src="~/js/history_log.js"></script>
+
+    <!-- Custom Theme Scripts -->
+    <script src="~/js/custom.js"></script>
+
+    <script src="~/lib/Select-dropdown-menu/js/dropdown-submenu.js"></script>
+
+    @RenderSection("multipleSelect", required: false)
+    <script>
+        $(document).ready(function () {
+            $('.data-table').DataTable();
+        });
+        function DynamicBreadcrumb() {
+
+            let BreadcrumbItem = [];
+
+            $('.current-page a').parents('li').each(function (n, li) {
+                let Childrena = $(li).children('a').parent().html();
+                BreadcrumbItem.push(Childrena);
+            });
+
+            let NewBreadcrumb = '';
+            for (let i = BreadcrumbItem.length - 1; i >= 0; i--) {
+                NewBreadcrumb += '<li class="breadcrumb-item">' + BreadcrumbItem[i] + '</li>';
+            }
+            $('.breadcrumb').html(NewBreadcrumb);
+
+            // Remove Side Bar Style
+            $('.breadcrumb').find('i').remove();
+            $('.breadcrumb').find('span').remove();
+            $('.breadcrumb').find('ul').remove();
+        }
+
+        $(document).ready(function () {
+            DynamicBreadcrumb();
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false) <!-- HisOrder DashBoard-->
+</body>
+</html>

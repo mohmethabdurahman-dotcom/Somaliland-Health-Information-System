@@ -1,0 +1,97 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.KmuMedfrequency>
+
+<div class="row" style="height: 79vh; width: 100%; overflow: auto;">
+    <div class="col-md-12">
+        <table id="MedfreqSearchTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>
+                        @* @Html.DisplayNameFor(model => model.FrqCode)*@
+                        Code
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.FreqDesc)*@
+                        Description
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.FrqForDays)*@
+                        For Day
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.FrqForTimes)*@
+                        For Times
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.FrqOneDayTimes)*@
+                        One Day Times
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.EnableStatus)*@
+                        Off/On
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.FrqSeqNo)*@
+                        Sequence
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.CreateUser)*@
+                        Created by
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.ModifyUser)*@
+                        Modified by
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td style="white-space:nowrap; width:80px;">
+                            &nbsp&nbsp<a asp-action="Edit" asp-route-id="@item.FrqCode" class="fa-solid fa-pencil"></a>
+                            &nbsp&nbsp<a asp-action="Delete" asp-route-id="@item.FrqCode" class="fa-solid fa-trash"></a>
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.FrqCode)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FreqDesc)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.FrqForDays)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.FrqForTimes)
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.FrqOneDayTimes)
+                        </td>
+                        <td>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="@item.FrqCode" name="@item.FrqCode" @(item.EnableStatus =='1' ?" checked":"") onclick="fn_Status('@item.FrqCode')">
+                                <label for="@item.FrqCode" class="custom-control-label"></label>
+                            </div>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FrqSeqNo)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CreateUser)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ModifyUser)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+
+
+

@@ -1,0 +1,134 @@
+@model DonorRegistrationViewModel
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@using KMU.HisOrder.MVC.Models.BloodBank
+@using KMU.HisOrder.MVC.Extesion
+@{
+    var lookups = ViewBag.DonorRegistrationLookups as DonorRegistrationLookups ?? new DonorRegistrationLookups();
+    var genderCode = Model.Gender switch
+    {
+        "Male" or "M" => "M",
+        "Female" or "F" => "F",
+        _ => ""
+    };
+    var nationalPhone = Model.NationalPhone ?? "+252";
+    var areaPhone = Model.AreaPhone ?? "063";
+}
+<input type="hidden" asp-for="Phone" id="Phone" />
+<input type="hidden" asp-for="Age" id="Age" />
+
+<h3 class="text-center">Personal Information</h3>
+
+<div class="form-group row mx-0">
+    <label class="form-control col-lg-2 border-0 font-weight-bold px-0 float-left"><font color="red">*</font>Mobile Phone:</label>
+    <div class="col-lg-10 px-0">
+        <div class="form-group row mx-0">
+            <select asp-for="NationalPhone" id="Select_NationalPhone" class="form-control col-lg-4 font-weight-bold text-center text-danger">
+                @foreach (var national in lookups.NationPhoneList)
+                {
+                    if (nationalPhone == national.RefDefaultFlag)
+                    {
+                        <option value="@national.RefDefaultFlag" selected>@national.RefName (@national.RefDefaultFlag)</option>
+                    }
+                    else
+                    {
+                        <option value="@national.RefDefaultFlag">@national.RefName (@national.RefDefaultFlag)</option>
+                    }
+                }
+                @if (!lookups.NationPhoneList.Any())
+                {
+                    <option value="+252" selected>Somaliland (+252)</option>
+                }
+            </select>
+            <input asp-for="AreaPhone" type="text" id="Txt_AreaPhone" class="form-control col-lg-4 rounded py-0 text-center" placeholder="Type Area Phone Code" value="@areaPhone" />
+            <input asp-for="MobilePhone" type="text" id="Txt_MobilePhone" class="form-control col-lg-4 rounded py-0 text-center" placeholder="Type Phone Number" />
+        </div>
+    </div>
+</div>
+
+<div class="form-group row mx-0">
+    <label class="form-control col-lg-2 border-0 font-weight-bold px-0 float-left"><font color="red">*</font>Donor Name:</label>
+    <div class="col-lg-10 px-0">
+        <div class="form-group row mx-0">
+            <input asp-for="FirstName" id="FirstName" class="form-control col-lg-4 rounded py-0 text-center" placeholder="First Name" required />
+            <input asp-for="MiddleName" id="MiddleName" class="form-control col-lg-4 rounded py-0 text-center" placeholder="Father's Name" />
+            <input asp-for="LastName" id="LastName" class="form-control col-lg-4 rounded py-0 text-center" placeholder="Grandfather's Name" required />
+        </div>
+    </div>
+</div>
+
+<div class="form-group row mx-0">
+    <label class="form-control col-lg-2 border-0 font-weight-bold px-0 float-left"><font color="red">*</font>Birth (Age):</label>
+    <select asp-for="AgeType" id="Select_AgeType" class="form-control col-lg-3 font-weight-bold text-center text-danger">
+        <option value="Date">By Date</option>
+        <option value="Age">By Age</option>
+    </select>
+    <select id="Select_Age" class="form-control col-lg-3 font-weight-bold text-center text-danger" style="@(Model.AgeType == "Age" ? "" : "display:none")">
+        <option value="">Select age…</option>
+        @for (var a = 18; a <= 65; a++)
+        {
+            if (Model.Age == a)
+            {
+                <option value="@a" selected>@a Years old</option>
+            }
+            else
+            {
+                <option value="@a">@a Years old</option>
+            }
+        }
+    </select>
+    <input asp-for="BirthDate" type="date" id="Txt_Birth" class="form-control col-lg-3 rounded py-0"
+           max="@DateTime.Today.ToString("yyyy-MM-dd")"
+           style="@(Model.AgeType == "Age" ? "display:none" : "")" />
+    <label class="form-control col-lg-1 border-0 font-weight-bold text-center px-0"><font color="red">*</font>Sex:</label>
+    <select id="Select_Gender" class="form-control col-lg-2 font-weight-bold text-center text-danger" required>
+        <option value=""></option>
+        @foreach (var sex in lookups.GenderList)
+        {
+            if (genderCode == sex.EnumToCode())
+            {
+                <option value="@sex.EnumToCode()" selected>@sex.EnumToString()</option>
+            }
+            else
+            {
+                <option value="@sex.EnumToCode()">@sex.EnumToString()</option>
+            }
+        }
+    </select>
+    <input type="hidden" asp-for="Gender" id="Gender" />
+</div>
+
+<div class="form-group row mx-0">
+    <label class="form-control col-lg-2 border-0 font-weight-bold px-0 float-left">National ID:</label>
+    <input asp-for="NationalId" type="text" id="Txt_NationalID" class="form-control col-lg-4 rounded py-0 text-center" placeholder="National ID" />
+    <label class="form-control col-lg-2 border-0 font-weight-bold px-0 text-center">Area:</label>
+    <select asp-for="AreaCode" id="Select_Area" class="form-control col-lg-4 font-weight-bold text-center">
+        <option value="">— Select area —</option>
+        @foreach (var area in lookups.AreaList)
+        {
+            if (Model.AreaCode == area.RefName)
+            {
+                <option value="@area.RefName" selected>@area.RefName</option>
+            }
+            else
+            {
+                <option value="@area.RefName">@area.RefName</option>
+            }
+        }
+    </select>
+</div>
+
+<div class="form-group row mx-0 align-items-center">
+    <label class="form-control col-lg-2 border-0 font-weight-bold px-0 float-left">Address:</label>
+    <input asp-for="Address" type="text" id="Txt_Address" class="form-control col-lg-8 rounded py-0" placeholder="Street, district, city" />
+    <div class="col-lg-2 px-0">
+        <div class="form-group row mx-0 align-items-center">
+            <label class="form-control col-lg-8 border-0 font-weight-bold px-0">Refugee:</label>
+            <input asp-for="RefugeeFlag" type="checkbox" id="chk_Refugee" class="form-control col-lg-4 rounded py-0 text-center" style="width:1.1rem;height:1.1rem;" />
+        </div>
+    </div>
+</div>
+
+<div class="form-group row mx-0">
+    <label class="form-control col-lg-2 border-0 font-weight-bold px-0 float-left">Job description:</label>
+    <input asp-for="JobDescription" id="JobDescription" class="form-control col-lg-10 rounded py-0" placeholder="Occupation / role (optional)" />
+</div>

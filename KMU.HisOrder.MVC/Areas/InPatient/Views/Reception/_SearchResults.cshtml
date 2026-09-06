@@ -1,0 +1,76 @@
+﻿@using KMU.HisOrder.MVC.Models
+@model IEnumerable<KMU.HisOrder.MVC.Models.KmuChart>
+
+<table id="ptInfo_tb" class="table">
+    @if (Model != null && Model.Any())
+    {
+        <thead>
+            <tr class="mb-5">
+                <th class="font-weight-bold text-dark py-0" style="width:100px">Patient ID</th>
+                <th class="font-weight-bold text-dark py-0" style="width:250px">Patient Name</th>
+                <th class="font-weight-bold text-dark py-0" style="width:150px">Mobile Phone</th>
+                <th class="font-weight-bold text-dark py-0" style="width:80px">Sex</th>
+                <th class="font-weight-bold text-dark py-0" style="width:180px">Date of Birth</th>
+                <th class="font-weight-bold text-dark py-0" style="width:250px">Address</th>
+                <th class="font-weight-bold text-dark py-0" style="width:100px">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var pt in Model)
+                {
+                    var ptName = pt.ChrPatientFirstname + "&nbsp;" + pt.ChrPatientMidname + "&nbsp;" + pt.ChrPatientLastname;
+                    var Age = DateTime.Today.Year - pt.ChrBirthDate.Value.Year;
+                    <tr id="tr_@pt.ChrHealthId" style="cursor:pointer" class="mt-5">
+
+                        <td class="font-weight-bold py-1">@Html.Raw(pt.ChrHealthId.Trim())</td>
+                        <td class="font-weight-bold py-1" style="">@Html.Raw(ptName)</td>
+                        <td class="font-weight-bold py-1">@Html.Raw(pt.ChrMobilePhone)</td>
+                        @if (pt.ChrSex != null)
+                        {
+                            <td class="font-weight-bold text-center py-1"> @pt.ChrSex</td>
+                        }
+                        else
+                        {
+                            <td class="font-weight-bold text-center py-1" style=""></td>
+                        }
+                        <td class="font-weight-bold py-1">@Html.Raw(pt.ChrBirthDate.Value.ToString("dd/MM/yyyy"))</td>
+                        <td class="font-weight-bold py-1">@Html.Raw(pt.ChrAddress)</td>
+                        <td class="font-weight-bold py-1">
+                            <button type="button" class="btn btn-success btn-sm" onclick="ShowModalReserve('@Url.Action("Reservation", "Reception", new {id = pt.ChrHealthId})', 'Make Reservasion')">
+                                <i class="fas fa-calendar-check"></i> Reserve
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="font-weight-bold text-danger" colspan="6">Not Patient Has Found!!</td>
+                </tr>
+            }
+        </tbody>
+    }
+    else
+    {
+        <tbody>
+            <tr>
+                <td class="text-center font-weight-bold text-danger" style="width:100%">Empty Param! </td>
+            </tr>
+        </tbody>
+    }
+</table>
+<script>
+    $(document).ready(function () {
+        $("#ptInfo_tb").DataTable({
+            scrollX: false,
+            lengthMenu: [3],
+            searching: false,
+            info: false,
+            dom: '<"top">rt<"clear">',
+        });
+        $(".dataTables_info").css("width", "100%");
+    });
+</script>

@@ -1,0 +1,148 @@
+﻿@using KMU.HisOrder.MVC.Extesion
+@model IEnumerable<KmuCoderef>
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+
+    var GendetList = ViewData["mrCreate_GendetList"] as List<EnumClass.EnumGender>;
+}
+
+@if( TempData["Show_User_Messages"] != null)
+{
+<table align="center">
+				<tr>
+								<td>
+	<h2>
+		<center>
+			<div class="alert alert-primary" role="alert">
+			@TempData["Show_User_Messages"]
+			</div>
+		</center>
+	</h2>
+								</td>
+				</tr>
+</table>
+}
+
+<form method="post" asp-area="" asp-controller="Login" asp-action="DoAddAccount">
+<table align="center">
+				<tr>
+								<td>
+<h1 class="text-center">Create New Account</h1>
+
+	<div class="form-group row mx-0 ">
+            <label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"><font color="red">*</font>Account ID:</label>
+            <input type="text" name="Account" class="form-control col-lg-4 font-weight-bold text-center rounded" placeholder="Account ID" required="" maxlength="@ViewBag.AccountIDmaxlength" />
+			@*<label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit">Up to @ViewBag.AccountIDmaxlength characters</label>*@
+	</div>
+	
+	<div class="form-group row mx-0 ">
+            <label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"><font color="red">*</font>Category:</label>
+			<label class="form-control col-lg-8 font-weight-bold border-0 px-0" style="background-color:inherit">
+			@foreach (var obj_one in Model)
+            {
+				<input type="radio" id="Category@(obj_one.RefCode)" name="Category" value="@obj_one.RefCode" required="">
+				<label for="Category@(obj_one.RefCode)">@(obj_one.RefName)</label>
+            }
+			</label>
+	</div>
+	
+	<div class="form-group row mx-0 ">
+            <label class="form-control col-lg-3 font-weight-bold border-0 px-0" style="background-color:inherit"><font color="red">*</font>@*First*@ Name:</label>
+            <input type="text" name="Firstname" class="form-control col-lg-3 font-weight-bold text-center rounded" placeholder="First Name" onchange="NameFirstCharToUpper_other_ToLower(this)" required="" />
+            <input type="text" name="MidName" class="form-control col-lg-3 font-weight-bold text-center rounded" placeholder="Father's Name" onchange="NameFirstCharToUpper_other_ToLower(this)" required="" />
+            <input type="text" name="LastName" class="form-control col-lg-3 font-weight-bold text-center rounded" placeholder="Grandfather's Name" onchange="NameFirstCharToUpper_other_ToLower(this)" required="" />
+			
+	</div>
+	
+	
+	
+	    <div class="form-group row mx-0">
+					<label class="form-control col-lg-2 border-0 font-weight-bold px-0 float-left" style="background-color:inherit"><font color="red">*</font>Mobile Phone:</label>
+            <div class="col-lg-10 px-0">
+                <div class="form-group row mx-0">
+                    <select name="CountryPhone" id="Select_NationalPhone" class="form-control col-lg-4 font-weight-bold text-center text-danger" onchange="fn_SetAreaPhone()">
+						<option value="">Select Country Calling Codes</option>
+						@foreach (var national in ViewData["NationPhoneList"] as List<KmuCoderef>)
+                        {
+									<option value="@national.RefDefaultFlag">@national.RefName (@national.RefDefaultFlag)</option>
+                        }
+                        @*<option value="Add">Add More+</option>*@
+                    </select>
+					<input type="text" name="AreaPhone" id="Txt_AreaPhone" class="form-control col-lg-4 rounded font-weight-bold text-center" placeholder="Type Area Phone Code" onchange="PhoneNumber_Only_Integer(this)" />
+                    <input type="text" name="MobilePhone" id="Txt_Phone" class="form-control col-lg-4 rounded font-weight-bold text-center" placeholder="Type Phone Number" required="" minlength="@ViewBag.MobilePhoneNumberminlength" onchange="PhoneNumber_Only_Integer(this)" pattern=".{@ViewBag.MobilePhoneNumberminlength,}" />
+                </div>
+
+            </div>
+        </div>
+	
+	
+	
+	
+	<div class="form-group row mx-0 ">
+            <label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"><font color="red">*</font>Sex:</label>
+			<select id="Select_Gender"    name="Sex"     class="form-control col-lg-4 font-weight-bold text-center rounded">
+
+                @foreach (var sex in GendetList)
+                {
+                    <option value="@sex.EnumToCode()">@sex.EnumToString()</option>
+                }
+
+				
+			</select>
+			<label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"></label>
+	</div>
+	
+	<div class="form-group row mx-0 ">
+            <label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"><font color="red">*</font>Birth Date:</label>
+            <input type="date" name="Birthdate" class="form-control col-lg-4 font-weight-bold text-center rounded" placeholder="Birth Date" required="" />
+			<label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"></label>
+	</div>
+	
+	<div class="form-group row mx-0 ">
+            <label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"><font color="red">*</font>E-mail:</label>
+            <input type="text" name="mail" class="form-control col-lg-4 font-weight-bold text-center rounded" placeholder="E-mail" required="" />
+			<label class="form-control col-lg-4 font-weight-bold border-0 px-0" style="background-color:inherit"></label>
+	</div>
+
+	
+	<div class="row justify-content-center">
+	<button type="submit" class="btn btn-primary">Create New Account </button>	
+	</div>
+
+@*
+<h2>
+	<span><span style="color:#FF0000">Rule：</span><br>Account ID : Up to @ViewBag.AccountIDmaxlength characters<br>Phone Number : at least @ViewBag.MobilePhoneNumberminlength number</span>
+									<br><br><span style="color:#FF0000">Notice</span> :  <br>The <span style="color:#FF0000">Phone Number</span> will be the <span style="color:#FF0000">default password</span>, and the user needs to change the password when <span style="color:#FF0000">logging in for the first time</span>.
+</h2>
+*@
+<table align="left">
+	<tr>
+		<td class="pt-3">
+			<span class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Notice</span> :
+			<div class="pl-2">
+				Account ID is up to @ViewBag.AccountIDmaxlength characters.<br>
+				Phone Number is at least @ViewBag.MobilePhoneNumberminlength digits.<br>
+				<span class="text-danger">The Phone Number will be the default password</span>, and the user needs to change the password when logging in for the first time.
+			</div>
+		</td>
+	</tr>
+</table>
+								</td>
+				</tr>
+</table>
+</form>
+
+
+
+@section scripts
+    {
+		<script>
+			$(document).ready(function ()
+				{
+					//Default country codes
+					$("#Select_NationalPhone").val("+252");//"+886"台灣//"+252"索馬利蘭;
+					fn_SetAreaPhone();
+				});
+		</script>
+	}

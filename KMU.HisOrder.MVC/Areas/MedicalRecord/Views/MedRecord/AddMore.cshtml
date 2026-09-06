@@ -1,0 +1,50 @@
+﻿@addTagHelper *,Microsoft.AspNetCore.Mvc.TagHelpers
+@model KMU.HisOrder.MVC.Models.KmuCoderef
+@{
+    Layout = null;
+}
+<div>
+    <input id="myInputID" required asp-for="RefName" onkeyup="NameFirstCharToUpper_other_ToLower(this),fn_ChangeHPC(this)" class="form-control" />
+        <button id="add" class="btn btn-primary  mt-2">Add</button>
+
+</div>
+
+<script>
+    function NameFirstCharToUpper_other_ToLower(inputTextObj) {//姓名首字大寫其他小寫
+        var getInputString = inputTextObj.value;//取值處理
+        getInputString = getInputString.toUpperCase();//先全部大寫
+
+        getInputString = getInputString.replace(/[^A-Za-z]/g, '');//只可输入英文
+        //參考資料 (javascript 限定英文 - Google 搜尋)  JS 限制输入框内容格式（数字、英文、中文）_齐大圣2012的博客-CSDN博客  https://blog.csdn.net/qidasheng2012/article/details/86717023
+        //"可以有數字".replace(/[^A-Za-z0-9]/g,'');// 只可输入英文,数字
+
+        if (getInputString.length > 1) {//判斷字串長度避免出錯
+            getInputString = getInputString.substring(0, 1) + getInputString.substring(1).toLowerCase();//剩餘小寫拼接在一起
+        }
+
+        inputTextObj.value = getInputString;//回傳更新
+    }
+ 
+    $("#add").on("click", function(){
+     var address = $("#myInputID").val();
+     $.ajax({
+         type:"post",
+            url: "/MedicalRecord/MedRecord/AddAddress?address="+address,
+         success:function(response){
+
+         }
+     })
+        //$("#myInputID").val('');
+        $('#form-modal').modal('hide');
+    });
+
+
+    var el = document.getElementById("myInputID");
+    el.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            layer.msg("Please Click Add Button");
+            event.preventDefault();
+        }
+    });
+
+</script>

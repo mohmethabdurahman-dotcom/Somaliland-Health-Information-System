@@ -1,0 +1,433 @@
+@model IEnumerable<dynamic>
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Card Styling */
+    .stat-card {
+        border: none;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        background: #fff;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08) !important;
+        }
+
+    /* Icon Containers */
+    .icon-shape {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 24px;
+    }
+
+    /* Custom Status Colors */
+    .bg-light-blue {
+        background-color: #e7f3ff;
+        color: #007bff;
+    }
+
+    .bg-light-yellow {
+        background-color: #fff9e6;
+        color: #ffc107;
+    }
+
+    .bg-light-green {
+        background-color: #eafbe7;
+        color: #28a745;
+    }
+
+    .bg-light-purple {
+        background-color: #f3e8ff;
+        color: #6f42c1;
+    }
+
+    /* Filter button styling */
+    .btn-group .btn {
+        transition: all 0.3s ease;
+    }
+
+    .btn-group .btn.active {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-outline-warning.active {
+        background-color: #ffc107;
+        color: white;
+        border-color: #ffc107;
+    }
+
+    .btn-outline-info.active {
+        background-color: #17a2b8;
+        color: white;
+        border-color: #17a2b8;
+    }
+
+    .btn-outline-success.active {
+        background-color: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+
+    .btn-outline-primary.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    .btn-outline-secondary.active {
+        background-color: #6c757d;
+        color: white;
+        border-color: #6c757d;
+    }
+
+  
+
+    .page-header h4 {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #2c3e50;
+    }
+
+    .page-header p {
+        font-size: 14px;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    .header-badges .badge {
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-right: 8px;
+    }
+
+    /* Table wrapping styles */
+    .table-responsive {
+        overflow-x: auto !important;
+    }
+
+    #patientInfolist_tb {
+        width: 100% !important;
+        table-layout: auto !important;
+    }
+
+    #patientInfolist_tb th,
+    #patientInfolist_tb td {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        vertical-align: top !important;
+    }
+
+    /* Specific column styling */
+    #patientInfolist_tb td:nth-child(5) {
+        max-width: 150px;
+    }
+
+    #patientInfolist_tb td:nth-child(6) {
+        max-width: 200px;
+    }
+
+    #patientInfolist_tb td:nth-child(6) small {
+        display: block;
+        line-height: 1.4;
+        margin-top: 3px;
+    }
+
+    #patientInfolist_tb td:nth-child(9) {
+        max-width: 120px;
+    }
+
+    /* Badge and button sizing */
+    .badge {
+        white-space: nowrap;
+    }
+
+    .btn-sm {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="row page-header px-1 pt-1">
+    <div class="col-12">
+        <div class="row bg-white shadow-sm d-flex justify-content-between align-items-center p-3">
+            <div class="col-6">
+                <h4>Welcome</h4>
+                <p>Radiology Exam Request List</p>
+            </div>
+            <div class="header-badges col-6 text-right">
+                <a href="@Url.Action("NewWalkInRequest", "Recieption")" class="btn btn-primary btn-sm">
+                    <i class="fa fa-plus"></i> New Request
+                </a>
+            </div>
+        </div>
+    </div>
+ </div>
+<div class="container-fluid px-3">
+    <div class="row py-3">
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card shadow-sm border-start border-primary border-5">
+                <div class="card-body d-flex align-items-center p-3">
+                    <div class="icon-shape bg-light-blue me-4">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                    <div class="px-2">
+                        <p class="text-muted fw-bold mb-1">NEW ORDERS</p>
+                        <h2 class="mb-0 fw-bold">@ViewBag.NewOrders</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card shadow-sm border-start border-warning border-5">
+                <div class="card-body d-flex align-items-center p-3">
+                    <div class="icon-shape bg-light-yellow me-4">
+                        <i class="fa-solid fa-calendar-day"></i>
+                    </div>
+                    <div class="px-2">
+                        <p class="text-muted fw-bold mb-1">SCHEDULED</p>
+                        <h2 class="mb-0 fw-bold">@ViewBag.Scheduled</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card shadow-sm border-start border-success border-5">
+                <div class="card-body d-flex align-items-center p-3">
+                    <div class="icon-shape bg-light-green me-4">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                    <div class="px-2">
+                        <p class="text-muted fw-bold mb-1">COMPLETED</p>
+                        <h2 class="mb-0 fw-bold">@ViewBag.Completed</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card shadow-sm border-start border-info border-5">
+                <div class="card-body d-flex align-items-center p-3">
+                    <div class="icon-shape bg-light-purple me-4">
+                        <i class="fa-solid fa-stamp"></i>
+                    </div>
+                    <div class="px-2">
+                        <p class="text-muted fw-bold mb-1">FINALIZED</p>
+                        <h2 class="mb-0 fw-bold">@ViewBag.Finalized</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <!-- Status Filter Buttons -->
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm active" onclick="filterStatus('ALL')">
+                        <i class="fa fa-list"></i> All (@(Model?.Count() ?? 0))
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="filterStatus('PENDING')">
+                        <i class="fa fa-clock"></i> Pending (@ViewBag.NewOrders)
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm" onclick="filterStatus('SCHEDULED')">
+                        <i class="fa fa-calendar-check"></i> Scheduled (@ViewBag.Scheduled)
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="filterStatus('COMPLETED')">
+                        <i class="fa fa-check-circle"></i> Completed (@ViewBag.Completed)
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="filterStatus('FINALIZED')">
+                        <i class="fa fa-stamp"></i> Finalized (@ViewBag.Finalized)
+                    </button>
+                </div>
+                <div>
+                    <span class="badge badge-primary" style="font-size: 13px; padding: 8px 12px;">
+                        <i class="fa fa-filter"></i> Quick Filter Active
+                    </span>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="patientInfolist_tb" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Order ID</th>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Modality / Exams</th>                
+                            <th>Sex</th>
+                            <th>Age</th>
+                            <th>Mobile</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                var statusBadgeClass = item.Status =="PENDING" ? "badge-primary" : 
+                                                      item.Status == "SCHEDULED" ? "badge-warning" : 
+                                                      item.Status == "COMPLETED" ? "badge-success" : 
+                                                      item.Status == "FINALIZED" ? "badge-info" : "badge-secondary";
+                                <tr>
+                                    <td><span class="badge @statusBadgeClass">@item.Status</span></td>
+                                    <td>@item.OrderDate</td>
+                                    <td><strong>@item.OrderId</strong></td>
+                                    <td>@item.PatientId</td>
+                                    <td>@item.PatientName</td>
+                                    <td>
+                                        <strong>@item.Modality</strong><br />
+                                        <small class="text-muted">@item.BodyParts</small>
+                                    </td>
+                                    <td>@item.Sex</td>
+                                    <td>@(item.Age?.ToString() ?? "N/A")</td>
+                                    <td>@item.Phone</td>
+                                    <td>
+                                        @if (item.Status == "PENDING")
+                                        {
+                                            <button class="btn btn-warning btn-sm" onclick="ShowModal1('@Url.Action("SchedulePendingExam", "Recieption", new { inhospId = item.InhospId, modality = item.Modality })',)">
+                                                <i class="fa fa-calendar-plus"></i> Schedule
+                                            </button>
+
+                                          
+                                        }
+                                        else if (item.Status == "SCHEDULED")
+                                        {
+                                            <button class="btn btn-primary btn-sm" onclick="printTicket('@item.OrderId')">
+                                                <i class="fa fa-print"></i> Print
+                                            </button>
+                                        }
+                                        else if (item.Status == "COMPLETED")
+                                        {
+                                            <button class="btn btn-success btn-sm" onclick="viewReport('@item.OrderId')">
+                                                <i class="fa fa-file-medical"></i> Report
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-secondary btn-sm" onclick="viewDetails('@item.OrderId')">
+                                                <i class="fa fa-eye"></i> View
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var table;
+        
+        $(document).ready(function () {
+            table = $("#patientInfolist_tb").DataTable({
+                responsive: false,
+                autoWidth: false,
+                scrollX: false,
+                pageLength: 100,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                order: [[1, 'desc']], // Sort by date column
+                columnDefs: [
+                    { width: "8%", targets: 0 },   // Status
+                    { width: "10%", targets: 1 },  // Date
+                    { width: "8%", targets: 2 },   // Order ID
+                    { width: "10%", targets: 3 },  // Patient ID
+                    { width: "13%", targets: 4 },  // Patient Name
+                    { width: "18%", targets: 5 },  // Modality / Exams
+                    { width: "5%", targets: 6, className: "text-center" },   // Sex
+                    { width: "5%", targets: 7, className: "text-center" },   // Age
+                    { width: "11%", targets: 8 },  // Mobile
+                    { width: "12%", targets: 9, className: "text-center", orderable: false }   // Action
+                ],
+                language: {
+                    search: "🔍 Search:",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "Showing 0 to 0 of 0 entries",
+                    infoFiltered: "(filtered from _MAX_ total entries)",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                }
+            });
+        });
+
+        // Filter by status
+        function filterStatus(status) {
+            // Update button states
+            $('.btn-group button').removeClass('active');
+            $('.btn-group button').each(function() {
+                if ($(this).text().includes(status) || (status === 'ALL' && $(this).text().includes('All'))) {
+                    $(this).addClass('active');
+                }
+            });
+
+            // Apply DataTable filter
+            if (status === 'ALL') {
+                table.column(0).search('').draw();
+            } else {
+                table.column(0).search('^' + status + '$', true, false).draw();
+            }
+        }
+
+        // Schedule pending exam
+        // function scheduleExam(inhospId, modality) {
+        //     window.location.href = '@Url.Action("SchedulePendingExam", "Recieption")?inhospId=' + inhospId + '&modality=' + modality;
+        // }
+
+        // Print ticket for scheduled exam
+        function printTicket(orderId) {
+            // Find first request ID for this order
+            var firstRequestId = null;
+            $('#patientInfolist_tb tbody tr').each(function() {
+                var rowOrderId = $(this).find('td:eq(2)').text().trim();
+                if (rowOrderId === orderId) {
+                    // You might need to store request ID in data attribute
+                    // For now, we'll use a different approach
+                    return false;
+                }
+            });
+            
+            // Alternative: Open print page with order ID parameter
+            window.open('@Url.Action("PrintTicketByOrderId", "Recieption")?orderId=' + orderId, '_blank');
+        }
+
+        // View report for completed exam
+        function viewReport(orderId) {
+            window.location.href = '@Url.Action("ViewReport", "Recieption")?orderId=' + orderId;
+        }
+
+        // View details
+        function viewDetails(orderId) {
+            window.location.href = '@Url.Action("ViewDetails", "Recieption")?orderId=' + orderId;
+        }
+    </script>
+}
+
+@section head {
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css">
+}

@@ -1,0 +1,50 @@
+﻿
+<div class="container pr-5">
+    <table id="healthTable" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Health ID</th>
+                <th>Mobile Phone</th>
+                <th>Full Name</th>
+                <th>Sex</th>
+                <th>Status</th>
+                <th>Address</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var resultsData = @Html.Raw(Json.Serialize(ViewBag.TransferPatient))
+
+
+        $('#healthTable').DataTable({
+          data: resultsData,
+          columns: [
+            { data: 'healthId', title: 'Health ID' },
+            { data: 'chrMobilePhone', title: 'Mobile Phone' },
+            { data: 'fullname', title: 'Full Name' },
+            { data: 'chrSex', title: 'Sex' },
+            { data: 'status', title: 'status' },
+            { data: 'chrAddress', title: 'Address' },
+              {
+                data: null,
+                render: function(data, type, row) {
+                    return `
+
+                         <button type="button" class="btn btn-success btn-sm" onclick="ShowModalReserve('@Url.Action("Reservation", "Reception", new { id = "__id__" })'.replace('__id__', '${row.healthId}'), 'Make Reservation')">
+                            <i class="fas fa-calendar-check"></i> Reserve
+                        </button>
+
+
+                    `;
+                }
+            }
+          ]
+        });
+    });
+</script>

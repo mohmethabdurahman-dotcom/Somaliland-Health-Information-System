@@ -1,0 +1,421 @@
+@model DonorHistoryProfileViewModel
+@using KMU.HisOrder.MVC.Models.BloodBank
+
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    ViewData["Title"] = "Blood Bank → Donor History — " + Model.FullName;
+
+    var btClass = "bb-bt-" + Model.BloodType.Replace("+", "\\+");
+
+}
+
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+
+<div class="bb-page">
+
+    <partial name="~/Areas/BloodBank/Views/Shared/_BloodBankNav.cshtml" />
+
+
+
+    <section class="bb-donor-profile-hero" aria-labelledby="donorProfileTitle">
+
+        <div class="bb-donor-profile-hero__accent" aria-hidden="true"></div>
+
+        <div class="bb-donor-profile-hero__inner">
+
+            <nav class="bb-request-detail-breadcrumb" aria-label="Breadcrumb">
+
+                <a asp-area="BloodBank" asp-controller="Home" asp-action="Index">Blood Bank</a>
+
+                <span>/</span>
+
+                <a asp-action="Find">Find Donor</a>
+
+                <span>/</span>
+
+                <span>@Model.FullName</span>
+
+            </nav>
+
+            <div class="bb-donor-profile-hero__row">
+
+                <div class="bb-donor-profile-hero__identity">
+
+                    <div class="bb-donor-card__bt-circle @btClass" aria-hidden="true">@Model.BloodType</div>
+
+                    <div>
+
+                        <h1 id="donorProfileTitle" class="bb-donor-profile-hero__title">@Model.FullName</h1>
+
+                        <p class="bb-donor-profile-hero__meta">
+
+                            <span class="bb-mono">@Model.Phone</span>
+
+                            · @Model.Gender
+
+                            ·                             <span class="bb-mono">@BloodBankIds.FormatDonor(Model.PrimaryDonorId)</span>
+                            @if (!string.IsNullOrWhiteSpace(Model.NationalId))
+                            {
+                                <text> · ID @Model.NationalId</text>
+                            }
+
+                        </p>
+
+                        <p class="bb-page-subtitle bb-hero-lead">View lifetime donations, screening outcomes, and linked HIS requests for this donor (opened from MRFind-style search).</p>
+
+                    </div>
+
+                </div>
+
+                <div class="bb-donor-profile-hero__actions">
+
+                    <a asp-action="Find" asp-route-phone="@Model.Phone" class="bb-btn bb-btn-ghost bb-btn-sm">
+                        <i class="fa-solid fa-search"></i> Search again
+                    </a>
+
+                    <a asp-action="Create" asp-route-donorId="@Model.PrimaryDonorId" class="bb-btn bb-btn-success bb-btn-sm">
+
+                        <i class="fa-solid fa-user-plus"></i> New visit
+
+                    </a>
+
+                    @if (ViewBag.CanEditDonor == true)
+                    {
+                        <a asp-action="Edit" asp-route-donorId="@Model.PrimaryDonorId" class="bb-btn bb-btn-primary bb-btn-sm">
+                            <i class="fa-solid fa-user-pen"></i> Edit donor
+                        </a>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <div class="bb-donor-profile-stats">
+
+        <div class="bb-request-detail-stat bb-donor-profile-stat--highlight">
+
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--blood" aria-hidden="true"><i class="fa-solid fa-repeat"></i></span>
+
+            <div>
+
+                <p class="bb-request-detail-stat__label">Lifetime visits</p>
+
+                <p class="bb-request-detail-stat__value">@Model.LifetimeVisits</p>
+
+            </div>
+
+        </div>
+
+        <div class="bb-request-detail-stat">
+
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--units" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
+
+            <div>
+
+                <p class="bb-request-detail-stat__label">Successful donations</p>
+
+                <p class="bb-request-detail-stat__value">@Model.SuccessfulDonations</p>
+
+            </div>
+
+        </div>
+
+        <div class="bb-request-detail-stat">
+
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--component" aria-hidden="true"><i class="fa-solid fa-flask"></i></span>
+
+            <div>
+
+                <p class="bb-request-detail-stat__label">Units collected</p>
+
+                <p class="bb-request-detail-stat__value">@Model.UnitsCollected</p>
+
+            </div>
+
+        </div>
+
+        <div class="bb-request-detail-stat">
+
+            <span class="bb-request-detail-stat__icon bb-request-detail-stat__icon--time" aria-hidden="true"><i class="fa-solid fa-boxes-stacked"></i></span>
+
+            <div>
+
+                <p class="bb-request-detail-stat__label">In inventory now</p>
+
+                <p class="bb-request-detail-stat__value">@Model.UnitsInInventory</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    @if (Model.FailedScreenings > 0 || Model.DeferredVisits > 0)
+
+    {
+
+        <div class="bb-donor-profile-alerts bb-mb-3">
+
+            @if (Model.FailedScreenings > 0)
+
+            {
+
+                <span class="bb-donor-profile-alert bb-donor-profile-alert--fail">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i> @Model.FailedScreenings failed screening@(Model.FailedScreenings == 1 ? "" : "s")
+
+                </span>
+
+            }
+
+            @if (Model.DeferredVisits > 0)
+
+            {
+
+                <span class="bb-donor-profile-alert bb-donor-profile-alert--warn">
+
+                    <i class="fa-solid fa-pause"></i> @Model.DeferredVisits deferred visit@(Model.DeferredVisits == 1 ? "" : "s")
+
+                </span>
+
+            }
+
+        </div>
+
+    }
+
+
+
+    <div class="bb-card">
+
+        <div class="bb-card__header">
+
+            <h4><i class="fa-solid fa-timeline"></i> Visit timeline</h4>
+
+            <p class="bb-page-subtitle" style="margin:0;">
+
+                @if (Model.FirstVisit.HasValue && Model.LastVisit.HasValue)
+
+                {
+
+                    <text>First @Model.FirstVisit.Value.ToString("dd MMM yyyy") — last @Model.LastVisit.Value.ToString("dd MMM yyyy")</text>
+
+                }
+
+            </p>
+
+        </div>
+
+        @if (Model.Visits.Any())
+
+        {
+
+            <div class="bb-donor-timeline">
+
+                @foreach (var v in Model.Visits)
+
+                {
+
+                    var statusBadge = v.Status == DonorStatuses.Passed ? "bb-badge-passed"
+
+                        : v.Status == DonorStatuses.Failed ? "bb-badge-failed"
+
+                        : v.Status == DonorStatuses.Deferred ? "bb-badge-rejected"
+
+                        : "bb-badge-pending";
+
+                    var stepClass = v.Status == DonorStatuses.Passed ? "is-pass"
+
+                        : v.Status == DonorStatuses.Failed ? "is-fail"
+
+                        : v.Status == DonorStatuses.Deferred ? "is-defer" : "";
+
+                    <article class="bb-donor-timeline-item @stepClass">
+
+                        <div class="bb-donor-timeline-item__rail" aria-hidden="true">
+
+                            <span class="bb-donor-timeline-item__dot"></span>
+
+                        </div>
+
+                        <div class="bb-donor-timeline-item__card">
+
+                            <header class="bb-donor-timeline-item__head">
+
+                                <div>
+
+                                    <time datetime="@v.RegisteredAt.ToString("o")" class="bb-donor-timeline-item__date">
+
+                                        @v.RegisteredAt.ToString("dd MMM yyyy · HH:mm")
+
+                                    </time>
+
+                                    <p class="bb-donor-timeline-item__sub">
+
+                                        Visit <span class="bb-mono">#@v.DonorId</span> · @v.DonationType
+
+                                    </p>
+
+                                </div>
+
+                                <span class="bb-badge @statusBadge">@v.Status</span>
+
+                            </header>
+
+                            <dl class="bb-donor-timeline-item__facts">
+
+                                <div>
+
+                                    <dt>Screening</dt>
+
+                                    <dd>@v.ScreeningResult</dd>
+
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(v.BagSerial))
+
+                                {
+
+                                    <div>
+
+                                        <dt>Bag serial</dt>
+
+                                        <dd class="bb-mono">@v.BagSerial</dd>
+
+                                    </div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(v.UnitStatus))
+
+                                {
+
+                                    <div>
+
+                                        <dt>Unit status</dt>
+
+                                        <dd>@v.UnitStatus</dd>
+
+                                    </div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(v.PatientId))
+
+                                {
+
+                                    <div>
+
+                                        <dt>Directed patient</dt>
+
+                                        <dd class="bb-mono">@v.PatientId</dd>
+
+                                    </div>
+
+                                }
+
+                            </dl>
+
+                            <div class="bb-donor-timeline-item__actions">
+
+                                @if (v.CanPrintCertificate && v.ScreeningId.HasValue)
+
+                                {
+
+                                    <a asp-area="BloodBank" asp-controller="Screening" asp-action="Print" asp-route-id="@v.ScreeningId" class="bb-btn bb-btn-sm bb-btn-ghost" target="_blank">
+
+                                        <i class="fa-solid fa-print"></i> Certificate
+
+                                    </a>
+
+                                }
+
+                                @if (v.Status == DonorStatuses.Registered || v.Status == DonorStatuses.Screening)
+
+                                {
+
+                                    <a asp-area="BloodBank" asp-controller="Screening" asp-action="Create" asp-route-donorId="@v.DonorId" class="bb-btn bb-btn-sm bb-btn-primary">
+
+                                        Continue screening
+
+                                    </a>
+
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                }
+
+            </div>
+
+        }
+
+        else
+
+        {
+
+            <div class="bb-card__body">
+
+                <div class="bb-empty-state">
+
+                    <p>No visits recorded.</p>
+
+                </div>
+
+            </div>
+
+        }
+
+    </div>
+
+    @if (Model.DispenseHistory.Any())
+    {
+        <div class="bb-card bb-mt-4">
+            <div class="bb-card__header"><h4>Blood dispensed to recipients</h4></div>
+            <div class="bb-card__body bb-table-scroll">
+                <table class="bb-table bb-table-compact">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Unit</th>
+                            <th>Recipient</th>
+                            <th>Destination</th>
+                            <th>Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.DispenseHistory)
+                        {
+                            <tr>
+                                <td>@d.DispenseDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="bb-mono">@d.SerialNumber</td>
+                                <td><strong>@d.RecipientName</strong></td>
+                                <td>@d.WardDestination</td>
+                                <td>@(d.DonationSource ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <p class="bb-page-subtitle bb-mt-2">Donor → unit → recipient chain for external (Not in HisOrder) and in-system dispenses.</p>
+            </div>
+        </div>
+    }
+
+</div>
+
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+

@@ -1,0 +1,193 @@
+﻿@model KMU.HisOrder.MVC.Areas.MedicalRecord.ViewModels.PrintClass
+@using KMU.HisOrder.MVC.Extesion
+@using KMU.HisOrder.MVC.Models
+
+@{
+
+}
+<style>
+    .lb_4 {
+        position: relative;
+        width: 100%;
+        max-width: 33%;
+        flex: 0 0 33%;
+        margin-top: 0.25rem !important
+    }
+
+    .lb_6 {
+        position: relative;
+        width: 100%;
+        max-width: 50%;
+        flex: 0 0 50%;
+        margin-top: 0.25rem !important
+    }
+
+    .lb_8 {
+        position: relative;
+        width: 100%;
+        max-width: 66%;
+        flex: 0 0 66%;
+        margin-top: 0.25rem !important
+    }
+
+    .lb_12 {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+        margin-top: 0.25rem !important
+    }
+
+    .align-items-center {
+        align-items: center !important;
+    }
+
+    .justify-content-center {
+        justify-content: center !important;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .div_4 {
+        position: relative;
+        width: 100%;
+        max-width: 33%;
+        flex: 0 0 33%;
+        margin-top: 0.25rem !important
+    }
+
+    .div_8 {
+        position: relative;
+        width: 100%;
+        max-width: 66%;
+        flex: 0 0 66%;
+        margin-top: 0.25rem !important
+    }
+
+    .div_12 {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+        margin-top: 0.25rem !important
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+
+    .font-weight-bold{
+        font-weight:bold!important;
+    }
+
+    .mt-3{
+        margin-top:1rem;
+    }
+
+</style>
+<div id="PersonalCardPage" class="page">
+    <table class="PageContainerTable">
+        <thead>
+            @*<tr>
+            <td style="text-align:center;">
+            <h2 class="PageFormTitle">@Model.FormTitle</h2>
+            </td>
+            </tr>*@
+            <tr>
+                <td>
+                    <div class="header-space"></div>
+                </td>
+            </tr>
+        </thead>
+        <tbody style="vertical-align: top;">
+            <tr>
+                <td>
+                    <div class="PageContentPsl">
+                        <div class="row my-5  align-items-center justify-content-center" style="margin:0px -10px;padding:60px 0px 0px 0px">
+                            <div style="width:500px;height:220px;border: 1px solid #dee2e6!important;border-radius: 0.25rem!important;border-color: #34495E !important;">
+                                <h3 class="text-center border-bottom mb-0">Republic of Somaliland Health Card</h3>
+                                <div class="form-group row mx-0" style="height:200px">
+                                    @*                    <div class="col-12 border-0">
+                                    <div class="row mx-0 justify-content-center">
+                                    <label id="Lb_FirstName" class="border-0 ptcard_text" style="font-size:13pt">@(!string.IsNullOrEmpty(Model.ChrPatientFirstname) ? Model.ChrPatientFirstname : "")</label> &nbsp;&nbsp;
+                                    <label id="Lb_MidName" class="border-0 ptcard_text" style="font-size:13pt">@(!string.IsNullOrEmpty(Model.ChrPatientMidname) ? Model.ChrPatientMidname : "")</label> &nbsp;&nbsp;
+                                    <label id="Lb_LastName " class="border-0 ptcard_text" style="font-size:13pt">@(!string.IsNullOrEmpty(Model.ChrPatientLastname) ? Model.ChrPatientLastname : "")</label>
+                                    </div>
+                                    </div>*@
+                                    <div class="div_4 mt-3 px-0">
+                                        @*<i class="fa-sharp fa-solid fa-user fa-10x"></i>*@
+                                        <div id="QrCodeInfo" class="row mx-0 mt-3 align-items-center justify-content-center"></div>
+                                    </div>
+                                    <div class="div_8 mt-3 px-0">
+                                        <div class="form-group row mx-0">
+                                            <label class="div-12 border-0 font-weight-bold mb-0">Name:</label>
+                                            <label id="Lb_FirstName" class="lb_12 border-0 ptcard_text" style="font-size:13pt">@(!string.IsNullOrEmpty(Model.PersonalInfo.FIRSTNAME) ? Model.PersonalInfo.FIRSTNAME : "")</label>
+                                            <label id="Lb_MidName" class="lb_6 border-0 ptcard_text" style="font-size:13pt">@(!string.IsNullOrEmpty(Model.PersonalInfo.MIDNAME) ? Model.PersonalInfo.MIDNAME : "")</label>
+                                            <label id="Lb_LastName" class="lb_6 border-0 ptcard_text" style="font-size:13pt">@(!string.IsNullOrEmpty(Model.PersonalInfo.LASTNAME) ? Model.PersonalInfo.LASTNAME : "")</label>
+
+                                            <label class="div-12 border-0 font-weight-bold mb-0">Health ID:</label>
+                                            <label id="Lb_PatientID" class="lb_12 border-0 ptcard_text" style="font-size:13pt">@Model.PersonalInfo.PATIENTID</label>
+                                            <label class="lb_6 border-0 font-weight-bold mb-0">Sex:</label>
+                                            <label class="lb_6 border-0 font-weight-bold mb-0">Birth:</label>
+                                            @if (string.IsNullOrEmpty(Model.PersonalInfo.GENDER))
+                                            {
+                                                <label id="" class="lb_6 border-0"></label>
+                                            }
+                                            else
+                                            {
+                                                <label id="Lb_Gender" class="lb_6 border-0 ptcard_text" style="font-size:13pt">@Model.PersonalInfo.enumGender.EnumToString()</label>
+                                            }
+
+                                            <label id="Lb_Birth" class="lb_6 border-0 ptcard_text" style="font-size:13pt">@(Model.PersonalInfo.BIRTHDATE.HasValue ? Model.PersonalInfo.BIRTHDATE.Value.ToString("dd/MM/yyyy") : "")</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>
+                    <div class="footer-space"></div>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+@*<script src="~/lib/bootstrap-4.6.2-dist/js/bootstrap.bundle.js"></script>*@
+<script>
+
+    $(document).ready(function () {
+        fn_GenerateQrCode();
+    });
+
+    function fn_GenerateQrCode() {
+        var QrCodeStr = "";
+        var ItemList = [];
+        ItemList.push({
+            PATIENTID: $("#Lb_PatientID").html(),
+            FIRSTNAME: $("#Lb_FirstName").html(),
+            MIDNAME: $("#Lb_MidName").html(),
+            LASTNAME: $("#Lb_LastName").html(),
+            GENDER: $("#Lb_Gender").html(),
+            BIRTHDATE: $("#Lb_Birth").html()
+        });
+
+        $("#QrCodeInfo").html("");
+        var qrcode = new QRCode(document.getElementById("QrCodeInfo"), {
+            text: JSON.stringify(ItemList),
+            width: 128,
+            height: 128,
+            colorDark: "#000000",
+            colorLight: "#FFFFFF",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        //new QRCode(document.getElementById("QrCodeInfo"), JSON.stringify(ItemList));
+    };
+</script>

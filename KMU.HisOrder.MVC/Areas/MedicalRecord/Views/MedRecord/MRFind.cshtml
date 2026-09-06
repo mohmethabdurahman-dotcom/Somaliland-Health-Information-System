@@ -1,0 +1,185 @@
+﻿@using KMU.HisOrder.MVC.Extesion;
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Medical Record → Find Medical Record";
+    var Title = ViewData["Title"] as string;
+}
+<style>
+    .direction {
+        font-weight: bold
+    }
+
+        .direction:hover {
+            text-decoration: underline;
+            font-weight: bold
+        }
+
+    .trHighlight {
+        background-color: #FFFAD7 !important;
+        border: inherit;
+    }
+</style>
+
+<script src="~/js/Ajax.js"></script>
+<h6 class="direction mx-2" style="">@Title</h6>
+<div class="form-group row  mx-0 border-bottom">
+    <div class="col-lg-9 border-right">
+        <div class="form-group row mx-0 mb-0 align-self-end">
+            <label class="form-control col-lg-2 font-weight-bold border-0 px-0 pb-0 mb-0 align-self-end" style="background-color:inherit;font-size:12px">&nbsp;&nbsp;Patient ID Number:</label>
+            <label class="form-control col-lg-2 font-weight-bold border-0 px-0 pb-0 mb-0 align-self-end" style="background-color:inherit;font-size:12px">&nbsp;&nbsp;Mobile Phone:</label>
+            <label class="form-control col-lg-4 font-weight-bold border-0 px-0 pb-0 mb-0 align-self-end" style="background-color:inherit;font-size:12px">&nbsp;&nbsp;&nbsp;Patient Name:</label>
+        </div>
+        <div class="form-group row mx-0 ">
+            <input type="text" id="Txt_PatientID" class="form-control col-lg-2 font-weight-bold text-center rounded" /> &nbsp;
+            <input type="text" id="Txt_MobilePhone" class="form-control col-lg-2 font-weight-bold text-center rounded" />&nbsp;
+            <input type="text" id="Txt_PatientName" class="form-control col-lg-4 font-weight-bold text-center rounded" />&nbsp;
+            @*<button type="button" class="form-control col-lg-2 font-weight-bold text-center btn btn-success round">More Conditon+</button>*@
+            <button type="submit" class="btn btn-primary float-right" onclick="fn_PatientSearch()">Search</button>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="form-group row mx-0 mb-0">
+            <label class="form-control col-lg-2 font-weight-bold border-0 px-0 mb-0 align-self-end" style="background-color:inherit;font-size:12px"></label>
+        </div>
+        <button type="button" class="btn btn-primary float-right" onclick="location.href='@Url.Action("MRCreate","MedRecord")'">Create Medical Record</button>
+        @*<button type="button" class="btn btn-danger float-right" onclick="">Read Card</button>*@
+    </div>
+</div>
+<div class="form-group row  mx-0">
+    <div class="col-12">
+        <div id="PatientDataTitle">
+            @*            <h4 class="card-title d-inline font-weight-bold text-info">Personal Information</h4>
+            <button id="Expand_group" class="btn btn-outline-info btn-sm float-right" data-toggle="collapse" href="#PatientDataContent">
+            <span class="StatusWord">Show</span>
+            </button>*@
+        </div>
+        <div id="PatientDataContent" class="collapse">
+        </div>
+    </div>
+    @*<div class="col-6">
+    <div id="ReserveDataTitle">
+    <h4 class="card-title d-inline font-weight-bold text-info">Medical History</h4>
+    <button id="Expand_group" class="btn btn-outline-info btn-sm float-right" data-toggle="collapse" href="#ReserveDataContent">
+    <span class="StatusWord">Show</span>
+    </button>
+    </div>
+    <div id="ReserveDataContent" class="collapse">
+    </div>
+    </div>*@
+</div>
+
+@section scripts
+    {
+
+    <script>
+        var HISORDER_ROOT = Root = '@Url.Content("~/HisOrder/")';
+    </script>
+
+    <!-- Area -->
+    <script src="~/js/Area.js"></script>
+
+    <script>
+
+        var APPLICATION_ROOT = '@Url.Content("~/")';
+
+        $(document).ready(function () {
+            //$('#PatientDataContent').css('min-height', '20vh');
+            //$('#ReserveDataContent').css('min-height', '20vh');
+
+            $("#Txt_PatientID").keyup(function (event) {
+                if (event.which === 13) {
+                    fn_PatientSearch();
+                }
+            });
+            $("#Txt_MobilePhone").keyup(function (event) {
+                if (event.which === 13) {
+                    fn_PatientSearch();
+                }
+            });
+            $("#Txt_PatientName").keyup(function (event) {
+                if (event.which === 13) {
+                    fn_PatientSearch();
+                }
+            });
+        });
+
+        function fn_ShowModal(ModalType) {
+            $("#" + ModalType + "Modal").modal({ backdrop: 'true', keyboard: false });
+            $("#" + ModalType + "Modal").on('shown.bs.modal', function () {
+                var $this = $(this);
+                var $modal_dialog = $this.find('.modal-dialog');
+                var m_top = ($(window).height() - $modal_dialog.height()) / 2;
+                $modal_dialog.css({ 'margin': m_top + 'px auto' });
+
+                if (ModalType == "ReadBarCode") {
+                    $("#Txt_ScanBarcode").focus();
+                }
+
+            });
+        }
+
+
+
+        function fn_PatientSearch() {
+
+            $("#PatientDataContent").html("");
+            $("#PatientDataContent").removeClass("show");
+
+            //$("#ReserveDataContent").html("");
+            //$("#ReserveDataContent").removeClass("show");
+
+
+            var PatientID = $("#Txt_PatientID").val();
+            var MobilePhone = $("#Txt_MobilePhone").val();
+            var PatientName = $("#Txt_PatientName").val();
+
+            if ((PatientID == "" || PatientID == null) && (MobilePhone == "" || MobilePhone == null) && (PatientName == "" || PatientName == null)) {
+                layer.alert('Please choose one of Condition to Search', {
+                    skin: 'layui-layer-lan',
+                    closebtn: 1,
+                    anim: 5,
+                    icon: 1,
+                    btn: ['OK'],
+                    title: 'Error Message'
+                }, function (index) {
+                    layer.close(index);
+                });
+
+                return;
+            }
+
+
+            var inUrl = "MedicalRecord/Ajax/PatientSearch";
+            var inData = {
+                PatientID: PatientID,
+                MobilePhone: MobilePhone,
+                PatientName: PatientName
+            };
+
+            var inSuccessFunc = function (responseData) {
+                $("#PatientDataContent").html(responseData);
+                $("#PatientDataContent").addClass("show");
+            }
+            ajax(inUrl, inData, inSuccessFunc, null);
+        }
+
+        function fn_SelectRow(trRow) {
+
+            var trID = trRow.id;
+            var trIDArr = trID.split("_");
+
+            $('tr[id^="tr_"]').removeClass("trHighlight");
+            $("#" + trID).addClass("trHighlight");
+
+            //fn_ShowReserveHistory(trIDArr[1]);
+        };
+
+
+        function fn_ClearText() {
+
+            $("input").val("");
+            $("textarea").val("");
+        }
+
+    </script>
+    }

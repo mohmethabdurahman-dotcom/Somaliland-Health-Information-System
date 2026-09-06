@@ -1,0 +1,543 @@
+﻿@using KMU.HisOrder.MVC.Extesion;
+@using KMU.HisOrder.MVC.Models;
+
+@model List<KMU.HisOrder.MVC.Areas.CBC.ViewModel.TestLabsViewModel>
+
+@{
+    var allCount = Model.Count();
+    var uCount = Model.Where(c => c.status == "UnApproved").Count();
+    var aCount = Model.Where(c => c.status == "Approved").Count();
+    
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Laboratory  → Approving Labs";
+    var Title = ViewData["Title"] as string;
+}
+<style>
+    input[type="checkbox"] {
+        transform: scale(1.5);
+    }
+
+    form-check-inline {
+        display: -ms-inline-flexbox;
+        display: inline-flex;
+        -ms-flex-align: center;
+        align-items: center;
+        padding-left: 0;
+        margin-right: 0.75rem;
+        padding-top: 10px;
+    }
+
+    .form-check-inline .form-check-input {
+        position: static;
+        margin-top: 10;
+        margin-right: 0.65rem;
+        margin-left: 0;
+    }
+
+    table.dataTable {
+        margin-top: -1em !important;
+        /**/
+    }
+
+    .stat-widget-one .stat-icon {
+        vertical-align: top;
+    }
+
+        .stat-widget-one .stat-icon i {
+            font-size: 30px;
+            border-width: 1px;
+            border-style: solid;
+            border-radius: 10px;
+            padding: 15px;
+            font-weight: 900;
+            display: inline-block;
+        }
+
+    .stat-widget-one .stat-content {
+        margin-left: 30px;
+        margin-top: 7px;
+    }
+
+    .stat-widget-one .stat-text {
+        font-size: 14px;
+        color: #868e96;
+    }
+
+    .stat-widget-one .stat-digit {
+        font-size: 24px;
+        color: #373757;
+    }
+    /*    Widget Two
+    ---------------------------*/
+    .stat-widget-two {
+        text-align: center;
+    }
+
+        .stat-widget-two .stat-digit {
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: #373757;
+        }
+
+            .stat-widget-two .stat-digit i {
+                font-size: 18px;
+                margin-right: 5px;
+            }
+
+        .stat-widget-two .stat-text {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #868e96;
+        }
+
+        .stat-widget-two .progress {
+            height: 8px;
+            margin-bottom: 0;
+            margin-top: 20px;
+            box-shadow: none;
+        }
+
+        .stat-widget-two .progress-bar {
+            box-shadow: none;
+        }
+    /*    Widget Three
+    ---------------------------*/
+    .stat-widget-three .stat-icon {
+        display: inline-block;
+        padding: 33px;
+        position: absolute;
+        line-height: 21px;
+    }
+
+        .stat-widget-three .stat-icon i {
+            font-size: 30px;
+            color: #ffffff;
+        }
+
+    .stat-widget-three .stat-content {
+        text-align: center;
+        padding: 15px;
+        margin-left: 90px;
+    }
+
+    .stat-widget-three .stat-digit {
+        font-size: 30px;
+    }
+
+    .stat-widget-three .stat-text {
+        padding-top: 4px;
+    }
+
+    .home-widget-three .stat-icon {
+        line-height: 19px;
+        padding: 27px;
+    }
+
+    .home-widget-three .stat-digit {
+        font-size: 24px;
+        font-weight: 300;
+        color: #373757;
+    }
+
+    .home-widget-three .stat-content {
+        text-align: center;
+        margin-left: 60px;
+        padding: 13px;
+    }
+
+    .stat-widget-four {
+        position: relative;
+    }
+
+        .stat-widget-four .stat-icon {
+            display: inline-block;
+            position: absolute;
+            top: 5px;
+        }
+
+        .stat-widget-four i {
+            display: block;
+            font-size: 36px;
+        }
+
+        .stat-widget-four .stat-content {
+            margin-left: 40px;
+            text-align: center;
+        }
+
+        .stat-widget-four .stat-heading {
+            font-size: 20px;
+        }
+
+    .stat-widget-five .stat-icon {
+        border-radius: 100px;
+        display: inline-block;
+        position: absolute;
+    }
+
+    .stat-widget-five i {
+        border-radius: 100px;
+        display: block;
+        font-size: 36px;
+        padding: 30px;
+    }
+
+    .stat-widget-five .stat-content {
+        margin-left: 100px;
+        padding: 24px 0;
+        position: relative;
+        text-align: right;
+        vertical-align: middle;
+    }
+
+    .stat-widget-five .stat-heading {
+        text-align: right;
+        padding-left: 80px;
+        font-size: 20px;
+        font-weight: 200;
+    }
+
+    .stat-widget-six {
+        position: relative;
+    }
+
+        .stat-widget-six .stat-icon {
+            display: inline-block;
+            position: absolute;
+            top: 5px;
+        }
+
+        .stat-widget-six i {
+            display: block;
+            font-size: 36px;
+        }
+
+        .stat-widget-six .stat-content {
+            margin-left: 40px;
+            text-align: center;
+        }
+
+        .stat-widget-six .stat-heading {
+            font-size: 16px;
+            font-weight: 300;
+        }
+
+        .stat-widget-six .stat-text {
+            font-size: 12px;
+            padding-top: 4px;
+        }
+
+    .stat-widget-seven .stat-heading {
+        text-align: center;
+    }
+
+    .stat-widget-seven .gradient-circle {
+        text-align: center;
+        position: relative;
+        margin: 30px auto;
+        display: inline-block;
+        width: 100%;
+    }
+
+        .stat-widget-seven .gradient-circle i {
+            position: absolute;
+            left: 0;
+            right: 0;
+            text-align: center;
+            top: 35px;
+            font-size: 30px;
+        }
+
+    .stat-widget-seven .stat-footer {
+        text-align: center;
+        margin-top: 30px;
+    }
+
+        .stat-widget-seven .stat-footer .stat-count {
+            padding-left: 5px;
+        }
+
+    .stat-widget-seven .count-header {
+        color: #252525;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 30px;
+    }
+
+    .stat-widget-seven .stat-count {
+        font-size: 18px;
+        font-weight: 400;
+        color: #252525;
+    }
+
+    .stat-widget-seven .analytic-arrow {
+        position: relative;
+    }
+
+        .stat-widget-seven .analytic-arrow i {
+            font-size: 12px;
+        }
+</style>
+
+
+<h6 class="direction mx-2" style="">@Title</h6>
+<div class="row page-titles mx-0 ">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <span class="ml-1 mr-2">Patient List</span>
+
+
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 col-sm-6 pt-1 pb-0">
+        <div class="card p-2">
+            <div class="stat-widget-one card-body">
+                <div class="stat-icon d-inline-block">
+                    <i class="fa fa-shapes text-info border-info"></i>
+                </div>
+                <div class="stat-content d-inline-block">
+                    <div class="stat-text">All Patients</div>
+                    <div class="stat-digit"><strong>@allCount</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-6 pt-1 pb-0">
+        <div class="card p-2">
+            <div class="stat-widget-one card-body">
+                <div class="stat-icon d-inline-block">
+                    <i class="fa-regular fa-square-caret-up text-secondary border-secondary"></i>
+                </div>
+                <div class="stat-content d-inline-block">
+                    <div class="stat-text">UnApproved</div>
+                    <div class="stat-digit"><strong>@uCount</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-sm-6 pt-1 pb-0">
+        <div class="card p-2">
+            <div class="stat-widget-one card-body">
+                <div class="stat-icon d-inline-block">
+                    <i class="fa fa-square text-success border-success"></i>
+                </div>
+                <div class="stat-content d-inline-block">
+                    <div class="stat-text">Approved</div>
+                    <div class="stat-digit"><strong>@aCount</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<form method="get" asp-action="ApprovedLabs" id="searchForm">
+
+<div class="form-group row  mx-0 border-bottom">
+    <div class="col-lg-9 border-right">
+        <div class="form-group row mx-0 mb-0 align-self-end">
+            <label class="form-control col-lg-4 font-weight-bold border-0 px-0 pb-0 mb-0 align-self-end" style="background-color:inherit;font-size:12px">&nbsp;&nbsp;Inhospital Id:</label>
+            <label class="form-control col-lg-4 font-weight-bold border-0 px-0 pb-0 mb-0 align-self-end" style="background-color:inherit;font-size:12px">&nbsp;&nbsp;&nbsp;Date:</label>
+        </div>
+        <div class="form-group row mx-0 ">
+                <input type="text" id="inHospitalId" class="form-control col-lg-4 font-weight-bold text-center rounded" name="inHospitalId" value="@Context.Request.Query["inHospitalId"]"  />&nbsp;
+                <input type="date" id="selectedDate" name="selectedDate" class="form-control col-lg-4 font-weight-bold text-center rounded" value="@ViewBag.SelectedDate"  />&nbsp;
+            <button type="submit" class="btn btn-primary float-right" onclick="">Search</button>
+        </div>
+    </div>
+</div>
+</form>
+<div class="col-lg-12">
+    <div class="card p-2">
+        <div class="card-body">
+<table id="ptInfo_tb" class="table">
+    @if (Model != null)
+    {
+        <thead>
+            <tr>
+                <th class="font-weight-bold text-dark" style="width:40px">...</th>
+                <th class="font-weight-bold text-dark py-0" style="width:80px">Patient ID</th>
+                <th class="font-weight-bold text-dark py-0" style="width:200px">Patient Name</th>
+                <th class="font-weight-bold text-dark py-0" style="width:140px">Mobile Phone</th>
+                <th class="font-weight-bold text-dark py-0" style="width:80px">Sex</th>
+                <th class="font-weight-bold text-dark py-0" style="width:250px">Date of Birth</th>
+                <th class="font-weight-bold text-dark py-0" style="width:150px">Address</th>
+                <th class="font-weight-bold text-dark py-0" style="width:150px">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                int rowIndex = 1;
+                @foreach (var pt in Model)
+                {
+                    var ptName = pt.FirstName + "&nbsp;" + pt.MidName + "&nbsp;" + pt.LastName;
+                    var Age = DateTime.Today.Year - pt.BirthDate.Value.Year;
+
+                                <tr id="tr_@pt.PatientId" style="cursor:pointer" onclick="fn_SelectRow(this)" class="@if(pt.Gender != "M"){
+                    @Html.Raw(" text-danger")
+                }else{
+                    @Html.Raw(" text-primary")
+                }">
+                        <td class="font-weight-bold">
+                            @rowIndex
+                        </td>
+                        <td class="font-weight-bold">@Html.Raw(pt.PatientId.Trim())</td>
+                        <td class="font-weight-bold">@Html.Raw(ptName)</td>
+                        <td class="font-weight-bold">@Html.Raw(pt.MobilePhone)</td>
+                        @if (pt.Gender != null)
+                        {
+                            @if (pt.Gender == "M")
+                            {
+                                <td class="font-weight-bold text-center">Male</td>
+                            }   
+                            else{
+                                <td class="font-weight-bold text-center">Female</td>
+
+                            }
+                        }
+                        else
+                        {
+                            <td class="font-weight-bold text-center"></td>
+                        }
+                        <td class="font-weight-bold">@Html.Raw(pt.BirthDate.Value.ToString("dd/MM/yyyy")) (@Age.AgeFormat())</td>
+                        <td class="font-weight-bold">@Html.Raw(pt.Address)</td>
+                                    @if (pt.status == "UnApproved")
+                                    {
+                                        <td class="font-weight-bold">
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="showLabDetailsModal('@pt.InHospitalId','@pt.status')">
+                                                <i class="fa-solid fa-circle-check "></i> Pending
+                                            </button>
+                                        </td>
+                                    }
+                                    else if (pt.status == "Approved")
+                                    {
+                                        <td class="font-weight-bold">
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="showLabDetailsModal('@pt.InHospitalId','@pt.status')">
+                                                <i class="fa-solid fa-eye "></i> View
+                                            </button>
+                                        </td>
+                                    }
+                        
+                    </tr>
+
+                    rowIndex++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="font-weight-bold text-danger" colspan="5">No Patients Found!</td>
+                </tr>
+            }
+        </tbody>
+    }
+    else
+    {
+        <tbody>
+            <tr>
+                <td class="text-center font-weight-bold text-danger" colspan="5">Empty Param!</td>
+            </tr>
+        </tbody>
+    }
+</table>
+</div></div></div>
+<div class="modal fade" id="labDetailsModal" tabindex="-1" role="dialog" aria-labelledby="labDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style="max-width:90%; height:98%; padding:0;" role="document">
+        <div class="modal-content">
+            
+            <div class="modal-body">
+
+                <div id="labDetailsContent"></div>
+            </div>
+            <div class="modal-footer">
+                                <input type="hidden" id="modalInHospitalId" />
+
+                <button type="button" class="btn btn-success" id="approveBtn" onclick="approveLab()">Approve</button>
+
+
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--dynamic content-->
+<script src="~/lib/jquery/dist/jquery.js"></script>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+@section scripts
+{
+    <script>
+        var APPLICATION_ROOT = '@Url.Content("~/")';
+
+        $(document).ready(function () {
+            $("#ptInfo_tb").DataTable({
+                scrollX: true,
+            });
+
+            $(".dataTables_info").css("width", "100%");
+        });
+
+        function showLabDetailsModal(patientId,status) {
+            $('#modalInHospitalId').val(patientId);
+            if (status === "UnApproved") {
+            $('#approveBtn').show();
+        } else {
+            $('#approveBtn').hide();
+        }
+            $('#labDetailsModal').modal('show');
+
+            $.ajax({
+                url: '/CBC/CBC/GetPatientLabs',
+                type: 'GET',
+                data: { InhospitalId: patientId },
+                success: function (data) {
+                    $('#labDetailsContent').html(data);
+                },
+                error: function () {
+                    $('#labDetailsContent').html('<p class="text-danger">Failed to load lab details.</p>');
+                }
+            });
+        }
+        function submitForm() {
+            document.getElementById("searchForm").submit();
+        }
+
+
+        function approveLab() {
+            var inHospitalId = $('#modalInHospitalId').val(); 
+
+            if (!inHospitalId) {
+                alert("Inhospital ID is required!");
+                return;
+            }
+            $.ajax({
+                url: '/CBC/CBC/ApproveLabs',  
+                type: 'POST',
+                data: { inHospitalId: inHospitalId },
+                success: function (response) {
+                    if (response.success) {
+                        layer.alert('All labs for this patient have been approved!', {
+                            skin: 'layui-layer-lan', closebtn: 1, anim: 5, icon: 1, btn: ['OK'], title: 'Success'
+                        });
+                        $('#labDetailsModal').modal('hide');
+                       
+                        location.reload();  
+                    } else {
+                        layer.alert("Failed to approve labs. Please try again.", {
+                            skin: 'layui-layer-lan', closebtn: 1, anim: 5, icon: 2, btn: ['OK'], title: 'Error Message'
+                        });
+                    }
+                },
+                error: function () {
+                    layer.alert("Failed to approve labs. Please try again.", {
+                        skin: 'layui-layer-lan', closebtn: 1, anim: 5, icon: 2, btn: ['OK'], title: 'Error Message'
+                    });
+                }
+            });
+        }</script>
+}

@@ -1,0 +1,96 @@
+﻿@model KMU.HisOrder.MVC.Models.InpatientReservation
+
+<style>
+    .modern-input {
+        border-radius: 10px;
+        padding: 10px 14px;
+        border: 1px solid #d6d6d6;
+        transition: all 0.2s ease;
+        background: #fafafa;
+    }
+
+        .modern-input:focus {
+            background: #ffffff;
+            border-color: #4a7dff;
+            box-shadow: 0 0 0 0.15rem rgba(80,120,255,0.25);
+        }
+
+    .modal-content {
+        border-radius: 18px !important;
+    }
+</style>
+
+<div class="p-3">
+
+    <div class="rounded-4 shadow-sm border bg-white p-4"
+         style="background: #fdfdfd; border: 1px solid #e5e5e5;">
+
+        <form id="editDutyForm">
+
+            <!-- Hidden ID -->
+            <input type="hidden" id="Id" value="@Model.inhospId" />
+            <!-- DOCTOR -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary">Doctor</label>
+                <input type="text"
+                       id="doctor"
+                       class="form-control modern-input"
+                       value="@Model.doctor"
+                       placeholder="Enter doctor name..." />
+            </div>
+
+            <!-- NURSE -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary">Nurse</label>
+                <input type="text"
+                       id="nurse"
+                       class="form-control modern-input"
+                       value="@Model.nurse"
+                       placeholder="Enter nurse name..." />
+            </div>
+
+            <div class="text-end pt-2">
+                <button type="button"
+                        id="btnSaveDuty"
+                        class="btn btn-primary px-4 py-2 rounded-3 shadow-sm">
+                    Save Changes
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+@* <script src="~/lib/jquery1.min.js"></script> *@
+
+    <script>
+        $("#btnSaveDuty").click(function () {
+
+        let inhospid = $("#Id").val();
+            let doctor = $("#doctor").val();
+            let nurse = $("#nurse").val();
+
+            $.ajax({
+                url: "/InPatient/Ward/EditDuty",
+                type: "POST",
+                data: {
+                inhospid: inhospid,
+                    doctor: doctor,
+                    nurse: nurse
+                },
+                success: function () {
+                    // alert("Updated Successfully!");
+                        // Default: reload entire page after alert
+            setTimeout(function () {
+                location.reload();
+            }, 200);
+                },
+                error: function () {
+                    alert("Error updating record.");
+                }
+            });
+
+        });
+    </script>
+

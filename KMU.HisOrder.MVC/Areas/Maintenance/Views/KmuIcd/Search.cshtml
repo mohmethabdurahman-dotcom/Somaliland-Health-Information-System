@@ -1,0 +1,100 @@
+﻿@using KMU.HisOrder.MVC.Extesion;
+@model IEnumerable<KMU.HisOrder.MVC.Models.KmuIcd>
+
+<div class="row" style="height: 79vh; width: 100%; overflow: auto;">
+    <div class="col-md-12">
+        <table id="IcdSearchTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>
+                    </th>
+                    <th>
+                        ICD10
+                    </th>
+                    <th style="width:380px;">
+                        Name
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Dhis2Code)
+                    </th>
+                    <th>
+                        Off/On
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        ShowMode
+                    </th>
+                    <th>
+                        Version
+                    </th>
+                    <th>
+                        Modified by
+                    </th>
+                    <th style="width: 120px;">
+                        Modified Date
+                    </th>
+                    <th>
+                        ICD10 Undot
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td style="white-space:nowrap; width:80px;">
+                            &nbsp&nbsp<a asp-action="Edit" asp-route-id="@item.IcdCode" class="fa-solid fa-pencil"></a>
+                            &nbsp&nbsp<a asp-action="Delete" asp-route-id="@item.IcdCode" class="fa-solid fa-trash"></a>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.IcdCode)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.IcdEnglishName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Dhis2Code)
+                        </td>
+                        @*<td>
+                    @Html.DisplayFor(modelItem => item.ParentCode)
+                    </td>*@
+                        <td>
+                            @*@if (item.Status == "1")
+                        {
+                        @Html.Label("True")
+                        }
+                        else
+                        {
+                        @Html.Label("False")
+                        }*@
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="@item.IcdCode" name="@item.IcdCode" @(item.Status =="1" ?" checked":"") onclick="fn_Status('@item.IcdCode')">
+                                <label for="@item.IcdCode" class="custom-control-label"></label>
+                            </div>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.IcdType)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ShowMode)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Versioncode)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ModifyUser)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ModifyDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.IcdCodeUndot)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

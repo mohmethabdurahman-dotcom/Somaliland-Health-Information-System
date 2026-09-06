@@ -1,0 +1,166 @@
+@model ScreeningFormViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Screening — " + Model.DonorName;
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell bb-screening-form-page">
+    <header class="bb-screening-hero" id="screeningHero">
+        <div class="bb-screening-hero__row">
+            <div class="bb-screening-hero__identity">
+                <a asp-action="Index" class="bb-dispense-back-btn"><i class="fa-solid fa-arrow-left"></i> Screening queue</a>
+                <h6 class="direction mb-0"><i class="fa-solid fa-vial-circle-check"></i> Screening workstation</h6>
+                <span class="bb-screening-hero__meta">
+                    <strong>@Model.DonorName</strong>
+                    <span class="bb-mono">@Model.BloodBankDonorId</span>
+                    @if (!string.IsNullOrWhiteSpace(Model.StaffName))
+                    {
+                        <span>· @Model.StaffName</span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.RegistrationVitalsSummary))
+                    {
+                        <span>· @Model.RegistrationVitalsSummary</span>
+                    }
+                </span>
+            </div>
+            <div class="bb-screening-hero__badges">
+                <span class="bb-badge bb-badge-blood">@Model.BloodType</span>
+                <span class="bb-screening-hero__meter" title="Infectious disease assays passed">
+                    <span id="assayPassCount">4/4</span>
+                    <small>assays</small>
+                </span>
+                <span id="overallBadge" class="bb-badge bb-id-panel__overall bb-badge-passed">Passed</span>
+            </div>
+        </div>
+        <ol class="bb-screening-hero__steps" aria-label="Screening steps">
+            <li class="is-current"><span>1</span> CBC</li>
+            <li><span>2</span> Serology</li>
+            <li><span>3</span> Certify</li>
+        </ol>
+    </header>
+
+    <form asp-action="Create" method="post" id="screeningForm" class="bb-screening-form-body">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="DonorId" />
+        <input type="hidden" asp-for="UnitId" />
+        <input type="hidden" asp-for="OverallResult" id="overallResult" />
+
+        <div class="bb-scr-workspace">
+            <div class="bb-scr-workspace__main">
+                <partial name="~/Areas/BloodBank/Views/Screening/PartialViews/_ScreeningPreDonationPanel.cshtml" model="Model" />
+
+                <section class="bb-id-panel bb-id-panel--advanced" aria-label="Infectious disease test panel">
+                    <div class="bb-id-panel__head">
+                        <div class="bb-id-panel__title">
+                            <span class="bb-id-panel__title-icon"><i class="fa-solid fa-virus"></i></span>
+                            <div>
+                                <h3 class="bb-id-panel__heading">Infectious disease panel</h3>
+                                <p class="bb-id-panel__sub">HIV · HBsAg · HCV · TPHA</p>
+                            </div>
+                        </div>
+                        <div class="bb-id-panel__head-tools">
+                            <span class="bb-id-panel__step">Step 2</span>
+                            <button type="button" class="bb-btn bb-btn-ghost bb-btn-sm bb-id-panel__tool" id="btnMarkAllPass">Mark all pass</button>
+                            <button type="button" class="bb-btn bb-btn-ghost bb-btn-sm bb-id-panel__tool" id="btnResetPanel">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="bb-id-panel__grid bb-id-panel__grid--advanced">
+                        @{
+                            var tests = new (string prop, string code, string label, string desc, string icon, string tone)[] {
+                                ("HivResult", "HIV Ab", "HIV", "Antibody screen", "fa-virus", "hiv"),
+                                ("HepBResult", "HBsAg", "Hepatitis B", "Surface antigen", "fa-shield-virus", "hepb"),
+                                ("HepCResult", "HCV Ab", "Hepatitis C", "Antibody screen", "fa-droplet", "hepc"),
+                                ("SyphilisResult", "TPHA", "Syphilis", "Treponemal Ab", "fa-bacteria", "syphilis")
+                            };
+                        }
+                        @foreach (var (prop, code, label, desc, icon, tone) in tests)
+                        {
+                            <article class="bb-assay-card bb-assay-card--@tone is-pass" data-test-row="@prop">
+                                <div class="bb-assay-card__top">
+                                    <span class="bb-assay-card__icon" aria-hidden="true"><i class="fa-solid @icon"></i></span>
+                                    <div class="bb-assay-card__copy">
+                                        <span class="bb-assay-card__code">@code</span>
+                                        <h4 class="bb-assay-card__name">@label</h4>
+                                        <p class="bb-assay-card__desc">@desc</p>
+                                    </div>
+                                </div>
+                                <div class="bb-toggle-test bb-toggle-test--assay" data-test="@prop">
+                                    <button type="button" class="pass selected" data-val="Pass"><i class="fa-solid fa-check"></i> PASS</button>
+                                    <button type="button" class="fail" data-val="Fail"><i class="fa-solid fa-xmark"></i> FAIL</button>
+                                </div>
+                                <input type="hidden" name="@prop" id="@prop" value="Pass" />
+                            </article>
+                        }
+                    </div>
+
+                    <div id="resultBanner" class="bb-id-panel__banner bb-id-panel__banner--live is-pass" aria-live="polite">All assays non-reactive — unit proceeds to bag assignment.</div>
+                </section>
+            </div>
+
+            <aside class="bb-scr-workspace__side">
+                <div class="bb-his-request-card bb-scr-donor-card">
+                    <div class="bb-his-request-card__header">
+                        <div class="bb-his-request-card__header-top">
+                            <span class="bb-his-request-card__lock"><i class="fa-solid fa-heart-pulse"></i> Donor context</span>
+                            <span class="bb-badge bb-badge-blood">@Model.BloodType</span>
+                        </div>
+                        <h4 class="bb-his-request-card__title">@Model.DonorName</h4>
+                        <p class="bb-his-request-card__subtitle bb-mono">@Model.BloodBankDonorId</p>
+                    </div>
+                    <div class="bb-his-request-card__body">
+                        <div class="bb-his-request-grid">
+                            <div class="bb-his-request-item">
+                                <span class="bb-his-request-item__icon"><i class="fa-solid fa-phone"></i></span>
+                                <div class="bb-his-request-item__content">
+                                    <span class="bb-his-request-item__label">Phone</span>
+                                    <span class="bb-his-request-item__value bb-mono">@(string.IsNullOrWhiteSpace(Model.DonorPhone) ? "—" : Model.DonorPhone)</span>
+                                </div>
+                            </div>
+                            <div class="bb-his-request-item">
+                                <span class="bb-his-request-item__icon"><i class="fa-solid fa-user-nurse"></i></span>
+                                <div class="bb-his-request-item__content">
+                                    <span class="bb-his-request-item__label">Staff</span>
+                                    <span class="bb-his-request-item__value">@Model.StaffName</span>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(Model.SerialNumber))
+                            {
+                                <div class="bb-his-request-item">
+                                    <span class="bb-his-request-item__icon"><i class="fa-solid fa-barcode"></i></span>
+                                    <div class="bb-his-request-item__content">
+                                        <span class="bb-his-request-item__label">Bag serial</span>
+                                        <span class="bb-his-request-item__value bb-mono">@Model.SerialNumber</span>
+                                    </div>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.RegistrationVitalsSummary))
+                            {
+                                <div class="bb-his-request-item bb-his-request-item--wide">
+                                    <span class="bb-his-request-item__icon"><i class="fa-solid fa-notes-medical"></i></span>
+                                    <div class="bb-his-request-item__content">
+                                        <span class="bb-his-request-item__label">Registration vitals</span>
+                                        <span class="bb-his-request-item__value">@Model.RegistrationVitalsSummary</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bb-scr-side-notes">
+                    <label class="bb-label" for="Notes">Clinical notes</label>
+                    <textarea asp-for="Notes" class="form-control" rows="4" id="Notes" placeholder="Optional observations for bag assignment and certificate"></textarea>
+                    <div class="bb-scr-side-actions">
+                        <a asp-action="Index" class="bb-btn bb-btn-ghost">Cancel</a>
+                        <button type="submit" class="bb-btn bb-btn-success" id="btnSubmitScreening">
+                            <i class="fa-solid fa-print"></i> Submit &amp; print
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </form>
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+<partial name="~/Areas/BloodBank/Views/Screening/PartialViews/_ScreeningPreDonationScripts.cshtml" />

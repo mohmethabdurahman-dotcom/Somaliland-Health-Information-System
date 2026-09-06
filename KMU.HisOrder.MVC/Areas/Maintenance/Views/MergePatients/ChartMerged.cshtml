@@ -1,0 +1,62 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.kmu_chart_MergeHistory>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<div class="row d-flex justify-content-center ">
+
+    <div class="shadow-sm col-11 mt-4 bg-white p-3 d-flex justify-content-start align-items-start">
+        <a class="btn btn-secondary btn-sm" asp-controller="MergePatients" asp-action="Index">Back to Merge</a>
+    </div>
+    <div class="card shadow-sm bg-white col-11 mt-1">
+        <table id="data-table" class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                   Chart Health ID
+                </th>
+                <th>
+                    Merged Health ID
+                </th>
+                <th>
+                    Create Time
+                </th>
+                <th>
+                    Merged Time
+                </th>
+                <th>
+                    Merger User
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.chr_halth_id)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.mh_health_id)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ModifyTime)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.merged_time)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.merger_user)
+                    </td>
+                    <td>
+                            <a asp-controller="MergePatients" asp-action="Undo" asp-route-id="@item.mh_health_id"  class="btn btn-sm btn-success undo"><i class="fa fa-info"></i> Detail</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+</div>
+

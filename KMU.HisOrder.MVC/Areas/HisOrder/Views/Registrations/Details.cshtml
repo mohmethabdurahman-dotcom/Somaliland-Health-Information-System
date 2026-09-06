@@ -1,0 +1,14 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.PhysicalSign>
+@{
+    
+}
+<div class="row">
+    @foreach(var item in Model){
+      
+         <div class="col-6">
+            <span id="value1" class="text-dark" style="font-size:16px;font:bold;"> @item.PhyType :</span>
+            <span class="text-primary" style="font-size:15px"> @item.PhyValue</span>
+         </div>
+    }
+    
+</div>

@@ -1,0 +1,62 @@
+@model DonorSearchResultViewModel
+@using KMU.HisOrder.MVC.Models.BloodBank
+<table id="donorInfo_tb" class="table">
+    @if (Model.EmptyParam)
+    {
+        <tbody>
+            <tr>
+                <td class="text-center font-weight-bold text-danger" style="width:100%">Empty Param! </td>
+            </tr>
+        </tbody>
+    }
+    else if (Model.Results.Any())
+    {
+        <thead>
+            <tr>
+                <th class="font-weight-bold text-dark" style="width:60px">...</th>
+                <th class="font-weight-bold text-dark py-0" style="width:120px">Donor ID</th>
+                <th class="font-weight-bold text-dark py-0" style="width:250px">Donor Name</th>
+                <th class="font-weight-bold text-dark py-0" style="width:150px">Mobile Phone</th>
+                <th class="font-weight-bold text-dark py-0" style="width:80px">Sex</th>
+                <th class="font-weight-bold text-dark py-0" style="width:80px">Blood</th>
+                <th class="font-weight-bold text-dark py-0" style="width:160px">Last visit</th>
+                <th class="font-weight-bold text-dark py-0" style="width:100px">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model.Results)
+            {
+                var statusBadge = d.LastStatus == DonorStatuses.Passed ? "bb-badge-passed"
+                    : d.LastStatus == DonorStatuses.Failed ? "bb-badge-failed"
+                    : "bb-badge-pending";
+                var rowClass = d.Gender == "Male" ? "text-primary" : d.Gender == "Female" ? "text-danger" : "";
+                var profileUrl = Url.Action("Profile", "Donors", new { area = "BloodBank", donorId = d.PrimaryDonorId })!;
+                var createUrl = Url.Action("Create", "Donors", new { area = "BloodBank", donorId = d.PrimaryDonorId })!;
+                <tr id="tr_donor_@d.PrimaryDonorId" style="cursor:pointer" onclick="fn_SelectRow(this)" class="@rowClass" data-profile-url="@profileUrl">
+                    <td class="font-weight-bold">
+                        <i class="fa-solid fa-clock-rotate-left fa-xl" title="Donor history"
+                           onclick="event.stopPropagation(); location.href='@profileUrl'"></i>
+                        &nbsp;&nbsp;
+                        <i class="fa-solid fa-user-plus fa-xl" title="New visit"
+                           onclick="event.stopPropagation(); location.href='@createUrl'"></i>
+                    </td>
+                    <td class="font-weight-bold">@d.BloodBankDonorId</td>
+                    <td class="font-weight-bold">@d.FullName</td>
+                    <td class="font-weight-bold">@d.Phone</td>
+                    <td class="font-weight-bold text-center">@d.Gender</td>
+                    <td class="font-weight-bold text-center">@d.BloodType</td>
+                    <td class="font-weight-bold">@(d.LastVisit?.ToString("dd/MM/yyyy HH:mm") ?? "—")</td>
+                    <td class="font-weight-bold text-center"><span class="bb-badge @statusBadge">@d.LastStatus</span></td>
+                </tr>
+            }
+        </tbody>
+    }
+    else
+    {
+        <tbody>
+            <tr>
+                <td class="font-weight-bold text-danger" colspan="8">Not Donor Has Found!!</td>
+            </tr>
+        </tbody>
+    }
+</table>

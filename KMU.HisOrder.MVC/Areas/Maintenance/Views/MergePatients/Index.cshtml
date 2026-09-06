@@ -1,0 +1,202 @@
+﻿    @{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Title = ViewData["Title"] = "Medical Record → Merge Patients";
+
+}
+<style>
+    .direction {
+        font-weight: bold
+    }
+
+        .direction:hover {
+            text-decoration: underline;
+            font-weight: bold
+        }
+
+    .trHighlight {
+        background-color: #FFFAD7 !important;
+        border: inherit;
+    }
+
+</style>
+<h6 class="direction mx-2" style="">@Title</h6>
+<div class="row d-flex justify-content-center">
+
+    <div class="col-11 shadow-sm text-center p-3 mt-2 bg-white ">
+        <h5 class="py-3">Merge Duplicated Patients</h5>
+        <div class="row d-flex align-items-end">
+            <div class="col-3 text-left">
+                <label>Mobile Phone</label>
+                <input required id="phone" class="form-control" />
+            </div>
+            <div class="col-3 text-left">
+                <label>Patient Name</label>
+                <input required id="name" class="form-control" onkeyup="NameFirstCharToUpper_other_ToLower(this)" />
+            </div>
+            <span class="m-0 p-0">
+                <a id="search" class="btn btn-success">Search</a>
+            </span>
+            <div class="d-flex ml-4">
+                <a class="btn btn-secondary" asp-action="ChartMerged">Merged Patients</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-11 shadow-sm text-left p-3 mt-1">
+        <table id="mergetable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Patient ID</th>
+                    <th>Patient Name</th>
+                    <th>Mobile Phone</th>
+                    <th>Sex</th>
+                    <th>Modify Time</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="bg-white">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="mergebtn"><a class="btn btn-danger">Merge</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<script src="~/lib/jquery1.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#search").on("click", function () {
+
+            $("#mergetable tbody #tr1").remove();
+            var patientName = $("#name").val();
+            var phonenumber = $("#phone").val();
+            if (patientName == "" || phonenumber == "") {
+                layer.msg("Please fill Mobile Phone and Patient Name fields");
+            }
+            else {
+
+                $.ajax({
+                    type: "post",
+                    url: "/Maintenance/MergePatients/getpatients",
+                    data: {
+                        phone: phonenumber,
+                        name: patientName
+                    },
+                    success: function (response) {
+
+                        if (response == 0) {
+                            layer.alert('Make sure mobile phone and patient name', {
+                                skin: 'layui-layer-lan',
+                                closebtn: 3,
+                                anim: 5,
+                                icon: 7,
+                                btn: ['OK'],
+                                title: 'Message',
+                                OK: function (index) {
+                                    layer.close(index);
+                                }
+                            });
+                        }//if end
+
+                        $.each(response, function (key, value) {
+
+                            $("#mergetable tbody").append(`<tr id="tr1">
+                            <td class="patientid"></td>
+                            <td class="name"></td>
+                            <td class="mobile"></td>
+                            <td class="sex"></td>
+                            <td class="rdate"></td>
+
+                        </tr>`);//append end
+                            $(".patientid:last").text(value.chrHealthId);
+                            $(".name:last").text(value.chrPatientFirstname + " " + value.chrPatientMidname + " " + value.chrPatientLastname);
+                            $(".mobile:last").text(value.chrMobilePhone);
+                            $(".sex:last").text(value.chrSex);
+                            $(".rdate:last").text(value.modifyTime);
+
+
+                            if (value.chrSex == "M") {
+                                $('.sex:last').text("Male");
+
+                            }
+                            else if (value.chrSex == "F") {
+
+                                $('.sex:last').text("Female");
+
+                            }
+
+                            $("#mergetable tbody #tr1").each(function (row, tr) {
+                                var gender = $(tr).find('td:eq(3)').text();
+                                if (gender == "Male") {
+                                    $(this).addClass("text-primary");
+
+                                }
+                                else if (gender == "Female") {
+                                    $(this).addClass("text-danger");
+                                }
+
+                                //console.log(gender);
+                            })//end table each
+
+                        })//each end
+                        //console.log(response);
+                    }
+                })//ajax end
+            }
+        })//on click search end
+
+
+
+        $(".mergebtn").on("click", function () {
+            var arr = [];
+            var inhospitalidList = [];
+            $("#mergetable tbody #tr1").each(function (row, tr) {
+                var patientid = $(tr).find('td:eq(0)').text();
+
+                arr.push(patientid);
+
+
+            })//end table each
+            //console.log(arr);
+            if (arr.length <= 1 || arr.length > 2) {
+                layer.msg("you need two patients to make merge");
+            }
+            else {
+                $.ajax({
+                    type: "post",
+                    url: "/Maintenance/MergePatients/Merge",
+                    data: {
+                        patientids: arr
+                    },
+                    success: function (response) {
+                        $.each(response, function(key, value){
+                            $.ajax({
+                                type: "post",
+                                url: "/Maintenance/MergePatients/SaveInhospid",
+                                data: {
+                                    inhospidList: value,
+                                    chrId_mhId: arr
+                                },
+                                success: function (response) {
+                                    console.log(response);
+                                }
+                            })//ajax2 end
+                           inhospitalidList.push(value);
+                        })//ech end
+                    
+                        layer.msg('Merge Patients success', { time: 2200, icon: 1 });
+                        $("#search").click();
+                    }
+
+                })//ajax end
+ 
+            }
+        })//onther on click end
+    })//document.ready end
+</script>

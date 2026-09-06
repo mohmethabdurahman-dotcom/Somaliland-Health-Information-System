@@ -1,0 +1,36 @@
+﻿@model KMU.HisOrder.MVC.Areas.MedicalRecord.ViewModels.PrintClass
+
+@{
+    Layout = "/Views/Shared/_PrintLayout.cshtml";
+}
+
+<!-- Render Border -->
+<div class="page-border"></div>
+
+<div class="header">
+    @Html.Partial("~/Areas/MedicalRecord/Views/Print/PartialViews/_v_Header.cshtml",Model)
+</div>
+
+<div class="footer">
+    @Html.Partial("~/Areas/MedicalRecord/Views/Print/PartialViews/_v_Footer.cshtml",Model)
+</div>
+
+
+
+<!-- Medical Record Page -->
+@Html.Partial("~/Areas/MedicalRecord/Views/Print/PartialViews/_PersonalCard.cshtml", Model);
+
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            // window.print();
+            setTimeout(function () { window.print(); }, 500);
+
+            // Print done close window.
+            window.addEventListener('afterprint', function () {
+                setTimeout(function () { window.close(); }, 10);
+            })
+        });
+    </script>
+}

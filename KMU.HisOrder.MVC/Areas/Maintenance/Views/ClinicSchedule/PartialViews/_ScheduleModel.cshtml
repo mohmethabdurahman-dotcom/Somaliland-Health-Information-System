@@ -1,0 +1,335 @@
+﻿@model KMU.HisOrder.MVC.Areas.Maintenance.ViewModels.ScheduleData
+@inject KMU.HisOrder.MVC.Models.KMUContext _context;
+@using KMU.HisOrder.MVC.Models;
+@using KMU.HisOrder.MVC.Extesion;
+@using Newtonsoft.Json
+@{
+    var Action = ViewData["Action"] as EnumClass.ActionCode?;
+    var empLists = ViewData["empLists"] as List<EmployeeList>;
+    var dptLists = ViewData["dptLists"] as List<DepartmentList>;
+    var Type = ViewData["Type"] as string;
+    var Value = ViewData["Value"] as string;
+   
+    DayOfWeek DayOfWeek = DateTime.Today.DayOfWeek;
+    if (Model != null && !string.IsNullOrEmpty(Model.SCHE_WEEK))
+    {
+    @foreach (DayOfWeek week in Enum.GetValues(typeof(DayOfWeek)))
+        {
+            if (Model.SCHE_WEEK == week.ToString("d"))
+            {
+                DayOfWeek = week;
+            }
+        }
+    }
+
+
+    var shifts = _context.KmuCoderefs.Where(c => c.RefCodetype == "Shift").ToList();
+
+    var JsonEmp = JsonConvert.SerializeObject(empLists);
+    var JsonDpt = JsonConvert.SerializeObject(dptLists);
+
+    var havePatients = _context.Registrations.Where(r => r.RegDepartment == Model.SCHE_DPT && r.RegDate.Month == DateTime.Today.Month && r.RegDate.Day == DateTime.Today.Day && r.RegStatus == "N").ToList();
+
+    var oldweek = Model.SCHE_WEEK;
+    var oldshift = Model.SCHE_Shift;
+    var oldnoon = Model.SCHE_NOON;
+    var oldroom = Model.SCHE_ROOM;
+    var olddepartment = Model.SCHE_DPT;
+    var olddoctor = Model.SCHE_DOCTOR_CODE;
+
+}
+<style>
+    .ui-autocomplete {
+        position: absolute;
+        cursor: default;
+        z-index: 9999 !important;
+    }
+</style>
+
+<div class="form-group row mx-0 mb-0">
+    <!--Week-->
+    <div class="col-3" style="display:block">
+        <label class="form-control font-weight-bold border-0 px-0 mb-0 align-self-end" style="background-color:inherit;font-size:16px"><font color="red">*</font>&nbsp;Week:</label>
+        <select id="SelectModalWeek" class="form-control font-weight-bold text-primary">
+            @foreach (DayOfWeek week in Enum.GetValues(typeof(DayOfWeek)))
+            {
+                if (DayOfWeek == week)
+                {
+                    <option value="@week.ToString("d")" selected>@week.EnumToString()</option>
+                }
+                else
+                {
+                    <option value="@week.ToString("d")">@week.EnumToString()</option>
+                }
+            }
+        </select>
+    </div>
+    <!--Noon-->
+    <div class="col-4" style="display:none">
+        <label class="form-control col-lg-12 font-weight-bold border-0 px-0 mb-0 align-self-end" style="background-color:inherit;font-size:16px"><font color="red">*</font>&nbsp;Noon:</label>
+        <select id="SelectModalNoon" class="form-control col-lg-12 font-weight-bold text-primary">
+            @foreach (EnumClass.EnumNoon noon in Enum.GetValues(typeof(EnumClass.EnumNoon)))
+            {
+                if (Model.SCHE_NOON != null && Model.SCHE_NOON == noon.EnumToCode())
+                {
+                    <option value="@noon.EnumToCode()" selected>@noon.EnumToString()</option>
+                }
+                else
+                {
+                    <option value="@noon.EnumToCode()">@noon.EnumToString()</option>
+                }
+            }
+        </select>
+    </div>
+
+        <!--Shift-->
+    <div class="col-3" style="display:block">
+        <label class="form-control col-lg-12 font-weight-bold border-0 px-0 mb-0 align-self-end" style="background-color:inherit;font-size:16px"><font color="red">*</font>&nbsp;Shift:</label>
+        <select id="SelectModalShift" class="form-control col-lg-12 font-weight-bold text-primary">
+        @*  <option></option>   
+          <option>Shift A</option>
+          <option>Shift B</option>
+          <option>Shift C</option>
+          <option>All Time</option>*@
+          <option></option>
+          @foreach(var item in shifts){
+        if(Model.SCHE_Shift != null && Model.SCHE_Shift == item.RefName){
+          <option value="@item.RefName" selected>@item.RefName</option>
+          }
+          else{
+           <option value="@item.RefName">@item.RefName</option>
+          }
+          }
+        </select>
+    </div>
+    <!--Room-->
+    <div class="col-3" style="display:block">
+        <label class="form-control font-weight-bold border-0 px-0 mb-0 align-self-end" style="background-color:inherit;font-size:16px"><font color="red">*</font>&nbsp;Room Code:</label>
+        <input type="text" id="Txt_ModalRoom" class="form-control font-weight-bold text-primary" maxlength="2" value="@Model.SCHE_ROOM" />
+    </div>
+
+    <!--On/Off-->
+    <div class="col-3" style="display:block">
+        <label class="form-control font-weight-bold border-0 px-0 mb-0 align-self-end" style="background-color:inherit;font-size:16px">&nbsp;On/Off:</label>
+        @* 2023/05/09 updated by 異類,把急診的特例拿掉 *@
+        @*        @if (Model.DPT_CATEGORY == "EMG")
+        {
+        <select id="Select_ModalFlag" class="form-control col-lg-12 font-weight-bold text-primary" disabled>
+        <option value="@EnumClass.OpenFlag.On.EnumToCode()" selected>@EnumClass.OpenFlag.On.EnumToString()</option>
+        </select>
+        }
+        else
+        {*@
+        <select id="Select_ModalFlag" class="form-control col-lg-12 font-weight-bold text-primary">
+            @foreach (EnumClass.OpenFlag flag in Enum.GetValues(typeof(EnumClass.OpenFlag)))
+            {
+                if (flag == Model.enumOpenFlag)
+                {
+                    <option value="@flag.EnumToCode()" selected>@flag.EnumToString()</option>
+                }
+                else
+                {
+                    <option value="@flag.EnumToCode()">@flag.EnumToString()</option>
+                }
+            }
+        </select>
+        @*}*@
+    </div>
+    <!--Department-->
+    <div class="col-6" style="display:block">
+        <label class="form-control font-weight-bold border-0 px-0 mb-0 align-self-end" style="background-color:inherit;font-size:16px"><font color="red">*</font>&nbsp;Department:</label>
+        @*        <select id="Txt_ModalDpt" class="form-control col-lg-12 font-weight-bold text-primary">
+        <option value=""></option>
+        @foreach(var dpt in dptLists)
+        {
+        var dptArr = dpt.Split('-');
+        if(Model.SCHE_DPT == dptArr[0])
+        {
+        <option value="@dpt" selected>@dpt</option>
+        }
+        else
+        {
+        <option value="@dpt">@dpt</option>
+        }
+        }
+        </select>*@
+        @if (havePatients.Count > 0)
+        {
+            <input readonly onclick="target()" type="text" id="Txt_ModalDpt" class="form-control col-lg-4 font-weight-bold text-primary" placeholder="Department" value="@Model.SCHE_DPT" />
+            <input readonly type="text" id="Txt_ModalDptName" class="form-control col-lg-8 font-weight-bold text-primary" placeholder="Type Department left side" value="@Model.SCHE_DPT_NAME" />
+        }
+        else
+        {
+            <input type="text" id="Txt_ModalDpt" class="form-control col-lg-4 font-weight-bold text-primary" placeholder="Department" value="@Model.SCHE_DPT" />
+            <input type="text" id="Txt_ModalDptName" class="form-control col-lg-8 font-weight-bold text-primary" placeholder="Type Department left side" readonly value="@Model.SCHE_DPT_NAME" />
+        }
+    </div>
+    <!--Doctor-->
+    <div class="col-6" style="display:block">
+        <label class="form-control font-weight-bold border-0 px-0 mb-0 align-self-end" style="background-color:inherit;font-size:16px"><font color="red" id="point_ModalDoctor">*</font>&nbsp;Doctor:</label>
+        @*        <select id="Txt_ModalDoctor" class="form-control col-lg-12 font-weight-bold text-primary">
+        <option value=""></option>
+        @foreach (var doc in empLists)
+        {
+        var docArr = doc.Split('-');
+        if (Model.SCHE_DOCTOR_CODE == docArr[0])
+        {
+        <option value="@doc" selected>@doc</option>
+        }
+        else
+        {
+        <option value="@doc">@doc</option>
+        }
+        }
+        </select>*@
+
+
+        <input type="text" id="Txt_ModalDoctor" class="form-control col-lg-4 font-weight-bold text-primary" placeholder="Doctor" value="@Model.SCHE_DOCTOR_CODE" />
+        <input type="text" id="Txt_ModalDoctorName" class="form-control col-lg-8 font-weight-bold text-primary" placeholder="Type Doctor Code left side" readonly value="@Model.SCHE_DOCTOR_NAME" />
+    </div>
+    <!--Remark-->
+    <div class="col-12" style="display:block">
+        <label class="form-control font-weight-bold border-0 px-0 mb-0 align-self-end" style="background-color:inherit;font-size:16px">&nbsp;Remarks:</label>
+        <textarea id="Txt_ModalRemark" class="form-control font-weight-bold">@Model.REMARK</textarea>
+    </div>
+</div>
+<br />
+<div class="form-group row mx-0 mb-0 justify-content-center">
+    @if (EnumClass.ActionCode.Create == Action)
+    {
+        <button type="button" class="btn btn-outline-success col-lg-5" onclick="fn_ModifyScheduleData('Create','@Type','@Value')">Create</button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-outline-danger col-lg-5" onclick="fn_ModifyScheduleData('Update','@Type','@Value','@oldweek','@oldshift','@oldnoon','@oldroom','@olddepartment','@olddoctor')">Update</button>
+    }
+
+</div>
+<script>
+    var dpt = $("#Txt_ModalDptName").val();
+    function target() {
+        layer.alert('Cannot be modeified! Because some patient are registred under this ' + dpt +' Department.' , {
+            skin: 'layui-layer-lan',
+            closebtn: 3,
+            anim: 5,
+            icon: 7,
+            btn: ['OK'],
+            title: 'Message',
+            OK: function (index) {
+                layer.close(index);
+            }
+        });
+    }
+
+    var EmpInfo = [];
+    EmpInfo = JSON.parse('@Html.Raw(JsonEmp)');
+
+    var DeptInfo = [];
+    DeptInfo = JSON.parse('@Html.Raw(JsonDpt)');
+
+    fn_displayDoctorPoint();    //display醫師必填符號
+
+    debugger;
+
+    $("#Txt_ModalDpt").autocomplete({
+        source: function (request, response) {
+            var containsMatcher = new RegExp(request.term, "i");
+            var contains = $.grep(DeptInfo, function (value) {
+                return containsMatcher.test(value.DptCode || value.DptName);
+            }).slice(0, 15);
+
+            response($.map(contains, function (obj, idx) {
+                return {
+                    label: obj.DptCode + "-" + obj.DptName,
+                    value: obj.DptCode,
+                    dept_code: obj.DptCode,
+                    dept_name: obj.DptName,
+                    dept_category: obj.DptCategory
+                };
+            }));
+        },
+        select: function (event, ui) {
+            this.value = ui.item.dept_code;
+            $('#Txt_ModalDptName').val(ui.item.dept_name);
+            fn_displayDoctorPoint();
+            return false;
+        }
+    })
+
+    $('#Txt_ModalDpt').on('change', function () {
+        if ($('#Txt_ModalDpt').val() == '') {
+            $('#Txt_ModalDptName').val('');
+        } else {
+            var _dptcode = $('#Txt_ModalDpt').val();
+            var _dptname = "";
+            DeptInfo.forEach(function (e) {
+                if (e.DptCode == _dptcode) {
+                    _dptname = e.DptName
+                }
+            })
+            $('#Txt_ModalDptName').val(_dptname);
+        }
+        fn_displayDoctorPoint();
+    })
+
+    $("#Txt_ModalDoctor").autocomplete({
+        source: function (request, response) {
+            var containsMatcher = new RegExp(request.term, "i");
+            var contains = $.grep(EmpInfo, function (value) {
+                return containsMatcher.test(value.UserID || value.UserName);
+            }).slice(0, 15);
+
+            response($.map(contains, function (obj, idx) {
+                return {
+                    label: obj.UserID + "-" + obj.UserName,
+                    value: obj.UserID,
+                    emp_code: obj.UserID,
+                    emp_name: obj.UserName
+                };
+            }));
+        },
+        select: function (event, ui) {
+            this.value = ui.item.emp_code;
+            $('#Txt_ModalDoctorName').val(ui.item.emp_name);
+            return false;
+        }
+    })
+
+    $('#Txt_ModalDoctor').on('change', function () {
+        if ($('#Txt_ModalDoctor').val() == '') {
+            $('#Txt_ModalDoctorName').val('');
+        } else {
+            var _drcode = $('#Txt_ModalDoctor').val();
+            var _drname = "";
+            EmpInfo.forEach(function (e) {
+                if (e.UserID == _drcode) {
+                    _drname = e.UserName
+                }
+            })
+            $('#Txt_ModalDoctorName').val(_drname);
+        }
+    })
+
+    //display醫師必填符號
+    function fn_displayDoctorPoint() {
+
+        if ($('#Txt_ModalDpt').val() == '') {
+            return;
+        }
+
+        var _category = "";
+        DeptInfo.forEach(function (e) {
+            if (e.DptCode == $('#Txt_ModalDpt').val()) {
+                _category = e.DptCategory
+            }
+        })
+
+        //2023.05.03 急診Doctor不必填 add by ealin.
+        if (_category == "EMG") {
+            $('#point_ModalDoctor').addClass('d-none');
+        } else {
+            $('#point_ModalDoctor').removeClass('d-none');
+        }
+    }
+
+</script>

@@ -1,0 +1,545 @@
+@model DispenseFormViewModel
+<script>
+(function () {
+  'use strict';
+
+  var unitId = @Model.UnitId;
+  var initialRequestId = @(Model.RequestId.HasValue ? Model.RequestId.Value.ToString() : "null");
+  var searchUrl = '@Url.Action("SearchPendingRequests", "Dispense", new { area = "BloodBank" })';
+  var lookupUrl = '@Url.Action("LookupPatient", "Dispense", new { area = "BloodBank" })';
+  var createUrl = '@Url.Action("Create", "Dispense", new { area = "BloodBank" })';
+
+  var OTHER_VALUE = 'Other';
+  var OUTSIDE_HOSPITAL_VALUE = 'Outside hospital';
+  var PREFIX_INSIDE = 'Other (inside)';
+  var OUTSIDE_PREFIX = 'Outside hospital —';
+
+  function $(id) { return document.getElementById(id); }
+
+  function setVal(id, v) {
+    var el = $(id);
+    if (el) el.value = v != null ? v : '';
+  }
+
+  function showEl(el, visible) {
+    if (!el) return;
+    el.classList.toggle('hidden', !visible);
+  }
+
+  function getMode() {
+    return (($('recipientMode') && $('recipientMode').value) || 'request').trim().toLowerCase();
+  }
+
+  function isOtherSelected() {
+    var sel = $('manualWardSelect');
+    return sel && sel.value === OTHER_VALUE;
+  }
+
+  function isOutsideHospitalPath() {
+    var sel = $('manualWardSelect');
+    if (!sel || !sel.value) return false;
+    if (sel.value === OUTSIDE_HOSPITAL_VALUE) return true;
+    if (sel.value === OTHER_VALUE) {
+      var site = $('manualPatientSite');
+      return site && site.value === 'outside';
+    }
+    return false;
+  }
+
+  function syncWardDisplay() {
+    var hidden = $('wardDestination');
+    var display = $('wardDestinationDisplay');
+    if (hidden && display) display.value = hidden.value || '';
+  }
+
+  function updateManualPreview() {
+    var preview = $('manualRecipientPreview');
+    var text = $('manualPreviewText');
+    if (!preview || !text) return;
+    var name = ($('manualPatientName') && $('manualPatientName').value.trim()) || '';
+    var dest = ($('wardDestination') && $('wardDestination').value.trim()) || '';
+    if (!name && !dest) {
+      preview.classList.add('hidden');
+      return;
+    }
+    text.textContent = (name || '—') + ' → ' + (dest || '—');
+    preview.classList.remove('hidden');
+  }
+
+  function clearOutsideHospitalFields() {
+    if ($('manualHospitalName')) $('manualHospitalName').value = '';
+    if ($('manualOutsideWard')) $('manualOutsideWard').value = '';
+  }
+
+  function toggleOutsideHospitalPanel() {
+    showEl($('manualOutsideHospitalPanel'), isOutsideHospitalPath());
+    if (!isOutsideHospitalPath()) clearOutsideHospitalFields();
+  }
+
+  function toggleOtherSubpanels() {
+    var otherPanel = $('manualOtherPanel');
+    var site = $('manualPatientSite');
+    var isOther = isOtherSelected();
+    showEl(otherPanel, isOther);
+
+    if (!isOther) {
+      if (site) site.value = '';
+      showEl($('manualOtherInsideWrap'), false);
+      toggleOutsideHospitalPanel();
+      return;
+    }
+
+    var inside = site && site.value === 'inside';
+    showEl($('manualOtherInsideWrap'), inside);
+    if (!inside && $('manualInsideWard')) $('manualInsideWard').value = '';
+    toggleOutsideHospitalPanel();
+  }
+
+  function buildOutsideHospitalDestination() {
+    var hospital = ($('manualHospitalName') && $('manualHospitalName').value.trim()) || '';
+    var ward = ($('manualOutsideWard') && $('manualOutsideWard').value.trim()) || '';
+    var bed = ($('manualBed') && $('manualBed').value.trim()) || '';
+    if (!hospital || !ward) return '';
+    var main = OUTSIDE_PREFIX + ' ' + hospital + ' / ' + ward;
+    return bed ? main + ' / ' + bed : main;
+  }
+
+  function buildOtherInsideDestination() {
+    var site = $('manualPatientSite');
+    if (!site || site.value !== 'inside') return '';
+    var detail = ($('manualBed') && $('manualBed').value.trim()) || '';
+    var parts = [PREFIX_INSIDE];
+    var ward = ($('manualInsideWard') && $('manualInsideWard').value.trim()) || '';
+    if (ward) parts.push(ward);
+    var main = parts.join(' — ');
+    return detail ? main + ' / ' + detail : main;
+  }
+
+  function setManualDestinationKey() {
+    var sel = $('manualWardSelect');
+    var keyEl = $('manualDestinationKey');
+    if (!sel || !keyEl) return;
+    if (sel.value === OUTSIDE_HOSPITAL_VALUE) {
+      keyEl.value = OUTSIDE_HOSPITAL_VALUE;
+    } else if (sel.value === OTHER_VALUE) {
+      var site = $('manualPatientSite');
+      keyEl.value = site && site.value === 'outside' ? 'Other-outside' : OTHER_VALUE;
+    } else {
+      keyEl.value = sel.value || '';
+    }
+  }
+
+  function syncManualWard() {
+    var sel = $('manualWardSelect');
+    var hiddenDest = $('wardDestination');
+    if (!sel || !hiddenDest) return;
+
+    toggleOtherSubpanels();
+    setManualDestinationKey();
+
+    var detail = ($('manualBed') && $('manualBed').value.trim()) || '';
+
+    if (isOutsideHospitalPath()) {
+      hiddenDest.value = buildOutsideHospitalDestination();
+    } else if (sel.value === OTHER_VALUE) {
+      hiddenDest.value = buildOtherInsideDestination();
+      clearOutsideHospitalFields();
+    } else if (sel.value) {
+      clearOutsideHospitalFields();
+      hiddenDest.value = detail ? sel.value + ' / ' + detail : sel.value;
+    } else {
+      hiddenDest.value = '';
+    }
+
+    updateManualPreview();
+    updateReadyState();
+  }
+
+  function isRecipientReady() {
+    var mode = getMode();
+    if (mode === 'request') {
+      return !!(($('dispenseRequestId') && $('dispenseRequestId').value) || initialRequestId);
+    }
+    if (mode === 'his') {
+      var pid = ($('dispensePatientId') && $('dispensePatientId').value.trim()) || '';
+      var panel = $('patientPanelBlock');
+      return !!pid && !!panel;
+    }
+    if (mode === 'manual') {
+      var name = ($('manualPatientName') && $('manualPatientName').value.trim()) || '';
+      var dest = ($('wardDestination') && $('wardDestination').value.trim()) || '';
+      var sel = $('manualWardSelect');
+      if (!name || !sel || !sel.value || !dest) return false;
+      if (sel.value === OTHER_VALUE) {
+        var site = $('manualPatientSite');
+        if (!site || !site.value) return false;
+      }
+      if (isOutsideHospitalPath()) {
+        var hospital = ($('manualHospitalName') && $('manualHospitalName').value.trim()) || '';
+        var ward = ($('manualOutsideWard') && $('manualOutsideWard').value.trim()) || '';
+        if (!hospital || !ward) return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function updateReadyState() {
+    var ready = isRecipientReady();
+    var btn = $('btnConfirm');
+    var hint = $('dispenseStatusHint');
+    var fill = $('fillBar');
+    var label = $('recipientReadyLabel');
+    var form = $('inventoryDispenseForm');
+    var mode = getMode();
+
+    if (btn) {
+      btn.disabled = !ready;
+      btn.classList.toggle('is-ready', ready);
+    }
+    if (hint) {
+      hint.classList.toggle('is-ready', ready);
+      if (ready) {
+        hint.textContent = mode === 'manual'
+          ? 'Manual recipient ready — confirm dispense.'
+          : 'Recipient selected — ready to dispense.';
+      } else if (mode === 'request') {
+        hint.textContent = 'Select a doctor request to dispense.';
+      } else if (mode === 'his') {
+        hint.textContent = 'Look up a HIS patient ID to continue.';
+      } else {
+        hint.textContent = 'Enter recipient name and destination.';
+      }
+    }
+    if (fill) {
+      fill.style.width = ready ? '100%' : (mode === 'manual' ? '50%' : '50%');
+      fill.classList.toggle('is-complete', ready);
+      fill.classList.toggle('is-partial', !ready);
+    }
+    if (label) {
+      label.textContent = ready ? 'selected' : 'pending';
+    }
+    if (form) {
+      form.setAttribute('data-recipient-mode', mode);
+    }
+  }
+
+  function setMode(mode) {
+    setVal('recipientMode', mode);
+
+    document.querySelectorAll('.bb-recipient-panel').forEach(function (p) {
+      var on = p.getAttribute('data-mode') === mode;
+      p.classList.toggle('hidden', !on);
+      p.style.display = on ? 'block' : 'none';
+      if (on) p.removeAttribute('hidden');
+      else p.setAttribute('hidden', 'hidden');
+    });
+
+    document.querySelectorAll('.bb-recipient-mode-picker .bb-source-mode-btn').forEach(function (btn) {
+      var on = btn.getAttribute('data-mode') === mode;
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+
+    document.querySelectorAll('input[name="recipientModeUi"]').forEach(function (r) {
+      r.checked = r.value === mode;
+    });
+
+    var summary = $('recipientSummaryBlock');
+    if (summary) summary.classList.toggle('hidden', mode === 'manual' || mode === 'request');
+
+    var wardWrap = $('wardDestinationWrap');
+    if (wardWrap) wardWrap.classList.toggle('hidden', mode === 'manual');
+
+    var contextCard = $('recipientContextCard');
+    if (contextCard && mode === 'manual') contextCard.classList.add('hidden');
+
+    if (mode === 'manual') {
+      syncManualWard();
+      var panel = $('panelManual');
+      if (panel) {
+        var card = panel.querySelector('.bb-manual-dispense-card');
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    } else {
+      syncWardDisplay();
+    }
+
+    updateReadyState();
+  }
+
+  window.setRecipientMode = setMode;
+
+  function urgencyClass(u) {
+    if (u === 'Emergency') return 'bb-badge-emergency';
+    if (u === 'Urgent') return 'bb-badge-urgent';
+    return 'bb-badge-routine';
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function renderRequests(items) {
+    var tbody = $('pendingRequestsBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!items || !items.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="bb-page-subtitle">No matching pending requests.</td></tr>';
+      return;
+    }
+    items.forEach(function (item) {
+      var tr = document.createElement('tr');
+      tr.setAttribute('data-request-id', item.requestId);
+      if (initialRequestId && String(item.requestId) === String(initialRequestId)) {
+        tr.classList.add('is-selected');
+      }
+      tr.innerHTML =
+        '<td><button type="button" class="bb-btn bb-btn-sm bb-btn-primary btn-pick-request">Select</button></td>' +
+        '<td><strong>' + escapeHtml(item.patientName) + '</strong></td>' +
+        '<td class="bb-mono">' + escapeHtml(item.patientId) + '</td>' +
+        '<td>' + escapeHtml(item.ward || '—') + '</td>' +
+        '<td>' + escapeHtml(item.requestingDoctorName || '') + '</td>' +
+        '<td>' + (item.unitsRequested || '') + '</td>' +
+        '<td><span class="bb-badge ' + urgencyClass(item.urgencyLevel) + '">' + escapeHtml(item.urgencyLevel || '') + '</span></td>';
+      tbody.appendChild(tr);
+    });
+    bindPickButtons();
+  }
+
+  function loadRequests() {
+    var term = ($('requestSearch') && $('requestSearch').value.trim()) || '';
+    var ward = ($('wardFilterInput') && $('wardFilterInput').value.trim()) || '';
+    setVal('wardFilter', ward);
+    fetch(searchUrl + '?unitId=' + unitId + '&term=' + encodeURIComponent(term) + '&ward=' + encodeURIComponent(ward))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.success) renderRequests(d.items);
+      });
+  }
+
+  function selectRequest(requestId) {
+    var ward = ($('wardFilterInput') && $('wardFilterInput').value.trim()) || '';
+    window.location.href = createUrl + '?unitId=' + unitId + '&requestId=' + requestId
+      + (ward ? '&ward=' + encodeURIComponent(ward) : '');
+  }
+
+  function bindPickButtons() {
+    document.querySelectorAll('.btn-pick-request').forEach(function (btn) {
+      btn.onclick = function (e) {
+        e.preventDefault();
+        var tr = btn.closest('tr');
+        if (tr) selectRequest(tr.getAttribute('data-request-id'));
+      };
+    });
+  }
+
+  function parseSavedOutsideHospital(dest) {
+    if (!dest || dest.indexOf(OUTSIDE_PREFIX) !== 0) return false;
+    var sel = $('manualWardSelect');
+    var key = $('manualDestinationKey');
+    var rest = dest.substring(OUTSIDE_PREFIX.length).trim();
+    var parts = rest.split(' / ').map(function (p) { return p.trim(); });
+    if (parts.length >= 2) {
+      if ($('manualHospitalName')) $('manualHospitalName').value = parts[0];
+      if ($('manualOutsideWard')) $('manualOutsideWard').value = parts[1];
+      if (parts.length >= 3 && $('manualBed')) $('manualBed').value = parts.slice(2).join(' / ');
+    }
+    if (key && key.value === 'Other-outside') {
+      if (sel) sel.value = OTHER_VALUE;
+      var site = $('manualPatientSite');
+      if (site) site.value = 'outside';
+    } else if (sel) {
+      sel.value = OUTSIDE_HOSPITAL_VALUE;
+    }
+    return true;
+  }
+
+  function parseSavedOtherInside(dest) {
+    if (!dest || dest.indexOf(PREFIX_INSIDE) !== 0) return false;
+    var sel = $('manualWardSelect');
+    var site = $('manualPatientSite');
+    var insideWard = $('manualInsideWard');
+    var bed = $('manualBed');
+    if (sel) sel.value = OTHER_VALUE;
+    if (site) site.value = 'inside';
+    var rest = dest.replace(PREFIX_INSIDE, '').replace(/^\s*—\s*/, '').trim();
+    var slash = rest.indexOf(' / ');
+    var main = slash >= 0 ? rest.substring(0, slash).trim() : rest;
+    if (slash >= 0 && bed) bed.value = rest.substring(slash + 3).trim();
+    var wards = ['Emergency', 'ICU', 'OT Ward', 'Male Ward', 'Female Ward'];
+    var matched = wards.find(function (w) { return main === w; });
+    if (matched && insideWard) insideWard.value = matched;
+    return true;
+  }
+
+  function initManualWard() {
+    var wardSel = $('manualWardSelect');
+    if (!wardSel) return;
+
+    var existingDest = ($('wardDestination') && $('wardDestination').value) || '';
+    var key = ($('manualDestinationKey') && $('manualDestinationKey').value) || '';
+
+    if (parseSavedOutsideHospital(existingDest)) {
+      syncManualWard();
+      return;
+    }
+    if (parseSavedOtherInside(existingDest)) {
+      syncManualWard();
+      return;
+    }
+
+    if (key === OUTSIDE_HOSPITAL_VALUE) wardSel.value = OUTSIDE_HOSPITAL_VALUE;
+    else if (key === 'Other-outside') {
+      wardSel.value = OTHER_VALUE;
+      var site = $('manualPatientSite');
+      if (site) site.value = 'outside';
+    } else if (key === OTHER_VALUE) wardSel.value = OTHER_VALUE;
+    else if (key) {
+      var opts = Array.prototype.slice.call(wardSel.options);
+      var match = opts.find(function (o) { return o.value === key; });
+      if (match) wardSel.value = key;
+    }
+
+    syncManualWard();
+  }
+
+  function validateManualSubmit() {
+    var name = ($('manualPatientName') && $('manualPatientName').value.trim()) || '';
+    if (!name) {
+      alert('Enter the patient name.');
+      $('manualPatientName') && $('manualPatientName').focus();
+      return false;
+    }
+
+    var sel = $('manualWardSelect');
+    if (!sel || !sel.value) {
+      alert('Select where the blood is going (Emergency, ICU, Outside hospital, Other, etc.).');
+      sel && sel.focus();
+      return false;
+    }
+
+    if (sel.value === OTHER_VALUE) {
+      var site = $('manualPatientSite');
+      if (!site || !site.value) {
+        alert('For Other, select whether the patient is inside or outside this hospital.');
+        site && site.focus();
+        return false;
+      }
+    }
+
+    if (isOutsideHospitalPath()) {
+      var hospital = ($('manualHospitalName') && $('manualHospitalName').value.trim()) || '';
+      var ward = ($('manualOutsideWard') && $('manualOutsideWard').value.trim()) || '';
+      if (!hospital) {
+        alert('Enter the hospital name.');
+        $('manualHospitalName') && $('manualHospitalName').focus();
+        return false;
+      }
+      if (!ward) {
+        alert('Enter the ward at the hospital.');
+        $('manualOutsideWard') && $('manualOutsideWard').focus();
+        return false;
+      }
+    }
+
+    syncManualWard();
+    var dest = ($('wardDestination') && $('wardDestination').value.trim()) || '';
+    if (!dest) {
+      alert('Complete the destination details.');
+      return false;
+    }
+    return true;
+  }
+
+  var btnRefresh = $('btnRefreshRequests');
+  if (btnRefresh) btnRefresh.addEventListener('click', loadRequests);
+
+  var requestSearch = $('requestSearch');
+  if (requestSearch) {
+    var searchTimer;
+    requestSearch.addEventListener('input', function () {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadRequests, 300);
+    });
+  }
+
+  var wardInput = $('wardFilterInput');
+  if (wardInput) {
+    wardInput.addEventListener('change', function () {
+      setVal('wardFilter', wardInput.value.trim());
+      loadRequests();
+    });
+  }
+
+  var btnHis = $('btnHisLookup');
+  if (btnHis) {
+    btnHis.addEventListener('click', function () {
+      var pid = ($('dispensePatientId') && $('dispensePatientId').value.trim()) || '';
+      if (!pid) { alert('Enter a HIS patient ID.'); return; }
+      fetch(lookupUrl + '?patientId=' + encodeURIComponent(pid))
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.success) { alert(d.message || 'Not found.'); return; }
+          window.location.href = createUrl + '?unitId=' + unitId + '&patientId=' + encodeURIComponent(d.data.patientId);
+        });
+    });
+  }
+
+  var patientIdInput = $('dispensePatientId');
+  if (patientIdInput) {
+    patientIdInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && getMode() === 'his') {
+        e.preventDefault();
+        if (btnHis) btnHis.click();
+      }
+    });
+  }
+
+  var wardSel = $('manualWardSelect');
+  if (wardSel) wardSel.addEventListener('change', syncManualWard);
+  var patientSite = $('manualPatientSite');
+  if (patientSite) patientSite.addEventListener('change', syncManualWard);
+  var insideWard = $('manualInsideWard');
+  if (insideWard) insideWard.addEventListener('change', syncManualWard);
+  var hospitalName = $('manualHospitalName');
+  if (hospitalName) hospitalName.addEventListener('input', syncManualWard);
+  var outsideWard = $('manualOutsideWard');
+  if (outsideWard) outsideWard.addEventListener('input', syncManualWard);
+  var manualBed = $('manualBed');
+  if (manualBed) manualBed.addEventListener('input', syncManualWard);
+  var manualName = $('manualPatientName');
+  if (manualName) manualName.addEventListener('input', function () {
+    updateManualPreview();
+    updateReadyState();
+  });
+
+  var form = $('inventoryDispenseForm');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      if (getMode() === 'manual' && !validateManualSubmit()) {
+        e.preventDefault();
+        return;
+      }
+      if (!isRecipientReady()) {
+        e.preventDefault();
+        updateReadyState();
+      }
+    });
+  }
+
+  bindPickButtons();
+  setMode(getMode() || 'request');
+  initManualWard();
+  syncWardDisplay();
+  updateReadyState();
+
+  if (initialRequestId) {
+    var summaryEl = $('selectedRequestSummary');
+    if (summaryEl) summaryEl.classList.remove('hidden');
+  }
+})();
+</script>

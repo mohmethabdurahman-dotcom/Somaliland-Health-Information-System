@@ -1,0 +1,91 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.KmuCoderef>
+
+@{
+    var kan = Model.Where(e => e.RefCodetype == "clinic_room");
+    var bal = Model.Where(e => e.RefCodetype == "call_area");
+}
+
+<div class="row" style="height: 79vh; width: 100%; overflow: auto;">
+    <div class="col-md-12">
+        <table id="KmuCallSearchTable" class="table p-0 m-0 border border-dark rounded">
+            <thead class="thead-dark border-bottom">
+                <tr>
+                    <th></th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Code
+                    </th>
+                    <th>
+                        Clinic Rooms
+                    </th>
+                    <th>
+                        Created
+                    </th>
+                    <th>
+                        Date
+                    </th>
+                    <th>
+                        Status
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in bal)
+                {
+                    <tr>
+                        <td style="white-space:nowrap; width:80px;">
+                            &nbsp&nbsp<a asp-action="Edit" asp-route-id="@item.RefId" class="fa-solid fa-pencil btn btn-dark p-2"></a>
+                     
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <span class="badge badge-success p-2">@item.RefCodetype</span>
+                        </td>
+                        <td>
+                            @*@Html.DisplayFor(modelItem => item.RefCode)*@
+                            <span class="badge badge-primary p-2">@item.RefCode</span>
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @Html.DisplayFor(modelItem => item.RefName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ModifyId)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ModifyTime)
+                        </td>
+                        @if (item.RefCasetype == "Y")
+                        {
+                            <td class="">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="radio custom-control-input" checked id="@item.RefId" value="@item.RefId">
+                                    <label class="custom-control-label" for="@item.RefId"></label>
+                                </div>
+                            </td>
+                        }
+                        else if (item.RefCasetype == "N")
+                        {
+                            <td class="">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="radio custom-control-input" id="@item.RefId" value="@item.RefId">
+                                    <label class="custom-control-label" for="@item.RefId"></label>
+                                </div>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+ 
+</div>
+<script src="~/lib/jquery1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".radio").click(function () {
+            var BedId = $(this).val()
+            window.location.href = "/Maintenance/CallingSettings/Close/" + BedId;
+        })
+    })
+</script>

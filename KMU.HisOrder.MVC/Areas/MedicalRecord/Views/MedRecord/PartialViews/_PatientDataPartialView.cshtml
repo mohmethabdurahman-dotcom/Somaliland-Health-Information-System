@@ -1,0 +1,156 @@
+﻿@model KMU.HisOrder.MVC.Areas.MedicalRecord.ViewModels.PatientListReturn
+@using KMU.HisOrder.MVC.Models;
+@using KMU.HisOrder.MVC.Areas.MedicalRecord.ViewModels;
+@using KMU.HisOrder.MVC.Extesion;
+
+<table id="ptInfo_tb" class="table">
+    @if (Model.ReturnT != null && Model.ReturnT.isSuccess)
+    {
+        <thead>
+            <tr>
+                <th class="font-weight-bold text-dark" style="width:60px">...</th>
+                <th class="font-weight-bold text-dark py-0" style="width:100px">Patient ID</th>
+                <th class="font-weight-bold text-dark py-0" style="width:250px">Patient Name</th>
+                <th class="font-weight-bold text-dark py-0" style="width:150px">Mobile Phone</th>
+                <th class="font-weight-bold text-dark py-0" style="width:80px">Sex</th>
+                <th class="font-weight-bold text-dark py-0" style="width:180px">Date of Birth</th>
+                <th class="font-weight-bold text-dark py-0" style="width:450px">Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.ptList != null && Model.ptList.Any())
+            {
+                foreach (var pt in Model.ptList)
+                {
+                    var ptName = pt.FIRSTNAME + "&nbsp;" + pt.MIDNAME + "&nbsp;" + pt.LASTNAME;
+                    var Age = DateTime.Today.Year - pt.BIRTHDATE.Value.Year;
+                    <tr id="tr_@pt.PATIENTID" style="cursor:pointer" onclick="fn_SelectRow(this)" class="@if(pt.enumGender == EnumClass.EnumGender.Male){@Html.Raw(" text-primary")}else{@Html.Raw(" text-danger")}">
+                        <td class="font-weight-bold">
+                            <i class="fa-solid fa-pencil fa-xl" onclick="location.href='@Url.Action("MREdit","MedRecord",new {PatientID= pt.PATIENTID})'"></i>
+                            &nbsp;&nbsp;
+                            <i class="fa-solid fa-file-medical fa-xl history-btn" data-pt-id="@pt.PATIENTID"></i>
+                        </td>
+                        <td class="font-weight-bold">@Html.Raw(pt.PATIENTID.Trim())</td>
+                        <td class="font-weight-bold" style="">@Html.Raw(ptName)</td>
+                        <td class="font-weight-bold">@Html.Raw(pt.MOBILEPHONE)</td>
+                        @if (pt.enumGender != null)
+                        {
+                            <td class="font-weight-bold text-center" style="">@pt.enumGender.EnumToString()</td>
+                        }
+                        else
+                        {
+                            <td class="font-weight-bold text-center" style=""></td>
+                        }
+                        <td class="font-weight-bold">@Html.Raw(pt.BIRTHDATE.Value.ToString("dd/MM/yyyy")) (@Age.AgeFormat())</td>
+                        <td class="font-weight-bold">@Html.Raw(pt.ADDRESS)</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="font-weight-bold text-danger" colspan="5">Not Patient Has Found!!</td>
+                </tr>
+            }
+
+        </tbody>
+    }
+    else
+    {
+        <tbody>
+            <tr>
+                <td class="text-center font-weight-bold text-danger" style="width:100%">Empty Param! </td>
+            </tr>
+        </tbody>
+    }
+</table>
+
+<!--HisStory Record-->
+<div class="modal fade" id="HisStroyRecordModal" data-first-open="true" role="dialog" aria-hidden="true">
+    <!--dynamic content-->
+</div>
+
+<div id="PrintForm"></div>
+
+<script>
+    $(document).ready(function () {
+
+        $(".history-btn").click(function () {
+            fn_openHistory(this);
+        });
+
+        $("#ptInfo_tb").DataTable({
+            scrollX: true,
+        });
+        $(".dataTables_info").css("width", "100%");
+
+
+
+        //2023.02.27 add by 1050325 history record
+        function fn_openHistory(obj) {
+            var _this = $(obj);
+            var patientPatientid = $(_this).attr("data-pt-id");
+            var vURL = "HisOrder/HisOrder/HistoryRecordMastrView";
+            var vData = {
+                patientInhospid: "",
+                patientPatientid: patientPatientid,
+                showClinic: false,
+                showPrint: true
+            };
+            var vSuccessFunc = function (result) {
+                console.log (result);
+                if(result == "null")
+                {
+                    layer.alert('No historical medical records for this patient', {
+                        skin: 'layui-layer-lan',
+                        closebtn: 3,
+                        anim: 5,
+                        icon: 7,
+                        btn: ['OK'],
+                        title: 'Message',
+                        OK: function (index) {
+                            layer.close(index);
+                        }
+                    });
+                }
+                else
+                {
+                $('#HisStroyRecordModal').empty();
+                $('#HisStroyRecordModal').html(result);
+
+                $('#HisStroyRecordModal').find("input").iCheck({
+                    labelHover: true,
+                    cursor: true,
+                    checkboxClass: "icheckbox_flat-green",
+                    radioClass: "iradio_square-green",
+                    increaseArea: "15%"
+                });
+
+                $('#v-pills-tab > button:first').tab('show') // Select first tab
+
+                $('#HisStroyRecordModal').modal('show');
+
+                $('#RePrintBtn').click(function () {
+
+                    var activeLink = $('button.nav-link.active');
+                    console.log('activeLink =' + activeLink);
+                    var activeLinkInhospid = activeLink.data('inhospid');
+                    console.log('activeLinkInhospid =' + activeLinkInhospid);
+                    fn_RePrint(null, activeLinkInhospid);
+
+                });
+
+                }
+            };
+            var vErrorFunc = function () {
+
+                return this;
+            };
+            ajaxGet(vURL, vData, vSuccessFunc, vErrorFunc);
+
+        }
+    });
+
+
+
+</script>

@@ -1,0 +1,357 @@
+﻿@using KMU.HisOrder.MVC.Areas.InPatient.ViewModels; 
+@model MedicalAdministrationVM
+<link rel="stylesheet" href="~/lib/iCheck/skins/all.css" />
+<style>
+    .checked-row {
+        background-color: #d0f0c0; /* or any color you want */
+    }
+
+</style>
+
+<form method="post" asp-area="InPatient" asp-controller="" asp-action="" id="medicationForm">
+    @Html.Hidden("healthId", Model.Patient?.ChrHealthId)
+    @Html.Hidden("inhospid", Model.inhospid)
+    <div id="patCard">
+        <div>
+            <div class="d-flex align-items-center justify-content-between ">
+                <div class="d-flex align-items-center">
+                    <div class="mr-1 position-relative d-flex justify-content-end align-items-end">
+                        <img src="/images/avatar.png" class="avatar-xl rounded-circle border-width-4 border-white" alt="" style="width: 66px; height:66px;" />
+
+                    </div>
+                    <div class="ml-2">
+                        <div class="mt-2 d-block">
+                            <h5 class="d-inline-block" id="patientName"><strong>@Model.Patient.ChrPatientFirstname @Model.Patient.ChrPatientMidname @Model.Patient.ChrPatientLastname</strong></h5>
+                            <div class="d-inline-block  ml-2 ">
+                                <label class="badge rounded-pill badge-danger" hidden>Waiting</label>
+                                <label class="badge rounded-pill badge-warning "><i class="fa far fa-star"></i></label>
+                            </div>
+                        </div>
+
+                        <div class="text-dark ">
+
+
+                            <h6 class="d-inline-block mr-3 pt-bl-color">
+                                <a href="#" title="Patient ID">
+                                    <i class="fa-solid fa-id-card mr-2 text-primary"
+                                       data-toggle="tooltip"
+                                       data-placement="right"
+                                       data-original-title="patient id"></i>
+                                </a> <span id="patientID">@Model.Patient.ChrHealthId </span>
+                            </h6>
+                            <h6 class="d-inline-block mr-3 ">
+                                <a href="#" title="Birthday / Age">
+                                    <i class="fa-solid fa-b mr-2 text-primary"
+                                       data-toggle="tooltip"
+                                       data-placement="right"
+                                       data-original-title="patient id"></i>
+                                </a><span id="brithdate">@Model.Patient.ChrBirthDate</span>
+                            </h6>
+                            <h6 class="d-inline-block mr-3">
+                                <a href="#" title="Sex">
+                                    <i class="fa-solid  fas fa-venus-mars mr-2 text-primary"
+                                       data-toggle="tooltip"
+                                       data-placement="right"
+                                       data-original-title="patient id"></i>
+                                </a>
+                                <span id="sex">@Model.Patient.ChrSex</span>
+                            </h6>
+                            <h6 class="d-inline-block mr-2 ">
+                                <a href="#" title="Mobile">
+                                    <i class="fa fa-phone mr-2 text-primary"
+                                       data-toggle="tooltip"
+                                       data-placement="right"
+                                       data-original-title="patient id"></i>
+                                </a> <span id="phoneNumber">@Model.Patient.ChrMobilePhone</span>
+                            </h6>
+                            <h6 class="d-inline-block mr-2 pt-br-color">
+                                <a href="#" title="Address">
+                                    <i class="fa far fas fa-location-dot mr-2 text-primary"
+                                       data-toggle="tooltip"
+                                       data-placement="right"
+                                       data-original-title="address"></i>
+                                </a> <span id="address">@Model.Patient.ChrAddress</span>
+                            </h6>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="bg-white rounded infoCard p-2 ml-3">
+    <div class="form-group">
+        <label for="medicaltype">Medication Type</label>
+        <select id="medicationType" class="form-control" name="medicaltype" required>
+            <option value="medication">Medication</option>
+            <option value="milk">Milk</option>
+        </select>
+    </div>
+    <!--based on the medication medication list must show up or milk-->
+
+    <div id="medicationUI">
+        <h6>Medications:</h6>
+        <table class="table" id="">
+            <thead>
+                <tr>
+                    <th>Taken</th>
+                    <th>Medication</th>
+                    <th>Dose</th>
+                    <th>Shift</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--
+                    I need to get shift
+                -->
+                @{
+                    foreach(var admistredMed in Model.administeredMedication)
+                    {
+                        <tr class="med-color">
+                            <td>
+                               <input type="checkbox" class="form-check-input check" onchange="toggleRowClass(this)">
+                            </td>
+                            <td>
+                                @admistredMed.PlanDes
+                            </td>
+                            <td>@admistredMed.QtyDose - @admistredMed.UnitDose</td>
+                            <td>
+                                @Html.Hidden("plancode", @admistredMed.PlanCode)
+                            </td>
+                            
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+    </div>
+    <hr />
+    <div id="recentMedicationGiven">
+        <h6>Recent Medications:</h6>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Medication</th>
+                    <th>Time</th>
+                    <th>Shift</th>
+                    <th>Given</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (var medication in Model.MedicalAdministration)
+                    {
+                       
+                        <tr>
+                            <td>
+                                @medication.medDes
+                            </td>
+                            <td>@medication.admisteredAt </td>
+                               
+                            <td>@medication.shift</td>
+                            <td>
+                                by <strong>@medication.administeredBy</strong>
+                            </td>
+                        </tr>
+                        
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="form-group" id="milkUI">
+        <label for="" class="form-label">Amount Of Milk (Ml)</label>
+        <input type="text" id="amountMilk" class="form-control">
+    </div>
+    <hr />
+    <div id="recentMilkGiven">
+        <h6>Recent milk feeding:</h6>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Amount of milk</th>
+                    <th>Time</th>
+                    <th>Shift</th>
+                    <th>Given</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (var medication in Model.MilkAdministration)
+                    {
+                        
+                    <tr>
+                        <td>
+                            @medication.milkAmount ml
+                        </td>
+                        <td>@medication.admisteredAt </td>
+                        <td>@medication.shift</td>
+                        <td>
+                            by <strong>@medication.administeredBy</strong>
+                        </td>
+					</tr>
+						
+                    }
+                }
+            </tbody>
+		</table>
+    </div>
+    <div class="modal-footer"> 
+         <button type="button" 
+                 class="btn btn-secondary" 
+               data-dismiss="modal"> 
+             Close 
+        </button> 
+         <button type="submit" class="btn btn-primary"> 
+             <i class="fas fa-calendar-check"></i> Save 
+        </button> 
+     </div>
+		</div>
+     </div>
+</form>
+
+
+<script src="~/lib/iCheck/icheck.js"></script>
+<script src="~/lib/iCheck/icheck.min.js"></script>
+
+<script>
+    function initializeICheck() {
+            $('input[type="checkbox"]').iCheck({
+                labelHover: true,
+                cursor: true,
+                checkboxClass: "icheckbox_flat-green",
+                radioClass: "iradio_square-green",
+                increaseArea: "15%"
+            });
+           }
+
+            function toggleRowClass(checkbox) {
+                const row = checkbox.closest('tr');
+                row.classList.toggle('checked-row', checkbox.checked);
+            }
+
+    $(document).ready(function (){
+        initializeICheck();
+         $("#medicationForm").submit(function (event) {
+             event.preventDefault(); // Prevent full page refresh
+             var amountMilk = $("#amountMilk").val().trim();
+             var medicationType = $("#medicationType").val().trim();
+             var healthId = $("#healthId").val().trim();
+             var inhospid = $("#inhospid").val().trim();
+             
+             
+             if(medicationType === "medication"){
+                 var checkedRows = [];
+                   $("tr").each(function () {
+                     var checkbox = $(this).find("input[type='checkbox']");
+
+                     if (checkbox.prop("checked")) {
+                         var rowData = {
+                             medDes: $(this).find("td:eq(1)").text().trim(),
+                             medCode: $(this).find("input[name='plancode']").val(),
+                             medicalType : medicationType,
+                             healthId : healthId,
+                             inhospid : inhospid
+                         };
+
+                         checkedRows.push(rowData);
+                       }
+                   });
+                    $.ajax({
+                     type:"POST",
+                     url:"/Inpatient/Ward/SaveMedication",
+                     contentType: "application/json",
+                     data: JSON.stringify(checkedRows),
+                     success : function(response){
+                         $("#drugModal").modal("hide");
+                         $("#medicationForm")[0].reset();
+                     layer.msg(response.message, { time: 2200, icon: 1 });
+                     },
+                     error: function(){
+                          layer.alert("error while saving.", {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        }, function (index) {
+                            layer.close(index);
+                        });
+                     }
+                 });
+             }else{
+                 //calculate the shift 
+                 //get the nurse
+                 var milkData = {
+                     medicalType : medicationType,
+                     milkAmount : amountMilk,
+                     healthId : healthId,
+                     inhospid : inhospid
+                 };
+                 $.ajax({
+                     type:"POST",
+                     url:"/Inpatient/Ward/SaveMilk",
+                     contentType: "application/json",
+                     data: JSON.stringify(milkData),
+                     success : function(response){
+                         $("#drugModal").modal("hide");
+                         $("#medicationForm")[0].reset();
+                     layer.msg(response.message, { time: 2200, icon: 1 });
+                     },
+                     error: function(){
+                          layer.alert("error while saving.", {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        }, function (index) {
+                            layer.close(index);
+                        });
+                     }
+                 });
+             }
+           
+
+             console.log("Data:", checkedRows);
+
+         });
+    })
+
+    $(document).ready(function() {
+
+         $("#milkUI").hide();
+         $("#recentMilkGiven").hide();
+        // Listen for change in medicationType
+        $("#medicationType").change(function() {
+            var medicationType = $("#medicationType").val().trim();
+
+            if (medicationType === "milk") {
+                // Show Milk UI and hide Medication UI
+                $("#milkUI").show();
+                $("#recentMilkGiven").show();
+                $("#medicationUI").hide();
+                $("#recentMedicationGiven").hide();
+            } else if (medicationType === "medication") {
+                // Show Medication UI and hide Milk UI
+                $("#medicationUI").show();
+                $("#recentMedicationGiven").show();
+                $("#milkUI").hide();
+                $("#recentMilkGiven").hide();
+            } else {
+                // Hide both UI elements if no selection is made
+                $("#milkUI").hide();
+                $("#medicationUI").hide();
+                $("#recentMedicationGiven").hide();
+                $("#recentMilkGiven").hide();
+            }
+        });
+    });
+
+</script>

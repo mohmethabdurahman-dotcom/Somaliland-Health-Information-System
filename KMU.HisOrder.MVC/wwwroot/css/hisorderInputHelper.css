@@ -1,0 +1,332 @@
+﻿#MedicalCategoryList table > thead > tr > th:last-child,
+#MedicalCategoryList table > tbody > tr > td:last-child {
+    text-align: left;
+}
+
+.MenuLoadingContainer {
+    text-align: center;
+}
+
+.MenuLoading {
+    width: 60px;
+}
+
+.Loadingli {
+    text-align: center;
+}
+
+.MenuBtn {
+    font-size: 18px;
+    font-family: Arial;
+    width: 100%;
+}
+
+.MenuTable {
+    font-size: 15px;
+    font-family: Arial;
+}
+
+    .MenuTable th {
+        padding: 10px !important;
+        user-select: none;
+        color: white;
+    }
+
+    .MenuTable td {
+        /*padding: 8px;*/
+        cursor: pointer;
+        user-select: none;
+    }
+
+.TabMenuColumn {
+    overflow: auto;
+    height: 70vh;
+    width: 100%;
+    padding: 0px !important;
+    /*background-color: #f6faff;*/
+}
+
+#BringOrderTable {
+    font-family: Arial;
+}
+
+    #BringOrderTable th {
+        color: white;
+        font-size: 18px;
+    }
+
+    #BringOrderTable th,
+    #BringOrderTable td {
+        font-size: 16px;
+        vertical-align: middle !important;
+        /*padding: 0px 0px 0px 10px !important;*/
+        user-select: none;
+        text-align: left;
+    }
+
+.RemoveBtn {
+    font-size: 28px;
+    color: #ff618d;
+    padding-left: 10px;
+}
+
+    .RemoveBtn:hover {
+        color: #ff5c5c;
+    }
+
+
+.Categoryul {
+    font-family: 'Microsoft JhengHei';
+    font-size: 16px;
+}
+
+.headli {
+    background-color: #405467;
+    color: #ffffff;
+    line-height: 2;
+}
+
+#ICDMenu ul {
+    padding: 0px;
+    display: grid;
+}
+
+    #ICDMenu ul li {
+        list-style-type: none;
+        padding: 4px;
+        white-space: nowrap;
+        user-select: none;
+    }
+
+        #ICDMenu ul li:not(.headli):hover {
+            background-color: #8DF5F5;
+            cursor: pointer;
+        }
+
+        #ICDMenu ul li span {
+            display: inline-block;
+            font-family: arial;
+            font-size: 17px;
+        }
+
+        #ICDMenu ul li:not(.headli) span {
+            color: #333;
+        }
+
+        #ICDMenu ul li span:nth-child(1) { /* Collapse Btn */
+            width: 28px;
+            margin-left: 10px;
+        }
+
+        #ICDMenu ul li span:nth-child(2) { /* ICD Code */
+            width: 90px;
+        }
+
+        #ICDMenu ul li span:nth-child(3) { /* ICD English Name*/
+            width: auto;
+        }
+
+.CollapseIcon {
+    width: 10px;
+    height: 10px;
+    color: gray;
+    transition: 0.3s; /* Animation Times */
+}
+
+    .CollapseIcon:hover {
+        cursor: pointer;
+    }
+
+.CollapseIconExpand {
+    transform: rotate(90deg);
+    content: url(../images/Collapse_Open.png); /* Dynamic Change IMG */
+}
+
+.CategorySwitchHidden,
+.CollapseCloseHidden {
+    display: none !important;
+}
+
+.IcdEnglishName {
+    margin-right: 10px;
+}
+
+.SelectedNoteRecord {
+    background-color: #f9ff76 !important;
+}
+
+.SelectedCollapseBlock {
+    background-color: #D1ECF1 !important;
+}
+
+/* Med Menu */
+#MedMenuTable > tbody > tr > td.BrandName {
+    white-space: nowrap;
+    max-width: 220px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#MedMenuTable > tbody > tr > td.GenericName {
+    white-space: nowrap;
+    max-width: 100px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#MedMenuTable > tbody > tr > td.Remarks {
+    white-space: nowrap;
+    max-width: 90px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#MedMenuTable > thead > th {
+    vertical-align: middle;
+}
+
+/* NonMed search input autoComplete */
+.ui-autocomplete {
+    z-index: 2000000000 !important;
+}
+
+.ui-autocomplete {
+    white-space: nowrap;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 20px;
+}
+
+.NonMedMenu .section {
+    font-weight: bold;
+}
+
+.CommentRow {
+    font-size: 17px;
+    font-family: arial;
+    font-weight: bold;
+    line-height: 1.5;
+    cursor: default !important;
+    color: white;
+    background: linear-gradient(90deg, #444444d4, #b5b5b5d4) !important;
+}
+
+.NonMedMenuTableCol {
+    padding: 0px 5px;
+    overflow: auto;
+    height: 100%;
+}
+
+.card-columns {
+    column-count: 2;
+}
+
+.NonMedMenuCardBody {
+    overflow: auto;
+    white-space: nowrap;
+}
+
+.NodeCardBody {
+    padding: 5px 15px;
+    max-height: 400px;
+    overflow: auto;
+}
+
+.NodeCardHeader {
+    border: none;
+    color: white;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+}
+
+.LabCard-header {
+    /*background-color: #00989f;*/
+    background-color: #593bdb;
+}
+
+.LabCard-body {
+    /*border: 3px solid #00989f;*/
+    border: 3px solid #593bdb;
+}
+
+    .LabCard-body > .NonMedNodes {
+        /*border: 1px solid #00989f;*/
+        border: 1px solid #593bdb;
+    }
+
+.ExamCard-header {
+    /*background-color: #1b7adb;*/
+    background-color: #03a9f4;
+}
+
+.ExamCard-body {
+    /*border: 3px solid #1b7adb;*/
+    border: 3px solid #03a9f4;
+}
+
+    .ExamCard-body > .NonMedNodes {
+        /*border: 1px solid #1b7adb;*/
+        border: 1px solid #03a9f4;
+    }
+
+.PathCard-header {
+    /*background-color: #f1536f;*/
+    background-color: #646263;
+}
+
+.PathCard-body {
+    /*border: 3px solid #f1536f;*/
+    border: 3px solid #646263;
+}
+
+    .PathCard-body > .NonMedNodes {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #646263;
+    }
+
+.BloodCard-header {
+    /*background-color: #f1536f;*/
+    background-color: #fa3323;
+}
+.BloodCard-body {
+    /*border: 3px solid #f1536f;*/
+    border: 3px solid #fa3323;
+}
+
+    .BloodCard-body > .NonMedNodes {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #fa3323;
+    }
+
+.OtherCard-header {
+    background-color: #767676;
+}
+
+.OtherCard-body {
+    border: 3px solid #767676;
+}
+
+    .OtherCard-body > .NonMedNodes {
+        border: 1px solid #767676;
+    }
+
+.NonMedNodes {
+    width: 100%;
+    color: black;
+    font-size: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    display: block;
+    margin: 10px 0px;
+    padding: 3px 0px 3px 15px;
+    background-color: #FEFEFE;
+    border-radius: 16px;
+    user-select: none;
+}
+
+    .NonMedNodes:hover {
+        cursor: pointer;
+        background-color: #eee;
+    }

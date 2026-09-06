@@ -1,0 +1,221 @@
+﻿@using KMU.HisOrder.MVC.Extesion
+@model IEnumerable<KmuUser>
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+	
+	var GendetList = ViewData["mrCreate_GendetList"] as List<EnumClass.EnumGender>;
+	var CategoryList = ViewData["select_CategoryList"] as IEnumerable<KmuCoderef>;
+}
+
+@if( TempData["Show_User_Messages"] != null)
+{
+<table align="center">
+				<tr>
+								<td>
+	<h2>
+		<center>
+			<div class="alert alert-primary" role="alert">
+			@TempData["Show_User_Messages"]
+			</div>
+		</center>
+	</h2>
+								</td>
+				</tr>
+</table>
+}
+
+
+
+
+
+<table align="center"><tr><td>
+<div class="container p-3">
+    <div class="row -4">
+		<div class="col-4">
+<form method="get">
+	<div class="input-group">
+	<input class="form-control" type="text" name="search_string" value="@ViewData["GetSeatchString"]" />
+		<div class="input-group-append">
+			<button type="submit" class="btn btn-primary">Search</button>
+		</div>
+	</div>
+</form>
+        </div>
+        <div class="col-4">
+            <h1 class="text-center">Users List</h1>
+        </div>
+        <div class="col-4 text-end">
+            <a asp-area="" asp-controller="Login" asp-action="new_account" class="btn btn-primary">
+                Create New Account
+            </a>
+        </div>
+    </div>
+</td></tr></table>
+
+    <br /><br />
+
+<table align="center"><tr><td>
+    <table class="table table-bordered table-striped" ><!--style="width:100%"-->
+        <thead>
+            <tr>
+                <th>
+                    <font color="red">*</font>Account ID
+                </th>
+
+
+                <th>
+                    <font color="red">*</font>Name
+                </th>
+
+                <th>
+                    <font color="red">*</font>Birth Date
+                </th>
+                <th>
+                    <font color="red">*</font>Sex
+                </th>
+
+                <th>
+                    <font color="red">*</font>Mobile Phone
+                </th>
+                <th>
+                    <font color="red">*</font>Email
+                </th>
+				<th>
+                    <font color="red">*</font>Category
+                </th>
+
+				 <th>
+                    Can Login
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj_one in Model)
+            {
+                <tr>
+                    <td>
+						<a asp-area="" asp-controller="Login" asp-action="auth_setting" asp-route-account_id="@obj_one.UserIdno" class="btn btn-primary">
+                        @obj_one.UserIdno
+						</a>
+                    </td>
+
+
+
+                    <td style="vertical-align: middle;">
+                        @obj_one.UserNameFirstname　@obj_one.UserNameMidname　@obj_one.UserNameLastname
+                    </td>
+
+
+                    <td style="vertical-align: middle;">
+                        @if (obj_one.UserBirthDate != null)
+                        {                                
+                        //@obj_one.UserBirthDate.Value.ToString("dd/MM/yyyy")
+                        }
+						<input type="date"  placeholder="Birth Date" max="@DateTime.Today.ToString("yyyy-MM-dd")" 
+						 value="@(obj_one.UserBirthDate.HasValue? obj_one.UserBirthDate.Value.ToString("yyyy-MM-dd") :"")"
+						onchange="UserManager__Use___GET___Protocol__ChangeUserProfile( '@obj_one.UserIdno' , 'Birth Date' , '@obj_one.UserBirthDate.Value.ToString("yyyy-MM-dd")' , this.value , this )"  />
+                    </td>
+                    <td style="vertical-align: middle;">
+
+						<select class="form-control" onchange="UserManager__Use___GET___Protocol__ChangeUserProfile( '@obj_one.UserIdno' , 'Sex' , '@obj_one.UserSex' , this.value , this )">
+
+						@foreach (var sex in GendetList)
+						{
+							<!option value="@sex.EnumToString()" @(obj_one.UserSex == sex.EnumToString() ? "selected" : String.Empty)>@sex.EnumToString()</!option>
+						}
+
+						</select>
+
+                    </td>
+
+                    <td style="vertical-align: middle;">
+                        @obj_one.UserMobilePhone
+                    </td>
+                    <td style="vertical-align: middle;">
+                        @obj_one.UserEmail
+                    </td>
+					<td style="vertical-align: middle;">
+
+						<select class="form-control" onchange="UserManager__Use___GET___Protocol__ChangeUserProfile( '@obj_one.UserIdno' , 'Category' , '@obj_one.UserCategory' , this.value , this )">
+
+						@foreach (var obj_one_Category in CategoryList)
+						{
+							<!option value="@(obj_one_Category.RefName)" @(obj_one.UserCategory == obj_one_Category.RefName ? "selected" : String.Empty)>@(obj_one_Category.RefName)</!option>
+						}
+
+						</select>
+
+                    </td>
+
+					<td style="vertical-align: middle;">
+                        @switch (obj_one.AccountStatus)
+                         {
+                                    case "0":
+									<a asp-area="" asp-controller="Login" asp-action="account_status_change" asp-route-account_id="@obj_one.UserIdno" asp-route-login_do="Allow_Login" class="fa-solid fa-toggle-off fa-2xl" style="color:black">
+									@*Do Allow Login*@
+									</a>
+                                        break;
+                                    case "1":
+									<a asp-area="" asp-controller="Login" asp-action="account_status_change" asp-route-account_id="@obj_one.UserIdno" asp-route-login_do="Close_Login" class="fa-solid fa-toggle-on fa-2xl" style="color:green">
+									@*Do Close Login*@
+									</a>
+                                        break;
+                                        default:
+                                        //@("null")
+                                        break;
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</td></tr></table>
+</div>
+
+
+
+@section scripts
+    {
+		<script>
+		function UserManager__Use___GET___Protocol__ChangeUserProfile( Account_ID , ChangeType , old_value , new_value , ChangeUseObject ) {//用戶管理員，使用get傳輸協定，變更用戶資料
+				if(confirm('Are you sure you want to change the 【' + ChangeType + '】 of Account ID 「' + Account_ID + '」 from 【' + old_value + '】 to 【' + new_value + '】？'))
+				{
+					var url;//(url.action javascript - Google 搜尋)c# - Using Url.Action in javascript - Stack Overflow https://stackoverflow.com/a/17701559
+					
+					switch (ChangeType) {
+						case 'Birth Date':
+					url = '@Url.Action("account_BirthDate_change", "Login", new {  Area = "" })' + '?' + 'account_id=' + Account_ID + '&' + 'Birth_Date=' + new_value;
+						break;
+						
+						case 'Sex':
+					url = '@Url.Action("account_Sex_change", "Login", new {  Area = "" })' + '?' + 'account_id=' + Account_ID + '&' + 'Sex=' + new_value;
+						break;
+						
+						case 'Category':
+					url = '@Url.Action("account_Category_change", "Login", new {  Area = "" })' + '?' + 'account_id=' + Account_ID + '&' + 'Category=' + new_value;
+						break;
+
+						default:
+						url = '?';
+					}
+					
+					//alert('跳轉 url 網址' + url);//Show Test Url
+					if(url === '?')
+					{
+						alert('Change failed URL not set yet');//變更失敗尚未設定網址
+						//failed Undo
+						ChangeUseObject.value = old_value ;
+					}
+					else
+					{
+					location.replace(url);//(javascript href url - Google 搜尋)細談 location.href 與 location.replace 的差別與實務應用 | The Will Will Web https://blog.miniasp.com/post/2009/03/25/location-href-and-location-replace-in-practice
+					}
+				}
+				else
+				{	//cancel Undo
+					ChangeUseObject.value = old_value ;
+				};
+		}
+		</script>
+	}

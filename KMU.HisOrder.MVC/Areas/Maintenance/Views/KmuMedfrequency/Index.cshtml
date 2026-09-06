@@ -1,0 +1,58 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.KmuMedfrequency>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Medicines Frequency";
+}
+
+<link href="~/css/style.css" rel="stylesheet" />
+
+<h4>&nbsp;&nbsp;&nbsp;Medicines Frequency</h4>
+<hr />
+<div class="row" style="margin:0px;">
+    <div class="col-md-12" style="text-align:right;">
+        <a asp-action="Create" class="btn btn-info">Create New</a>
+    </div>
+</div>
+
+
+<div id="MedfreqDetailContain" style="0px 10px">
+    @Html.Partial("Search", Model)
+</div>
+
+<span id="loading" style="display:none;"><h4>loading...</h4></span>
+
+@section scripts{
+    <script>
+        function fn_Status(inCode) {
+            var checked = $('input[name="' + inCode + '"]').is(':checked')
+
+            let postData = {
+                inFrqCode: inCode
+            };
+
+            $.post('@Url.Action("UpdateStatus", "KmuMedfrequency")', postData, null);
+        }
+
+        $(document).ready(function () {
+            $('#MedfreqSearchTable').DataTable({
+                "searching": false,
+                "ordering": false,
+                "lengthChange": false,
+            });
+        })
+    </script>
+}
+
+
+    @*<style>
+    $('.openBtn').on('click',function(){
+        $('.modal-body').load('getContent.php?id=2',function(){
+            $('#myModal').modal({show:true});
+        });});
+</style>*@
+
+
+
+
+
+

@@ -1,0 +1,124 @@
+@model BloodBankPatientPanelViewModel
+@using KMU.HisOrder.MVC.Models.BloodBank
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var requests = ViewBag.Requests as List<BloodBankRequest> ?? new();
+    var events = ViewBag.Events as List<BloodBankPatientEvent> ?? new();
+    var pending = ViewBag.PendingRequest as BloodBankRequest;
+    ViewData["Title"] = $"Blood Bank → {Model.PatientName}";
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+
+<div class="bb-his-shell bb-patient-profile">
+    <h6 class="direction mx-2 mb-1">@ViewData["Title"]</h6>
+    <p class="bb-page-subtitle mx-2 mb-2">
+        <span class="bb-mono">@Model.PatientId</span>
+        @if (!string.IsNullOrWhiteSpace(Model.Phone)) { <span> · @Model.Phone</span> }
+    </p>
+    <div class="bb-profile-actions mx-2">
+        <a asp-action="Find" class="bb-btn bb-btn-ghost bb-btn-sm"><i class="fa-solid fa-magnifying-glass"></i> Find Patient</a>
+        @if (pending != null)
+        {
+            <a asp-controller="Requests" asp-action="Dispense" asp-route-id="@pending.RequestId" class="bb-btn bb-btn-success bb-btn-sm">
+                <i class="fa-solid fa-truck-medical"></i> Dispense pending request
+            </a>
+            <a asp-controller="Requests" asp-action="Details" asp-route-id="@pending.RequestId" class="bb-btn bb-btn-primary bb-btn-sm">View pending request</a>
+        }
+        <a asp-controller="Donors" asp-action="Create" asp-route-patientId="@Model.PatientId" asp-route-requestId="@pending?.RequestId" class="bb-btn bb-btn-primary bb-btn-sm">
+            <i class="fa-solid fa-user-plus"></i> Register directed donor
+        </a>
+        <a asp-controller="Requests" asp-action="Create" asp-route-patientId="@Model.PatientId" class="bb-btn bb-btn-ghost bb-btn-sm">
+            <i class="fa-solid fa-plus"></i> New blood request
+        </a>
+        @if (!string.IsNullOrWhiteSpace(Model.BloodType))
+        {
+            <a asp-controller="Donors" asp-action="Find" asp-route-bloodType="@Model.BloodType" class="bb-btn bb-btn-ghost bb-btn-sm">
+                <i class="fa-solid fa-magnifying-glass"></i> Find compatible donor (@Model.BloodType)
+            </a>
+        }
+    </div>
+
+    @if (pending != null)
+    {
+        <div class="bb-card mx-2">
+            <div class="bb-card__header"><h4><i class="fa-solid fa-fill-drip"></i> Pending blood request</h4></div>
+            <div class="bb-card__body">
+                <p class="mb-0">
+                    <span class="bb-badge bb-badge-blood">@Model.BloodType</span>
+                    <span class="text-muted"> · @Model.ComponentType × @Model.UnitsRequested · @Model.UrgencyLevel</span>
+                </p>
+            </div>
+        </div>
+    }
+
+    <div class="mx-2">
+        <partial name="~/Areas/BloodBank/Views/Shared/_PatientPanel.cshtml" model="Model" />
+    </div>
+
+    <div class="bb-card mx-2">
+        <div class="bb-card__header"><h4><i class="fa-solid fa-list"></i> Blood request history</h4></div>
+        <div class="bb-card__body">
+            @if (requests.Any())
+            {
+                <table class="table bb-table bb-table-compact mb-0">
+                    <thead>
+                        <tr>
+                            <th>Request</th>
+                            <th>Type</th>
+                            <th>Component</th>
+                            <th>Units</th>
+                            <th>Urgency</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in requests)
+                        {
+                            <tr>
+                                <td class="bb-mono">#@r.RequestId</td>
+                                <td><span class="bb-badge bb-badge-blood">@r.BloodType</span></td>
+                                <td>@r.ComponentType</td>
+                                <td>@r.UnitsRequested</td>
+                                <td>@r.UrgencyLevel</td>
+                                <td>@r.Status</td>
+                                <td>@r.RequestDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td><a asp-controller="Requests" asp-action="Details" asp-route-id="@r.RequestId" class="bb-btn bb-btn-ghost bb-btn-sm">View</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="font-weight-bold text-danger mb-0">No blood bank requests for this patient.</p>
+            }
+        </div>
+    </div>
+
+    <div class="bb-card mx-2 mb-2">
+        <div class="bb-card__header"><h4><i class="fa-solid fa-clock-rotate-left"></i> Blood bank events</h4></div>
+        <div class="bb-card__body">
+            @if (events.Any())
+            {
+                <ul class="list-unstyled mb-0">
+                    @foreach (var e in events)
+                    {
+                        <li class="mb-2 pb-2 border-bottom">
+                            <strong>@e.EventType</strong>
+                            <span class="text-muted"> · @e.EventDateTime.ToString("dd/MM/yyyy HH:mm")</span><br />
+                            <span>@e.EventDescription</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="font-weight-bold text-muted mb-0">No blood bank events recorded yet.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />

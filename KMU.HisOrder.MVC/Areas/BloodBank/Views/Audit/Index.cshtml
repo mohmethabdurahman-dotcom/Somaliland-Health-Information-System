@@ -1,0 +1,77 @@
+@model AuditLogViewModel
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Blood Bank → Staff Audit"; }
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell">
+    <h6 class="direction mx-2">@ViewData["Title"]</h6>
+    <h6 class="bb-section-direction"><i class="fa-solid fa-filter"></i> Filter audit log</h6>
+    <div class="bb-card bb-filter-bar">
+        <div class="bb-card__body">
+            <form method="get" class="bb-filter-bar__form">
+                <div class="bb-filter-field">
+                    <label class="bb-label">Staff</label>
+                    <input name="FilterStaff" value="@Model.FilterStaff" class="form-control" placeholder="Staff name or ID" />
+                </div>
+                <div class="bb-filter-field">
+                    <label class="bb-label">Patient</label>
+                    <input name="FilterPatient" value="@Model.FilterPatient" class="form-control" placeholder="Patient ID or name" />
+                </div>
+                <div class="bb-filter-field">
+                    <label class="bb-label">From</label>
+                    <input name="DateFrom" type="date" value="@(Model.DateFrom?.ToString("yyyy-MM-dd"))" class="form-control" />
+                </div>
+                <div class="bb-filter-field">
+                    <label class="bb-label">To</label>
+                    <input name="DateTo" type="date" value="@(Model.DateTo?.ToString("yyyy-MM-dd"))" class="form-control" />
+                </div>
+                <div class="bb-filter-field">
+                    <label class="bb-label">&nbsp;</label>
+                    <button type="submit" class="bb-btn bb-btn-primary">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="bb-audit-layout">
+        <div class="bb-card">
+            <div class="bb-card__header"><h4>Screening Events</h4></div>
+            <div class="bb-table-wrap">
+                <table class="bb-table">
+                    <thead><tr><th></th><th>Staff</th><th>Donor</th><th>Result</th><th>Date-Time</th></tr></thead>
+                    <tbody>
+                    @foreach (var s in Model.Screenings) {
+                        var donorName = s.Donor != null ? $"{s.Donor.FirstName} {s.Donor.LastName}" : (s.DonorId.HasValue ? $"Donor #{s.DonorId}" : "—");
+                        var resBadge = s.OverallResult == "Passed" ? "bb-badge-passed" : "bb-badge-failed";
+                        <tr>
+                            <td>
+                                <a asp-controller="Screening" asp-action="Print" asp-route-id="@s.ScreeningId" asp-route-auto="false" target="_blank" class="bb-btn bb-btn-sm bb-btn-ghost" title="Print certificate"><i class="fa-solid fa-print"></i></a>
+                            </td>
+                            <td>@s.StaffName</td>
+                            <td>@donorName</td>
+                            <td><span class="bb-badge @resBadge">@s.OverallResult</span></td>
+                            <td>@s.ScreeningDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="bb-card">
+            <div class="bb-card__header"><h4>Dispense Events</h4></div>
+            <div class="bb-table-wrap">
+                <table class="bb-table">
+                    <thead><tr><th>Staff</th><th>Patient</th><th>Units</th><th>Date-Time</th></tr></thead>
+                    <tbody>
+                    @foreach (var d in Model.Dispenses) {
+                        <tr>
+                            <td>@d.DispensingStaffName</td>
+                            <td>@d.PatientName</td>
+                            <td>@d.UnitsReleased</td>
+                            <td>@d.DispenseDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />

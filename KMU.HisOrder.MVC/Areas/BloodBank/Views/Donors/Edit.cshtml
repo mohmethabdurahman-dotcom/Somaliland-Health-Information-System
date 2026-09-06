@@ -1,0 +1,90 @@
+@model DonorRegistrationViewModel
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@using KMU.HisOrder.MVC.Models.BloodBank
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Blood Bank → Edit Donor";
+    var bloodTypes = ViewBag.BloodTypes as string[] ?? BloodBankLookups.BloodTypes;
+    var donorDisplayId = Model.DonorId.HasValue ? BloodBankIds.FormatDonor(Model.DonorId.Value) : "";
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<partial name="~/Areas/BloodBank/Views/Donors/PartialViews/_DonorRegistrationHisStyles.cshtml" />
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankNav.cshtml" />
+
+<div class="bb-donor-mr-page">
+    <h6 class="direction mx-2">@ViewData["Title"]</h6>
+
+    @if (TempData["Error"] != null) { <div class="alert alert-danger mx-2">@TempData["Error"]</div> }
+
+    <form asp-action="Edit" method="post" id="donorEditForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="DonorId" />
+
+        <div class="form-group row mx-0 border-bottom">
+            <div class="col-lg-7 border-right">
+                <div class="form-group row mx-0">
+                    <label class="form-control col-lg-3 font-weight-bold border-0 px-0">Donor ID Number:</label>
+                    <input type="text" id="Txt_DonorID" class="form-control col-lg-3 font-weight-bold text-center rounded" readonly value="@donorDisplayId" />
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <a asp-action="Profile" asp-route-donorId="@Model.DonorId" class="btn btn-default btn-sm float-right"><i class="fa fa-arrow-left"></i> Donor history</a>
+            </div>
+        </div>
+
+        <div class="form-group row mx-0">
+            <div class="col-lg-7 border-right">
+                <partial name="~/Areas/BloodBank/Views/Donors/PartialViews/_DonorMrStylePersonalInfo.cshtml" model="Model" />
+
+                <div class="form-group row mx-0 mt-3 pt-3" style="border-top:dashed 1px #e6e9ed;">
+                    <label class="form-control col-lg-2 border-0 font-weight-bold px-0" asp-for="BloodType"><font color="red">*</font>Blood type:</label>
+                    <select asp-for="BloodType" class="form-control col-lg-4 font-weight-bold text-center text-danger" required>
+                        @foreach (var bt in bloodTypes) { <option value="@bt">@bt</option> }
+                    </select>
+                    <label class="form-control col-lg-2 border-0 font-weight-bold px-0 text-center" asp-for="DonationType">Donation type:</label>
+                    <select asp-for="DonationType" class="form-control col-lg-4 font-weight-bold text-center">
+                        <option value="@DonationTypes.Volunteer">Volunteer</option>
+                        <option value="@DonationTypes.Directed">Directed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-lg-5 border-left">
+                <h3 class="text-center">Update Donor</h3>
+                <p class="text-muted small text-center">Review demographics and blood type, then save changes.</p>
+
+                <div asp-validation-summary="All" class="text-danger small"></div>
+
+                <div class="col-12 mt-1 row justify-content-center py-2 mx-0" style="border-top:dashed 1px black">
+                    <button type="submit" class="btn btn-sm btn-primary col-6">
+                        <i class="fa-solid fa-floppy-disk"></i> Save changes
+                    </button>
+                    <a asp-action="Profile" asp-route-donorId="@Model.DonorId" class="btn btn-sm btn-warning col-4">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />
+<script>
+(function () {
+  var form = document.getElementById('donorEditForm');
+  if (!form) return;
+  function $(id) { return document.getElementById(id); }
+  function compose() {
+    var p = [$('Select_NationalPhone'), $('Txt_AreaPhone'), $('Txt_MobilePhone')]
+      .map(function (el) { return el && el.value.trim(); }).filter(Boolean);
+    if ($('Phone')) $('Phone').value = p.join(' ');
+    var g = $('Select_Gender');
+    if (g && $('Gender')) $('Gender').value = g.value === 'M' ? 'Male' : g.value === 'F' ? 'Female' : g.value;
+  }
+  form.addEventListener('submit', compose);
+  var at = $('Select_AgeType');
+  if (at) at.addEventListener('change', function () {
+    var byAge = at.value === 'Age';
+    if ($('Select_Age')) $('Select_Age').style.display = byAge ? '' : 'none';
+    if ($('Txt_Birth')) $('Txt_Birth').style.display = byAge ? 'none' : '';
+  });
+})();
+</script>

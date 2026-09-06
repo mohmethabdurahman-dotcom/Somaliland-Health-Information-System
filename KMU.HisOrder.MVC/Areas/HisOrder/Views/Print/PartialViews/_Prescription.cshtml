@@ -1,0 +1,145 @@
+﻿@model KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.PrintClass
+@using KMU.HisOrder.MVC.Models
+@inject KMU.HisOrder.MVC.Models.KMUContext _context;
+
+@{
+    Model.FormTitle = "Prescription Pharmacy (Farmasii)";
+    List<Hisorderplan> MedOrder = Model.OrderData.Where(c => c.HplanType == "Med").ToList();
+    //var MedBagOrder = new List<Hisorderplan>();
+}
+
+<div id="PrescriptionPage" class="page">
+    <table class="PageContainerTable">
+        <thead>
+            <tr>
+                <td class="PageFormTitleTd">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="header-space"></div>
+                </td>
+            </tr>
+        </thead>
+        <tbody style="vertical-align: top;">
+            <tr>
+                <td>
+                    <div class="PageContent">
+                        <h2 class="PageFormTitle">@Model.FormTitle</h2>
+                        <!-- 區分藥袋列印 -->
+                        @*            @if (MedOrder.Count() > 0)
+                        {
+                        @for (int i = 0; i < MedOrder.GroupBy(c => c.MedBag).Count(); i++)
+                        {
+                        <h4 style="font-style:italic;">※ Med Bag. @(i + 1)</h4>
+                        <table id="MedDetailTable" class="DetailContentTable">
+                        <thead>
+                        <tr style="text-decoration:underline;">
+                        <th></th>
+                        <th>Medication</th>
+                        <!--<th>SingleDose</th>-->
+                        <th>Unit</th>
+                        <th>Route</th>
+                        <th>Freq.</th>
+                        <!--<th>Indic.</th>-->
+                        <!--<th>DailyDose</th>-->
+                        <th>Days</th>
+                        <th>Qty.</th>
+                        </tr>
+                        </thead>
+                        <tbody style="vertical-align:top;">
+                        @{
+                        MedBagOrder = MedOrder.Where(c => c.MedBag == i + 1).ToList();
+                        }
+                        @for (int j = 0; j < MedBagOrder.Count(); j++)
+                        {
+                        <tr>
+                        <td style="width:20px; max-width:20px">@(j + 1).</td>
+                        <td style="width:135px; max-width:135px; white-space:normal;">@MedBagOrder[j].PlanDes</td>
+                        <td>@MedBagOrder[j].QtyDose</td>
+                        <td style="max-width: 80px; white-space: normal;">@MedBagOrder[j].UnitDose</td>
+                        <td style="width: 135px; max-width: 135px; white-space: normal;">@MedBagOrder[j].DosePath</td>
+                        <td>@MedBagOrder[j].FreqCode</td>
+                        <!--<td>@MedBagOrder[j].DoseIndication</td>-->
+                        <!--<td>@MedBagOrder[j].QtyDaily</td>-->
+                        <td>@MedBagOrder[j].PlanDays</td>
+                        <td>@MedBagOrder[j].TotalQty</td>
+                        </tr>
+                        }
+                        </tbody>
+                        </table>
+                        <hr style="border-style:dashed; border-color:#ccc;"></hr>
+                        }
+                        }*@
+
+                        <!-- 不分藥袋列印 -->
+                        <table id="MedDetailTable" class="DetailContentTable" style="text-align:left;">
+                            <thead style="vertical-align: bottom;">
+                                <tr>
+                                    <th colspan="3" style="font-size: 23px; font-weight: bold;">Generic Name</th>
+                                    <th colspan="3" style="font-size: 23px; font-weight: bold; text-align:left;">Qty</th>
+                                </tr>
+                                <tr style=" margin-top: 10px; ">
+                                    <th colspan="1">Route</th>
+                                    <th colspan="1">Dose/Unit</th>
+                                    <th colspan="1">Freq.</th>
+                                    <!--<th>Indic.</th>-->
+                                    <!--<th>DailyDose</th>-->
+                                    <th colspan="1">Days</th>
+                                </tr>
+                                <tr>
+                                    <td colspan="10">
+                                        <hr style="margin:0px; border-color:#999;" />
+                                    </td>
+                                </tr>
+                            </thead>
+
+                            <tbody style="vertical-align:top;">
+
+                                @*Down line*@
+                                @for (int j = 0; j < MedOrder.Count(); j++)
+                                {
+                                    <tr style="padding-left: 20px;">
+                                        @*<td>@(j + 1).</td>*@
+                                        <td colspan="3" style="font-size: 22px; margin-right: 5px;">@(j + 1). &nbsp; @MedOrder[j].PlanDes</td>
+                                        <td colspan="3" style="text-align:right; font-size: 22px;">@MedOrder[j].TotalQty</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="1" style="white-space:normal; font-size: 20px;">@MedOrder[j].DosePath</td>
+                                        <td colspan ="1" style="text-align:left; font-size: 20px;">@MedOrder[j].QtyDose @MedOrder[j].UnitDose <span style="font-size: 14px"></span> x</td>
+                                        @*<td style="text-align:left; font-size: 22px;"></td>*@
+                                        <td colspan="1" style="text-align:left; font-size: 20px;">@MedOrder[j].FreqCode <span style="font-size: 17px">times </span>x </td>
+                                        <!--<td>@MedOrder[j].DoseIndication</td>-->
+                                        <!--<td>@MedOrder[j].QtyDaily</td>-->
+                                        <td colspan="1" style="text-align:left; font-size: 20px;">@MedOrder[j].PlanDays <span style="font-size: 17px">day </span></td>
+                                    </tr>
+                                    @if (!string.IsNullOrWhiteSpace(MedOrder[j].Remark))
+                                    {
+                                        <tr>
+                                            <td style="font-size: 20px;" colspan="7">
+                                                Remarks：@MedOrder[j].Remark
+                                            </td>
+                                        </tr> 
+                                    }
+                                    <tr>
+                                        <td colspan="10">
+                                            <hr style="margin-top: 8px; border: 2px dashed #999;" />
+                                        </td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td colspan="10">
+                                        <hr style="margin:0px; border-color:#999;" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div>
+                            @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_v_Footer.cshtml",Model)
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

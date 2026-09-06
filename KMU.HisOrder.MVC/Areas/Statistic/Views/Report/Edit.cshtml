@@ -1,0 +1,74 @@
+﻿@model KMU.HisOrder.MVC.Models.KmuDepartment
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>KmuDepartment</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="DptCode" />
+            <div class="form-group">
+                <label asp-for="DptName" class="control-label"></label>
+                <input asp-for="DptName" class="form-control" />
+                <span asp-validation-for="DptName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DptCategory" class="control-label"></label>
+                <input asp-for="DptCategory" class="form-control" />
+                <span asp-validation-for="DptCategory" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DptDepth" class="control-label"></label>
+                <input asp-for="DptDepth" class="form-control" />
+                <span asp-validation-for="DptDepth" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DptStatus" class="control-label"></label>
+                <input asp-for="DptStatus" class="form-control" />
+                <span asp-validation-for="DptStatus" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DptRemark" class="control-label"></label>
+                <input asp-for="DptRemark" class="form-control" />
+                <span asp-validation-for="DptRemark" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DptDefaultAttr" class="control-label"></label>
+                <input asp-for="DptDefaultAttr" class="form-control" />
+                <span asp-validation-for="DptDefaultAttr" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ModifyUser" class="control-label"></label>
+                <input asp-for="ModifyUser" class="form-control" />
+                <span asp-validation-for="ModifyUser" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ModifyTime" class="control-label"></label>
+                <input asp-for="ModifyTime" class="form-control" />
+                <span asp-validation-for="ModifyTime" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DptParent" class="control-label"></label>
+                <input asp-for="DptParent" class="form-control" />
+                <span asp-validation-for="DptParent" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

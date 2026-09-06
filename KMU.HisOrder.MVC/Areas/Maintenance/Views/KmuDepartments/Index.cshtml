@@ -1,0 +1,170 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.KmuDepartment>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Title = ViewData["Title"] = "Maintain → Clinic Rooms";
+
+}
+
+<div class="p-3">
+    <h6 class="direction mx-2" style="">@Title</h6>
+
+    <div class="row mt-4">
+
+        <p class="offset-1 d-flex justify-content-end col-11">
+
+            <a class="btn btn-primary text-bold" asp-action="Create">Create New</a>
+        </p>
+    </div>
+    <span hidden id="roomAlert" class="alert text-whtie bg-danger">@TempData["roomAlert"]</span>
+    <table class="table data-table  col-10">
+        <thead>
+            <tr>
+                <th>
+
+                </th>
+                <th>Code</th>
+                <th>
+                    Category
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ModifyTime)
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Modified by
+                </th>
+
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.DptCode" class="fa-solid fa-pencil fa-xl text-primary"></a>
+
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DptCode)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DptCategory)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DptName)
+                    </td>
+
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ModifyTime)
+                    </td>
+                    @if (item.DptStatus == "Y")
+                    {
+                        <td class="">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="radio custom-control-input" checked id="@item.DptCode" value="@item.DptCode">
+                                <label class="custom-control-label" for="@item.DptCode"></label>
+                            </div>
+                        </td>
+                    }
+                    else if (item.DptStatus == "N")
+                    {
+                        <td class="">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="radio custom-control-input" id="@item.DptCode" value="@item.DptCode">
+                                <label class="custom-control-label" for="@item.DptCode"></label>
+                            </div>
+                        </td>
+                    }
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ModifyUser)
+                    </td>
+                    @*     <td>
+                <a class="custom-control custom-switch"></a>
+                </td>*@
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script src="~/lib/jquery1.min.js"></script>
+
+
+<script>
+
+    $(document).ready(function () {
+        $(".radio").click(function () {
+            var BedId = $(this).val()
+            window.location.href = "/Maintenance/KmuDepartments/Close/" + BedId;
+        })
+
+       
+        var roomAlert = $("#roomAlert").text();
+        if(roomAlert != ''){
+            layer.alert(roomAlert, {
+                skin: 'layui-layer-lan',
+                closebtn: 3,
+                anim: 5,
+                icon: 7,
+                btn: ['OK'],
+                title: 'Message',
+                OK: function (index) {
+                    layer.close(index);
+                }
+            });
+        }
+    })
+
+    var department = $("#dptCategory option:selected").val();
+    $("#dptCategory").on("change", function () {
+        var cDpName = $("#dptCategory").val();
+
+        var items = '<option disabled selected>--Select Name--</option>';
+        $.ajax({
+            type: "post",
+            url: "/Maintenance/KmuDepartments/Department?CDpName=" + cDpName,
+            success: function (response) {
+                $.each(response, function (key, value) {
+
+                    items += "<option value=" + value.dptCode + ">" + value.dptName + "</option>";
+
+                    console.log(value.dptName);
+                })
+                $("#DptName").html(items);
+
+
+            }
+        })
+
+    })
+
+
+    $("#btnsearch").on("click", function () {
+        alert("hello")
+        var department = $("#dptCategory").val();
+        var DName = $("#DptName").val();
+        var name = $("#Name").val();
+
+        $.ajax({
+            type: "post",
+            url: "/Maintenance/KmuDepartments/Index?department=" + department + "&DName=" + DName + "&name=" + name,
+            success: function (response) {
+                alert("success");
+            }
+
+        })
+
+
+    })
+
+
+
+
+</script>

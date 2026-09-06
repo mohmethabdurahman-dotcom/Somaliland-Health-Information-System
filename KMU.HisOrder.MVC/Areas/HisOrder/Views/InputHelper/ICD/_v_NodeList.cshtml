@@ -1,0 +1,26 @@
+﻿@model List<KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.VKmuIcd>
+
+@{
+    var NodeMode = ViewData["NodeMode"] as string;
+}
+
+@if (Model.Count() > 0)
+{
+    <ul class="IcdNodes Categoryul @NodeMode" data-parentcode="@Model.First().ParentCode">
+        @for (int i = 0; i < Model.Count(); i++)
+        {
+            <li ondblclick="AddIcdData(event,this)" style="@(i>100 ? "display:none;" : "")">
+                @if (Model[i].IsParent == true)
+                {
+                    <span><a onclick="ExpandNodes(event,this)" ondblclick="event.stopPropagation()"><img class="CollapseIcon" src="~/images/Collapse_Close.png" /></a></span>
+                }
+                else
+                {
+                    <span><a><img style="width:10px; height:10px; cursor:default; visibility:hidden;" /></a></span>
+                }
+                <span class="IcdCode">@Html.DisplayFor(modelItem => Model[i].IcdCode)</span>
+                <span class="IcdEnglishName">@Html.DisplayFor(modelItem => Model[i].IcdEnglishName)</span>
+            </li>
+        }
+    </ul>
+}

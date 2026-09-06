@@ -1,0 +1,546 @@
+﻿@using KMU.HisOrder.MVC.Areas.HisOrder.ViewModels;
+@model IEnumerable<VKmuNonMedicine>
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+
+@{
+    var inhospitalid = TempData["InhospitalId"];
+    var healthid = TempData["HealthId"];
+    var nmType = TempData["NmType"];
+    var Date = TempData["Date"];
+
+    var GroupbyList = Model.OrderBy(c => c.RefShowseq).GroupBy(x => new { x.GroupCode, x.RefName, x.ItemType, x.PlanDes });
+    IEnumerable<VKmuNonMedicine> OtherList = Model.Where(c => c.ItemType != "intake" && c.ItemType != "Comor" && c.ItemType != "Hist" && c.ItemType != "Vital" && c.ItemType != "Hyper" && c.ItemType != "Asthma" && c.ItemType != "Heart" && c.ItemType != "Diabetes" && c.ItemType != "Back");
+
+}
+
+<style>
+    .intakeHeader {
+        background-color: #006d92;
+    }
+
+    .comorHeader {
+        background-color: #a881af;
+    }
+
+    .histHeader {
+        background-color: #4d3c77;
+    }
+
+    .vitalheader {
+        background-color: #DD6E0F;
+    }
+
+    .hyperheader {
+        background-color: #5E716A;
+    }
+
+    .asthmaheader {
+        background-color: #0E86D4;
+    }
+
+    .heartheader {
+        background-color: #bb3e03;
+    }
+
+    .diabetesheader {
+        background-color: #008B8B;
+    }
+
+
+    .intake-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #006d92;
+    }
+
+    .Comor-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #a881af;
+    }
+
+    .Hist-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #4d3c77;
+    }
+
+    .vital-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #DD6E0F;
+    }
+
+    .hyper-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #5E716A;
+    }
+
+    .asthma-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #0E86D4;
+    }
+
+    .heart-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #bb3e03;
+    }
+
+    .diabetes-body {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #008B8B;
+    }
+
+
+    .intake-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #006d92;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .Comor-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #a881af;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .Hist-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #4d3c77;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .vital-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #DD6E0F;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .hyper-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #5E716A;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .asthma-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #0E86D4;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .heart-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #bb3e03;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .diabetes-body > .ncd_items {
+        /*border: 1px solid #c50049;*/
+        border: 1px solid #008B8B;
+        padding: 5px;
+        margin: 3px;
+        border-radius: 30px;
+    }
+
+    .bgheader {
+        background-color: #D3D3D3;
+    }
+
+    .headerround {
+        border: 1px solid;
+        margin-right: 18px;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .textwrap {
+        white-space: nowrap;
+        max-width: 320px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .vitalInput {
+        margin-left: 20px;
+        width: 100px;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        border-bottom: 1px solid gray;
+    }
+
+</style>
+
+<p hidden id="inhospitalid">@inhospitalid</p>
+<p hidden id="healthid">@healthid</p>
+<p hidden id="nmType">@nmType</p>
+<p hidden id="Date">@Date</p>
+
+@if (OtherList.Count() <= 0)
+{
+    <div class="row TabMenuColumn">
+        @Html.AntiForgeryToken()
+        <div class="NonMedMenu card-columns" style="width:100%; column-gap:7px;">
+            @foreach (var item in GroupbyList)
+            {
+                switch (item.Key.ItemType)
+                {
+                    case "intake":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader intakeHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody intake-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "intake" && c.ItemSpec != "Comment"))
+                                {
+                                    var unChecked = _context.kmu_ncd.Where(e => e.plancode == Node.ItemId && e.healthid == healthid).ToList();
+                                    foreach (var a in unChecked)
+                                    {
+                                        <select class="selectedItems1" hidden>
+                                            <option value="@a.plancode">@a.plancode</option>
+                                        </select>
+                                    }
+
+                                    <div class="ncd_items textwrap">
+                                        <ul class="row" id="ncd"> <li style="padding-left: 10px;"><input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" /> @Node.ItemName</li> </ul>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "Back":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader intakeHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody intake-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Back" && c.ItemSpec != "Comment"))
+                                {
+                                    var unChecked = _context.kmu_ncd.Where(e => e.plancode == Node.ItemId && e.healthid == healthid).ToList();
+                                    foreach (var a in unChecked)
+                                    {
+                                        <select class="selectedItems1" hidden>
+                                            <option value="@a.plancode">@a.plancode</option>
+                                        </select>
+                                    }
+                                    <div class="ncd_items textwrap">
+                                        <ul class="row" id="ncd">
+                                            <li style="padding-left: 10px;"> <input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" /> @Node.ItemName</li>
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "Comor":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader comorHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody Comor-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Comor" && c.ItemSpec != "Comment"))
+                                {
+                                    var unChecked = _context.kmu_ncd.Where(e => e.plancode == Node.ItemId && e.healthid == healthid).ToList();
+                                    foreach (var a in unChecked)
+                                    {
+                                        <select class="selectedItems1" hidden>
+                                            <option value="@a.plancode">@a.plancode</option>
+                                        </select>
+                                    }
+
+                                    <div class="ncd_items textwrap">
+                                        <ul class="row" id="ncd">
+                                            <li style="padding-left: 10px;"> <input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" /> @Node.ItemName</li>
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "Hist":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader histHeader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody Hist-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Hist" && c.ItemSpec != "Comment"))
+                                {
+                                    var unChecked = _context.kmu_ncd.Where(e => e.plancode == Node.ItemId && e.healthid == healthid).ToList();
+                                    foreach (var a in unChecked)
+                                    {
+                                        <select class="selectedItems1" hidden>
+                                            <option value="@a.plancode">@a.plancode</option>
+                                        </select>
+                                    }
+
+                                    <div class="ncd_items textwrap">
+                                        <ul class="row" id="ncd">
+                                            <li style="padding-left: 10px;"> <input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" /> @Node.ItemName</li>
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+                    case "Vital":
+                        <partial name="vitalSign.cshtml" />
+                        break;
+                    case "Hyper":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader hyperheader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody hyper-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Hyper" && c.ItemSpec != "Comment"))
+                                {
+                                    var unChecked = _context.kmu_ncd.Where(e => e.plancode == Node.ItemId && e.inhospid == inhospitalid).ToList();
+                                    foreach (var a in unChecked)
+                                    {
+                                        <select class="selectedItems" hidden>
+                                            <option value="@a.plancode">@a.plancode</option>
+                                        </select>
+                                    }
+                                    <div class="ncd_items textwrap">
+                                        <ul class="row" id="ncd">
+                                            <li style="padding-left: 10px;"> <input height="100px" width="100px" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" /> @Node.ItemName</li>
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+
+                    case "Asthma":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader asthmaheader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody asthma-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Asthma" && c.ItemSpec != "Comment"))
+                                {
+                                    var unChecked = _context.kmu_ncd.Where(e => e.plancode == Node.ItemId && e.inhospid == inhospitalid).ToList();
+                                    foreach (var a in unChecked)
+                                    {
+                                        <select class="selectedItems" hidden>
+                                            <option value="@a.plancode">@a.plancode</option>
+                                        </select>
+                                    }
+
+                                    <div class="ncd_items textwrap">
+                                        <ul class="row" id="ncd">
+                                            <li style="padding-left: 10px;"> <input height="100px" width="100px" type="checkbox" class="checkbox textwrap ncd" value="@Node.ItemId" /> @Node.ItemName</li>
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+
+                    case "Heart":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader heartheader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody heart-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Heart" && c.ItemSpec != "Comment"))
+                                {
+                                    var unChecked = _context.kmu_ncd.Where(e => e.plancode == Node.ItemId && e.inhospid == inhospitalid).ToList();
+                                    foreach (var a in unChecked)
+                                    {
+                                        <select class="selectedItems" hidden>
+                                            <option value="@a.plancode">@a.plancode</option>
+                                        </select>
+                                    }
+
+                                    <div class="ncd_items textwrap">
+                                        <ul class="row" id="ncd">
+                                            <li style="padding-left: 10px;"> <input height="100px" width="100px" type="checkbox" class="checkbox textwrap ncd" value="@Node.ItemId" /> @Node.ItemName</li>
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        break;
+
+                    case "Diabetes":
+                        <div class="card">
+                            <div class="card-header NodeCardHeader diabetesheader">
+                                @item.Key.RefName
+                            </div>
+                            <div class="card-body NodeCardBody diabetes-body">
+                                @foreach (var Node in Model.Where(c => c.GroupCode == item.Key.GroupCode && c.ItemType == "Diabetes" && c.ItemSpec != "Comment"))
+                                {
+                                    var unChecked = _context.kmu_ncd.Where(e => e.plancode == Node.ItemId && e.inhospid == inhospitalid).ToList();
+                                    foreach (var a in unChecked)
+                                    {
+                                        <select class="selectedItems1" hidden>
+                                            <option value="@a.plancode">@a.patient_answer</option>
+                                        </select>
+                                    }
+
+                                    if (Node.enabled == true)
+                                    {
+                                        <div class="ncd_items textwrap p-2">
+                                            <div class="row">
+                                                <ul class="col-12" id="ncd">
+                                                    <li style="padding-left: 10px;">
+                                                        <input height="100" width="100" type="checkbox" class="checkbox  ncd ncd_input" value="@Node.ItemId" /> @Node.ItemName
+
+                                                        @*<input class="form-control inp" type="text" name="@Node.ItemId" placeholder="Write @Node.ItemName" />*@
+                                                        <textarea class="form-control inp" name="@Node.ItemId" placeholder="Write @Node.ItemName" rows="4" style="font-style: italic"></textarea>
+
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="ncd_items textwrap">
+                                            <ul class="row" id="ncd">
+                                                <li style="padding-left: 10px;"><input height="100" width="100" type="checkbox" class="checkbox  ncd" value="@Node.ItemId" /> @Node.ItemName</li>
+                                            </ul>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        break;
+                }
+            }
+        </div>
+
+
+    </div>
+}
+else
+{
+    <!-- Supply & Other-->
+    @*<div id="SupplyMenu" class="row" style="width:100%;">
+        <div class="TabMenuColumn">
+            <table id="SupplyMenuTable" class="table table-striped jambo_table MenuTable">
+                <thead>
+                    <tr>
+                        <th>
+                            Code
+                        </th>
+                        <th>
+                            Name
+                        </th>
+                        <th style="display:none;"><!--ItempType--></th>
+                        <th style="display:none;"><!--Remark--></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in OtherList)
+                    {
+                        <tr class="SupplyMenutr" ondblclick="AddNonMedData(event,null,this)">
+                            <td class="ItemId">
+                                @Html.DisplayFor(modelItem => item.ItemId)
+                            </td>
+                            <td class="ItemName">
+                                @Html.DisplayFor(modelItem => item.ItemName)
+                            </td>
+                            <td class="ItemType" style="display:none;">
+                                @Html.DisplayFor(modelItem => item.ItemType)
+                            </td>
+                            <td class="Remark" style="display:none;">
+                                @Html.DisplayFor(modelItem => item.Remark)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>*@
+}
+<div class="row headerround shadow p-3 mb-2">
+    <button class="btn form-control btn-primary btn-sm col-md-12 save">
+        <i class="fa-solid  fa-save"></i> Save
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        var arr = [];
+
+        $('.selectedItems').each(function (k, v) {
+            var conceptName = $(v).find(":selected").val();
+            arr.push(conceptName);
+        })
+        $(arr).each(function (k, v) {
+            $(`input[value = ${v}]`).prop("checked", true);
+        })
+
+        var arr1 = [];
+        var obj = {};
+
+        $('.selectedItems1').each(function (k, v) {
+            var conceptName = $(v).find(":selected").val();
+            var plandes = $(v).find(":selected").text();
+
+            obj[conceptName] = plandes;
+        })
+
+        $(arr1).each(function (k, v) {
+            $(`input[value = ${v}]`).prop("checked", true);
+        })
+
+        $.each(obj, function (key, value) {
+            console.log(key, value);
+            $(`input[value = ${key}]`).prop("checked", true);
+            $(`input[name = ${key}].inp`).prop("value", value);
+            $(`textarea[name = ${key}].inp`).prop("value", value);
+            $(`textarea[name = ${key}].inp`).prop('required', true);
+        });
+
+        $(".save").on("click", function () {
+            var inhospitalId = $("#inhospitalid").text();
+            var healthid = $("#healthid").text();
+            var NmType = $("#nmType").text();
+            var date = $("#Date").text();
+
+            $("#ncd li").each(function (k, v) {
+                var value = $(v).find(".ncd:checked").val()
+                var inp = $(v).find(".inp").val();
+
+                if (value != undefined) {
+                    console.log(value);
+                    console.log(inp);
+                    var ids = $(v).find(".ncd").val();
+
+                    $.ajax({
+                        type: "post",
+                        url: "/HisOrder/Ncd/SaveNcd",
+                        data: {
+                            inhospitalId: inhospitalId,
+                            healthId: healthid,
+                            NmType: NmType,
+                            items: ids,
+                            inps: inp,
+                            date: date
+                        },
+                        success: function (response) {
+                            $('#form-modal1').modal('hide');
+                            layer.msg('Saved Successfully', { time: 2200, icon: 1 });
+                            return false;
+                        }
+                    })
+                }
+                else {
+                    layer.msg("Select at least one item");
+                }
+            })
+        })
+    });
+</script>

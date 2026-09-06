@@ -1,0 +1,212 @@
+﻿@using KMU.HisOrder.MVC.Areas.HisOrder.Models;
+@using KMU.HisOrder.MVC.Areas.HisOrder.Controllers;
+@using KMU.HisOrder.MVC.Areas.Maintenance.ViewModels;
+
+@model List<ClinicScheduleItem>
+
+@{
+    var get_user_auth_cookie = Context.User.Claims.ToList();
+    var showModal = (bool)ViewData["DisPlaySwithClinicModal"];
+    var defalutClinic = (ClinicDTO)ViewData["DisPlayDefaultClinic"];
+    var loginDTO = (LoginDTO)ViewData["loginDTO"];
+    var defaultRegDate = ((DateTime)ViewData["DisPlayDefaultRegDate"]).ToString("dd/MM/yyyy");
+    string sourceType = (string)ViewData["SourceType"].ToString();
+    var checkOPD = "";
+    var checkEMG = "";
+
+    if (sourceType == "OPD")
+    {
+        checkEMG = "hidden";
+    }
+    else
+    {
+        checkOPD = "hidden";
+    }
+
+}
+
+@using (Html.BeginForm("SwitchClinic", "HisOrder", FormMethod.Post, new { Areas = "", id = "switchClinic-modal-form" }))
+{
+
+    @Html.Hidden("clinicDate");
+    @Html.Hidden("clinicDeptCode");
+    @Html.Hidden("clinicRoomNo")
+    @Html.Hidden("clinicDoctorId");
+    @Html.Hidden("loginId");
+    @Html.Hidden("sourceType");
+
+    <div class="modal fade"
+         id="switchClinic_modal"
+         tabindex="-1"
+         aria-labelledby="switchClinic_modalLabel"
+         aria-hidden="true"
+         data-showModal=@showModal>
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Switch Clinic</h5>
+                    <button type="button"
+                            class="close"
+                            data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-validation">
+                        <form class="form-valide"
+                              action="#"
+                              method="post"
+                              novalidate="novalidate">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="card card-15 m-0">
+                                        <div class="card-body">
+                                            <div class="form-row">
+                                                <div class="form-group col-md-2 switch_dept_checkbox_group ml-2" id="SwitchSourceType" data-source-type="@sourceType">
+                                                    <div><label>Source Type</label></div>
+                                                    <div class="form-check form-check-inline" @checkOPD>
+                                                        <label class="form-check-label">
+                                                            <input type="checkbox"
+                                                                   id="checkbox_opd"
+                                                                   value="OPD"
+                                                                   checked="checked"
+                                                                   onclick="this.checked=!this.checked;"
+                                                                   class="form-check-input"
+                                                                   />OPD
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline" @checkEMG>
+                                                        <label class="form-check-label">
+                                                            <input type="checkbox"
+                                                                   id="checkbox_er"
+                                                                   checked="checked"
+                                                                   value="EMG"
+                                                                   onclick="this.checked=!this.checked;"
+                                                                   class="form-check-input"
+                                                                   />EMG
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                @if (get_user_auth_cookie.Where(c => c.Type == "User_auth_page_Name「" + "NcdDataEntry" + "」").Count() > 0)
+                                                {
+                                                    <div class="form-group col-md-3">
+                                                        <label>Register Date</label>
+                                                        <input id="reg_datePicker" class="form-control " name="clinic-date" required="required" value="@defaultRegDate">
+                                                    </div>
+                                                }else
+                                                {
+                                                    <div class="form-group col-md-3">
+                                                        <label>Register Date</label>
+                                                        <input id="reg_datePicker" class="form-control " name="clinic-date" disabled readonly required="required" value="@defaultRegDate">
+                                                    </div>
+                                                }
+                                                
+
+                                                <div class="form-group col-md-4">
+                                                    <label>Doctor</label>
+                                                    <input type="text"
+                                                           class="form-control"
+                                                           readonly="true"
+                                                           name="clinic-doctor-code"
+                                                           data-clinic-doctor-code="@loginDTO.EMPCODE"
+                                                           value="@loginDTO.EMPNAME @loginDTO.EMPCODE" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" id="switch_dept_card">
+                                <div class="col-lg-12">
+                                    <div class="card card-15">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                @foreach (var clinic in Model)
+                                                {
+                                                    var defaultOk = (defalutClinic != null && (defalutClinic.DeptCode == clinic.SCHE_DPT)) ? "ok" : "";
+
+                                                    <div class="col-md-4 col-xl-4">
+                                                        @*<input name="clinic-dept-code" value="@clinic.ScheDptCode" hidden/>*@
+                                                        <div class="card card-15 card-hover clinic_dept_box  @defaultOk " data-source-type="@sourceType" data-dept-code="@clinic.SCHE_DPT" data-room-no="@clinic.SCHE_ROOM" data-doctor-code="@clinic.SCHE_DOCTOR_CODE" data-login-code="@clinic.SCHE_DOCTOR_CODE">
+                                                            <div class="card-body">
+                                                                <h4 class="text-center">@clinic.SCHE_DPT_NAME</h4>
+                                                                <p class="card-text"></p>
+                                                                <div class="inbox-divider"></div>
+                                                                <div class="row">
+                                                                    <div class="col-7">
+                                                                        <div class="clinic_dept_box_content1 text-left">
+                                                                            <span class="text-dark">Clinic Room :</span>
+                                                                        </div>
+                                                                        <div class="clinic_dept_box_content2 text-left">
+                                                                            <span class="text-dark">Doctor Name :</span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-5">
+                                                                        <div class="clinic_dept_box_content3 inner ">
+                                                                            @clinic.SCHE_ROOM
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ml-0 mt-2 text-center">
+                                                                    @clinic.SCHE_DOCTOR_NAME
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="col-md-4 col-xl-4 clinic_dept_box_templete" hidden>
+                                                <div class="card card-15 card-hover clinic_dept_box" data-source-type="" data-dept-code="" data-room-no="" data-doctor-code="" data-login-code="">
+                                                    <div class="card-body">
+                                                        <h4 class="text-center clinic_dept_title"></h4>
+                                                        <p class="card-text"></p>
+                                                        <div class="inbox-divider"></div>
+                                                        <div class="row">
+                                                            <div class="col-7">
+                                                                <div class="clinic_dept_box_content1 text-left">
+                                                                    <span class="text-dark">Clinic Room :</span>
+                                                                </div>
+                                                                <div class="clinic_dept_box_content2 text-left">
+                                                                    <span class="text-dark">Doctor Name :</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-5">
+                                                                <div class="clinic_dept_box_content3 inner clinic_dept_room ">
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="ml-0 mt-2 text-center clinic_doctor_name">
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary switch_confirm">
+                        Save changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+

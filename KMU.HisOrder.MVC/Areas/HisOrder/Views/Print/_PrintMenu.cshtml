@@ -1,0 +1,106 @@
+﻿@model KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.PrintClass
+@using KMU.HisOrder.MVC.Models
+
+<style>
+    .PrintCheckboxContainer {
+        color: black;
+        /* background: linear-gradient(90deg, #ff81d4d4, #ffadadd4); */
+        background: linear-gradient(90deg, #19f1cad4, #aeb0ffd4);
+        border-radius: 20px;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .NodeLabel {
+        cursor: pointer;
+        user-select: none;
+    }
+</style>
+
+<div id="PrintMenu" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content" style="width:450px; margin-top:80px;">
+            <div class="modal-header" style="padding:10px;">
+                <h5 class="modal-title" style="font-weight:bold;">Print Documents</h5>
+                <button type="button" class="close" data-dismiss="modal" style="font-size:30px;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding-top:0px;">
+                <div class="row" style="text-align:center; margin-top: 10px;">
+                    <div class="col-md-6">
+                        <button type="button" id="SelectAll" class="btn btn-info mr-3" style="width:70%;">SelectAll</button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" id="RemoveAll" class="btn btn-info mr-3" style="width:70%;">RemoveAll</button>
+                    </div>
+                </div>
+
+                <div id="PrintButtons">
+                    @foreach (var item in Model.ShowPrint)
+                    {
+                        if (item == "MedicalRecord")
+                        {
+                            <label class="NodeLabel" style="display:block;">
+                                <div class="PrintCheckboxContainer">
+                                    <input type="checkbox" name="PrintPage" value="@item" style="margin-left:5px; margin-right:5px;">
+                                    @item
+                                </div>
+                            </label>
+                        }
+                        else
+                        {
+                            <label class="NodeLabel" style="display:block;">
+                                <div class="PrintCheckboxContainer">
+                                    <input type="checkbox" name="PrintPage" value="@item" style="margin-left:5px; margin-right:5px;" checked>
+                                    @item
+                                </div>
+                            </label>
+                        }
+                    }
+                </div>
+                <button id="PrintBtn" type="button" class="btn btn-primary mr-3" style="width:150px; float:right;">Print</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+
+        //$('#PrintNodes').find("input[type=checkbox]").iCheck({
+        //    labelHover: true,
+        //    cursor: true,
+        //    checkboxClass: "icheckbox_flat-pink",
+        //    increaseArea: "15%",
+        //    handle:'background-color:white;',
+        //});
+
+        $('#SelectAll').click(function () {
+            $('.PrintCheckboxContainer').find('input[type=checkbox]').each(function () {
+                $(this).prop('checked', true);
+            });
+        });
+
+        $('#RemoveAll').click(function () {
+            $('.PrintCheckboxContainer').find('input[type=checkbox]').each(function () {
+                $(this).prop('checked', false);
+            });
+
+        });
+
+        var CheckedNodes = [];
+        $('#PrintBtn').click(function () {
+            $('.PrintCheckboxContainer input:checked').each(function () {
+                CheckedNodes.push($(this).val());
+            });
+
+            if (CheckedNodes.length > 0) {
+                window.open(Root + "Print/generateOrderPrint?inPages=" + CheckedNodes + "&inHospID=" + '@Model.RePrintInHospID' + "&RePrintOrderplanids=" + '@Model.RePrintOrderplanids');
+                CheckedNodes = [];
+            }
+
+            $('#PrintMenu').modal('hide');
+        });
+    })
+</script>

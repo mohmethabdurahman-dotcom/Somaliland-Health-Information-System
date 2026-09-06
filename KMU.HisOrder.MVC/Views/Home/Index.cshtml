@@ -1,0 +1,380 @@
+﻿@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/lib/c3js/js/d3.js"></script>
+<script src="~/lib/c3js/js/c3.js"></script>
+
+<link href="~/lib/c3js/css/c3.css" rel="stylesheet" />
+
+<style>
+    .TotalCount {
+        display: grid;
+        width: 15%;
+    }
+
+    .count_top {
+        font-size: 15px !important;
+    }
+
+    .count_bottom {
+        font-size: 15px !important;
+    }
+
+    .DeptDiv {
+        display: flex;
+        font-size: 15px;
+        width: 100%;
+        /*font-weight: bold;*/
+        flex-wrap: wrap;
+        color: #050505;
+        /*height: 88vh;*/
+        height: 70vh;
+        overflow-y: auto;
+    }
+
+    .opdDept {
+        border: 2px solid #e7e7e7;
+        margin: 3px;
+        width: 170px;
+        height: 140px;
+        line-height: 50px;
+        padding: 15px;
+    }
+
+    .c3-chart-arcs-title {
+        font-size: 10px;
+    }
+
+    .c3-target-Tablet text {
+        fill: black;
+    }
+
+    .c3-chart-arc text {
+        fill: black;
+    }
+
+    /*scrollbar css*/
+    ::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+        margin: 80px 0 5px 0;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        -webkit-border-radius: 4px;
+        border-radius: 4px;
+        background: rgb(219,219,219);
+    }
+    /*scrollbar css*/
+
+    .tile_stats_count {
+        min-height: 80px;
+    }
+
+    .cursordefault {
+        cursor: default;
+    }
+</style>
+<div class="">
+
+
+    @if (TempData["Error_Messages"] != null)
+    {
+        <h2 style="text-align:center;">
+            <span style="color:#FF0000;">
+                @TempData["Error_Messages"]
+            </span>
+        </h2>
+    }
+    <div class="row" style="display: inline-block;min-width: 65%;margin: 0px;">
+        <div class="tile_count cursordefault">
+            <div class="col-md-2 col-sm-4  tile_stats_count">
+                <span class="count_top"><i class="fa fa-user"></i> Total Patients</span>
+                <div id="TotalCount" class="text-center count green"></div>
+                <div class="count_bottom"><i id="ToOpd" title="OPD" class="blue "></i> <i id="ToER" title="ER" class="red"></i> </div>
+            </div>
+            <div class="col-md-2 col-sm-4  tile_stats_count">
+                <span class="count_top"><i class="fa fa-user"></i> Male</span>
+                <div id="MaleCount" class="text-center count green"></div>
+                <span class="count_bottom"><i id="MOpd" title="OPD" class="blue"></i> <i id="MER" title="ER" class="red"></i> </span>
+            </div>
+            <div class="col-md-2 col-sm-4  tile_stats_count">
+                <span class="count_top"><i class="fa fa-user"></i> Female</span>
+                <div id="FemaleCount" class="text-center count green"></div>
+                <span class="count_bottom"><i id="FeOpd" title="OPD" class="blue"></i> <i id="FeER" title="ER" class="red"></i> </span>
+            </div>
+            <div class="col-md-2 col-sm-4  tile_stats_count">
+                <span class="count_top"><i class="fa fa-user"></i> Finished</span>
+                <div id="CompCount" class="text-center count green"></div>
+                <span class="count_bottom"><i id="CompOpd" title="OPD" class="blue"></i> <i id="CompER" title="ER" class="red"></i> </span>
+            </div>
+
+            <div class="col-md-4 col-sm-4  tile_stats_count">
+                <span class="count_top"><i class="fa-solid fa-calendar"></i></i> Date</span>
+                <div style="display: flex;justify-content: center;align-items: baseline;">
+                    <input id="ChosenDate" name="ChosenDate" style="font-size: 15px;" class="form-control " value="">
+                    <button type="button" class="btn btn-primary float-right" onclick="reloaPageChart()" style="border: #2a3f54;font-size: 10px;margin-left:5px;background-color: #2a3f54;"><i class="fa-solid fa-rotate"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="text-align:center;margin: 0px;">
+        <div id="DeptDiv" class="DeptDiv col-md-8" style=""></div>
+
+        <div class="ChartDiv  col-md-4">
+            <div>
+                <div id="LineChart"> </div>
+                <div id="LineChartName">Last three months</div>
+            </div>
+
+            <div>
+                <div id="PieChart"></div>
+                <div id="PieChartName">Total registered patients</div>
+            </div>
+
+
+        </div>
+    </div>
+
+</div>
+
+@section scripts {
+    <script>
+        $('input[name="ChosenDate"]').daterangepicker({
+            singleDatePicker: true,
+            showDropdowns: true,
+            locale: {
+                format: 'DD/MM/YYYY'
+            }
+        });
+
+        let columns2 = @Json.Serialize(ViewData["YearData"]);
+        let cat2 = @Json.Serialize(ViewData["YearCat"]);
+        var chart2 = c3.generate({
+            bindto: "#LineChart",
+            size: {
+                height: 180,
+                width: 380
+            },
+            data: {
+                columns: [
+                    columns2
+                    //['sample', 30, 200, 100, 400, 150, 250, 30, 200, 100, 400, 150, 250]
+                ], type: 'spline'
+            }, legend: {
+                show: false
+            }, axis: {
+                x: {
+                    type: 'category',
+                    categories: cat2,
+                    label: {
+                        // text: 'Number of Visits per month',
+                        text: 'Month',
+                        position: 'outer-right'
+                    }
+                    //categories: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+                },
+                y:{
+                    label: {
+                        text: 'Registered patients',
+                        position: 'outer-top'
+                    },
+                    tick: {
+                        // 四捨五入
+                        // format: function (d) { return Math.round(d); }
+
+                        format: function (x) {
+                            return (x == Math.floor(x)) ? x : "";
+                        }
+                    }
+                }
+            }
+
+        });
+
+        reloaPageChart()
+
+        function reloaPageChart(){
+            let CDate = $("#ChosenDate").val().split("/");
+            $.ajax({
+                type: 'POST',
+                url: APPLICATION_ROOT + "Home/ChartDataCollation",
+                data: {
+                    ChosenDate: CDate[2] + "/" + CDate[1] + "/" + CDate[0]
+                },
+                async: false,
+                dataType: 'json',
+                success: function (_result) {
+                    $("#DeptDiv").empty();
+                    result = _result.pieChartList;
+
+                    let TotalOPD = 0, TotalER = 0, MaleOPD = 0,  FemaleOPD = 0, FemaleER = 0,MaleER = 0, CompletedOPD = 0, CompletedER = 0;
+                    if(_result.pList.length>0){
+                        for(var i = 0; i < _result.pList.length; i++){
+                            if (_result.pList[i].dpt_category == "EMG" ) {
+                                TotalER++;
+                                switch (_result.pList[i].sex) {
+                                    case "M":
+                                        MaleER++;
+                                    break;
+                                    case "F":
+                                        FemaleER++;
+                                    break
+                                }
+                                if( _result.pList[i].regStatus == "*"  || _result.pList[i].regStatus == "T" || _result.pList[i].regStatus == "O")
+                                    CompletedER++;
+                            }else{
+                                TotalOPD++;
+                                switch (_result.pList[i].sex) {
+                                    case "M":
+                                        MaleOPD++;
+                                    break;
+                                    case "F":
+                                        FemaleOPD++;
+                                    break
+                                }
+                                if (_result.pList[i].regStatus == "*" || _result.pList[i].regStatus == "T")
+                                    CompletedOPD++;
+                            }
+
+                        }
+                    }
+
+                    $('#ToOpd').text(TotalOPD);
+                    $('#ToER').text(TotalER);
+                    $('#MOpd').text(MaleOPD);
+                    $('#MER').text(MaleER);
+                    $('#FeOpd').text(FemaleOPD);
+                    $('#FeER').text(FemaleER);
+                    $('#CompOpd').text(CompletedOPD);
+                    $('#CompER').text(CompletedER);
+
+
+                    var TotalChart = []
+
+                    for (var i = 0; i < result.length; i++) {
+                        let max = parseInt(result[i].cloumns[0][1]) + parseInt(result[i].cloumns[1][1]);
+                        TotalChart.push([
+                            result[i].pieName == null ? result[i].pieId : result[i].pieName,
+                            max
+                        ]);
+                    //var DLabel = document.createElement('label');
+                        var OutDiv = document.createElement('div');
+                        OutDiv.id = 'Outer' + result[i].pieId;
+                        document.getElementById('DeptDiv').appendChild(OutDiv);
+
+
+                        var iDiv = document.createElement('div');
+                        iDiv.id = 'chart' + result[i].pieId;
+                        document.getElementById('Outer' + result[i].pieId).appendChild(iDiv);
+
+                        // clickable funcation weeye
+
+                        $currentID = result[i].pieId;
+
+                        var iDiv2 = document.createElement('a');
+                        iDiv2.id = 'Name' + result[i].pieId;
+                        iDiv2.href = 'Home/Details/' + result[i].pieId;
+
+                        document.getElementById('Outer' + result[i].pieId).appendChild(iDiv2);
+                        $('#Name' + result[i].pieId).text(result[i].pieName == null ? result[i].pieId : result[i].pieName)
+
+
+                        let bindto = "#chart" + result[i].pieId;
+                        let colors = [];
+                        if (result[i].dpt_category != "EMG" ) {
+                            colors = ['#1f77b4', '#ff7f0e'];
+                        }else{
+                            colors = ['#d81c1c', '#58ca7b'];
+                        }
+                        //let max = parseInt(result[i].cloumns[0][1]) + parseInt(result[i].cloumns[1][1]) == 0 ? 100 : parseInt(result[i].cloumns[0][1]) + parseInt(result[i].cloumns[1][1]);
+
+
+                        if( max != 0 ){
+                            var chart = c3.generate({
+                                bindto: bindto,
+                                size: {
+                                    height: 120,
+                                    width: 178
+                                },
+                                data: {
+                                    columns: [result[i].cloumns[0]],
+                                    type: 'gauge',
+                                }, color: {
+                                    pattern: colors
+                                },
+                                tooltip: {
+                                    format: {
+                                        value: function (value, ratio, id) {
+                                            return value;
+                                        }
+                                    }
+                                },
+                                gauge: {
+                                    max: max,
+                                    //label: {
+                                    //	format: function (value, ratio, id) {
+                                    //		return d3.format('')(ratio);
+                                    //	}
+                                    //},
+                                }, legend: {
+                                    show: true
+                                }
+
+                            });
+                        }else{
+
+                            $('#Outer' + result[i].pieId).addClass("opdDept");
+                            $('#chart' + result[i].pieId).text("No Patients");
+
+                        }
+                    }
+
+                    $('#TotalCount').text(_result.total);
+                    $('#MaleCount').text(_result.maleCount);
+                    $('#FemaleCount').text(_result.femaleCount);
+                    $('#CompCount').text(_result.completedCount);
+
+                    var chart3 = c3.generate({
+                        bindto: "#PieChart",
+                        size: {
+                            height: 225,
+                            width: 300
+                        },
+                        data: {
+                            columns: TotalChart,
+                            type: 'pie',
+                        },
+                        color: {
+                            pattern: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5', '#9fa756', '#56a75d', '#5685a7', '#8251ad', '#fca5b9', '#7d0909',
+                                '#7d6909', '#2a7d09', '#097d53', '#096b7d', '#09267d', '#53097d', '#873f86', '#873f57', '#7fccb8']
+                        }, legend: {
+                            show: false
+                        },
+                        tooltip: {
+                            format: {
+                                value: function (value, ratio, id) {
+                                    return value;
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    if (xhr.status == "401") {
+                        alert('Unauthorized ' + thrownError + '！');
+                    }
+                    location.reload();
+                },
+                complete: function (XMLHttpRequest, textStatus) { }
+            });
+        }
+
+    </script>
+}

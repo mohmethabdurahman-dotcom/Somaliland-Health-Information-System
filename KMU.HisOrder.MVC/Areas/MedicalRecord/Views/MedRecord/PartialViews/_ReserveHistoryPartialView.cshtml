@@ -1,0 +1,94 @@
+﻿@model KMU.HisOrder.MVC.Areas.Reservation.ViewModels.ReserveHistoryList
+@using KMU.HisOrder.MVC.Models;
+@using KMU.HisOrder.MVC.Areas.Reservation.ViewModels;
+@using KMU.HisOrder.MVC.Extesion;
+@{
+}
+
+<table class="table" id="hylist_tb" style="width:100%">
+    @if (Model.ReturnT != null && Model.ReturnT.isSuccess)
+    {
+        <thead>
+            <tr>
+                <th class="font-weight-bold text-primary" style="width:50px"></th>
+                <th class="font-weight-bold text-primary" style="width:80px">Print</th>
+                <th class="font-weight-bold text-primary" style="width:150px">Medical Day</th>
+                <th class="font-weight-bold text-primary" style="width:400px">Department/Doctor</th>
+                <th class="font-weight-bold text-primary" style="width:100px">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.rhList != null && Model.rhList.Any())
+            {
+                foreach (var rh in Model.rhList)
+                {
+                    <tr id="" style="cursor:pointer">
+                        <td class="font-weight-bold text-dark">
+                            @if (rh.STATUSCODE == "C" || rh.STATUSCODE == "*")
+                            {
+                                @*<i class="fa-solid fa-notes-medical"></i>*@
+                            }
+                            else
+                            {
+                                <i class="fa-solid fa-rectangle-xmark fa-2xl" onclick="fn_CancelReserve('@rh.InHospID','@rh.PatientID')"></i>
+                                @*<i class="fa-solid fa-notes-medical"></i>*@
+                            }
+
+                        </td>
+                        <td>
+                            @if (rh.STATUSCODE == "C" || rh.STATUSCODE == "*")
+                            {
+                                @*<i class="fa-solid fa-notes-medical"></i>*@
+                            }
+                            else
+                            {
+                                <i class="fa-solid fa-print fa-2xl" onclick="fn_PrintReserveSheet('@rh.InHospID','@rh.PatientID')"></i>
+                                @*<i class="fa-solid fa-notes-medical"></i>*@
+                            }                            
+                        </td>
+                        <td class="font-weight-bold text-info text-center">@rh.REG_DATE.Value.ToShortDateString()</td>
+                        <td class="font-weight-bold text-info">@rh.REG_DEPT_NAME<br />@rh.DOCTOR_NAME</td>
+
+                        @if (rh.STATUSCODE == "*")
+                        {
+                            <td class="font-weight-bold text-success">@rh.STATUSDESC</td>
+                        }
+                        else if (rh.STATUSCODE == "C")
+                        {
+                            <td class="font-weight-bold text-danger">@rh.STATUSDESC</td>
+                        }
+                        else
+                        {
+                            <td class="font-weight-bold text-info">@rh.STATUSDESC</td>
+                        }
+
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="font-weight-bold text-danger" colspan="5">Not Reservation Has Found!!</td>
+                </tr>
+            }
+
+        </tbody>
+    }
+    else
+    {
+        <tbody>
+            <tr>
+                <td class="text-center font-weight-bold text-danger" style="width:100%">Empty Param! </td>
+            </tr>
+        </tbody>
+    }
+</table>
+<script>
+    $(document).ready(function () {
+        $("#hylist_tb").DataTable({
+            scrollX: true,
+            order: [[2, 'desc']],
+        });
+        $(".dataTables_info").css("width", "100%");
+    });
+</script>

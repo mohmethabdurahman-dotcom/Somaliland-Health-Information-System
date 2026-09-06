@@ -1,0 +1,44 @@
+@model KMU.HisOrder.MVC.Areas.BloodBank.Models.BloodRequestFormViewModel
+@{
+    var bloodTypes = ViewBag.BloodTypes as string[] ?? KMU.HisOrder.MVC.Areas.BloodBank.Models.BloodBankLookups.BloodTypes;
+    var components = ViewBag.Components as string[] ?? KMU.HisOrder.MVC.Areas.BloodBank.Models.BloodBankLookups.Components;
+    var urgencyLevels = ViewBag.UrgencyLevels as string[] ?? KMU.HisOrder.MVC.Areas.BloodBank.Models.BloodBankLookups.UrgencyLevelOptions;
+    var showComponent = ViewBag.ShowComponentField != false;
+    var showUrgency = ViewBag.ShowUrgencyField != false;
+}
+<div class="row">
+    <div class="col-md-3">
+        <label asp-for="BloodType">Blood type</label>
+        <select asp-for="BloodType" class="form-control" required>
+            @foreach (var bt in bloodTypes) {
+                <option value="@bt">@bt</option>
+            }
+        </select>
+    </div>
+    @if (showComponent) {
+    <div class="col-md-3">
+        <label asp-for="ComponentType">Component</label>
+        <select asp-for="ComponentType" class="form-control" required>
+            @foreach (var c in components) {
+                <option value="@c">@c</option>
+            }
+        </select>
+    </div>
+    }
+    @if (showUrgency) {
+    <div class="col-md-3">
+        <label asp-for="UrgencyLevel">Urgency</label>
+        <select asp-for="UrgencyLevel" class="form-control" required>
+            @foreach (var u in urgencyLevels) {
+                <option value="@u">@u</option>
+            }
+        </select>
+    </div>
+    }
+    @if (ViewBag.ShowUnitsField == true) {
+    <div class="col-md-3">
+        <label asp-for="UnitsRequested">Units requested</label>
+        <input asp-for="UnitsRequested" type="number" min="1" max="20" class="form-control" required />
+    </div>
+    }
+</div>

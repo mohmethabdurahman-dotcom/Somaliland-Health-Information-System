@@ -1,0 +1,561 @@
+﻿
+<!-- Font-Awesome -->
+<link href="~/lib/font-awesome/css/all.min.css"
+      rel="stylesheet" />
+
+<!-- iCheck -->
+<link href="~/lib/iCheck/skins/all.min.css"
+      rel="stylesheet" />
+
+<!-- Tagify -->
+<link href="~/css/tagify.css" rel="stylesheet" />
+
+<!--DragSort-->
+<link href="~/lib/dragsort/dragsort.css" rel="stylesheet" />
+
+<!-- Style -->
+<link href="~/css/style.css" rel="stylesheet" />
+
+<!--  HisOrder InputHelper  -->
+<link href="~/css/hisorderInputHelper.css" rel="stylesheet">
+
+<style>
+    .pt-br-color {
+        border: Solid rgb(234, 233, 233);
+        border-left-width: 0px;
+        border-bottom-width: 0px;
+        border-top-width: 0px;
+        border-right-width: 1px;
+        padding-right: 15px;
+        /* padding-left: 15px; */
+    }
+
+    .pt-bl-color {
+        /* border: Solid rgb(234, 233, 233);
+                                border-left-width: 0px;
+                                border-bottom-width: 0px;
+                                border-top-width: 0px;
+                                border-left-width: 1px;
+                                padding-left: 10px; */
+    }
+
+    .radius-30-icon {
+        display: block;
+        font-size: 1rem;
+        background: #eee;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        overflow: hidden;
+        border-radius: 20%;
+        color: #999;
+        margin: 0;
+        margin: 0 10px 0 0;
+        text-align: center;
+    }
+
+    .d-flex-item-icon {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+        justify-content: flex-start;
+    }
+
+    .bd-callout {
+        padding: 0.5rem;
+        margin-top: 0rem;
+        margin-bottom: 10px;
+        border: 1.5px solid #e9ecef;
+        border-top-width: 0.2rem;
+        border-radius: 0.45rem;
+    }
+
+    .bd-callout-info {
+        border-top-color: #593bdb;
+    }
+
+    .bd-callout-primary {
+        border-top-color: #0E5CA7;
+    }
+
+    .bd-callout-success {
+        border-top-color: #1ABB9C;
+    }
+
+
+    .bd-callout-warning {
+        border-top-color: #EC8F3F;
+    }
+
+    .bd-callout-danger {
+        border-top-color: #dc3545;
+    }
+
+    .bd-callout-pink {
+        border-top-color: #e6a1f2;
+    }
+
+    .bd-callout-dark {
+        border-top-color: #545454;
+    }
+
+    .bd-callout-gray {
+        border-top-color: gray;
+    }
+
+    .bd-callout-purple {
+        border-top-color: #593bdb;
+    }
+
+    .bd-callout-master {
+        border-top-color: #2A3F54;
+    }
+
+
+    /*bagdg*/
+    .badge-master {
+        background: #2A3F54;
+        color: white;
+    }
+
+    .badge-gray {
+        background: gray;
+        color: white;
+    }
+
+    .badge-outline-gray {
+        border: 1px solid #593bdb;
+        color: #593bdb;
+    }
+
+    .badge-outline-primary {
+        border: 1px solid #593bdb;
+        color: #593bdb;
+    }
+
+    .badge-outline-warning {
+        border: 1px solid #f0ad4e;
+        color: #f0ad4e;
+    }
+
+
+    .badge-outline-success {
+        border: 1px solid #28a745;
+        color: #28a745;
+    }
+
+    .badge_dot {
+        position: absolute;
+        top: 0;
+        transform: translate(50%,-50%);
+        left: 60% !important;
+        /* padding: 0.35em 0.55em;
+                          font-size: 0.75em;
+                          font-weight: 700; */
+    }
+
+
+    .page-titles-fixed {
+        background-color: ghostwhite;
+        overflow: hidden;
+        /* position: fixed;*/
+        top: 40px;
+        width: 100%;
+        padding-left: 15px;
+        padding-right: 5px;
+        /*z-index: 9999;*/
+        border-radius: 5px;
+        box-shadow: 0 5px 20px rgb(0 0 0 / 10%);
+    }
+
+    .page-content {
+        margin-top: 2.5px;
+    }
+
+    .tagify {
+        padding-left: 5px;
+        width: 100%;
+        height: 65px;
+        max-height: 100%;
+        border-radius: 3px;
+        overflow: auto;
+        flex-wrap: unset;
+        align-items: center;
+    }
+
+    /*凍結表頭/行頭*/
+    /*sticky會跟著上一層的overfloat跑！！因此要定義一個外框*/
+    .table-sticky-wrapper {
+        width: 100%;
+        height: 60vh; /*外框的高度*/
+        overflow: auto;
+    }
+
+    table.table-sticky {
+        table-layout: fixed;
+        min-width: 100%;
+        width: auto;
+        overflow: unset !important
+    }
+
+    .table-sticky th {
+        position: sticky;
+        word-break: keep-all;
+        background: #fff
+    }
+
+    .table-sticky td {
+        /*  border-right: 1px solid #ddd;
+            text-align: right*/
+    }
+
+    .table-sticky thead tr th:first-of-type {
+        left: 0; /*sticky要用 上下左右定位*/
+        z-index: 2;
+        border-right: 0px hidden #0E5CA7;
+        /*  box-shadow: -2px -2px 0 inset #ddd*/
+    }
+
+    .table-sticky thead tr th {
+        top: 0; /*sticky要用 上下左右定位*/
+        background: #0E5CA7;
+        vertical-align: top;
+        border-bottom: 0;
+        border-right: 0px hidden #0E5CA7;
+        box-shadow: 0 -1px 0 inset #ddd;
+        z-index: 999;
+        color: white;
+    }
+
+
+    .table-sticky thead tr.th-green th:first-of-type {
+        left: 0; /*sticky要用 上下左右定位*/
+        z-index: 2;
+        border-right: 0px hidden #DBFEF7;
+        /*  box-shadow: -2px -2px 0 inset #ddd*/
+    }
+
+    .table-sticky thead tr.th-green th {
+        top: 0; /*sticky要用 上下左右定位*/
+        background: #1ABB9C;
+        vertical-align: top;
+        border-bottom: 0;
+        border-right: 0px hidden #DBFEF7;
+        box-shadow: 0 -1px 0 inset #ddd;
+        z-index: 999;
+        color: white;
+    }
+
+    /*sticky要用 上下左右定位*/
+    .table-sticky tbody th {
+        left: 0; /*定位用*/
+        z-index: 20; /*遮蓋表格內容的圖層層級設定*/
+        box-shadow: -2px 0 0 inset #ddd; /*內框線*/
+    }
+
+    .table-sticky .card-header {
+        background: #f7f7f7
+    }
+
+    .table-sticky td a {
+        float: left
+    }
+    /*為了按鈕設定的，刪除不影響*/
+    .table-sticky th a {
+        display: inline-block
+    }
+    /*為了按鈕設定的，刪除不影響*/
+
+    /*表格做記號：群組底色*/
+    table [data-group="0"], table tr[data-group="0"] > th {
+        background: #ffffff !important;
+    }
+
+    table [data-group="1"], table tr[data-group="1"] > th {
+        background: #F5F6F7 !important;
+    }
+
+    @@media screen and (max-width: 767px) {
+        .table-sticky tbody th,
+        .table-sticky thead tr th:first-of-type {
+            width: unset !important; /*th有時會自帶寬度設定，用以清除*/
+            word-break: break-word;
+            min-width: 100px;
+            max-width: 150px
+        }
+    }
+    /*讓左邊第一直欄的寬度 手機尺寸時不要過寬遮蔽資訊*/
+
+    /*   .note-editor.note-frame {
+            background-color: white;
+            height: 90%;
+        }
+    */
+
+    /*    .note-editable.card-block {
+            background-color: white;
+            height: 98%;
+        }*/
+
+
+    body {
+        /* font-family: "Roboto", sans-serif; */
+        /*   font-family: "CenturyGothic", "微軟正黑體";*/
+        /*    background: rgba(88, 115, 254, 0.04);*/
+        /*    color: #868e96;*/
+        font-family: "Roboto", sans-serif;
+        font-size: 17px;
+        overflow-x: hidden;
+        overflow-y: hidden;
+    }
+</style>
+
+
+
+<p>測試用畫面!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</p>
+
+<div>
+    <div class=" row page-content ">
+        @*<div class=" col-lg-1 col-xl-1"></div>*@
+
+        <!--右側工具欄-->
+        <div class="side_tool_wrap newFiexdSide" style="display: block;">
+            <div class="side_tool">
+
+
+
+                <ul>
+                    <li class=" nav-item">
+                        <button type="button" class="history-btn btn  btn-primary  mr-3" data-toggle="modal" data-target="#HisStroyRecordModal" style="width:60px; height:60px">
+                            <i class="fa-solid fa-book-medical" style="font-size:25px;"></i>
+                        </button>
+                        <button type="button" class="call-btn btn  btn-pink  mr-3" style="width:60px">
+                            <i class="fa-solid fa-volume-high"></i> Call
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+
+
+
+
+        <!--歷史病歷 HisStory Record-->
+        <div class="modal fade" id="HisStroyRecordModal" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" style="max-width:90%; height:98%; padding:0;">
+                <div class="modal-content" style="height:98% ; border-radius:5px; ">
+                    <div class="modal-header" style="padding:5px 10px;">
+                        <h5 class="modal-title" style="font-weight:bold;">History Record</h5>
+                        <button type="button" class="close" data-dismiss="modal" style="font-size: 30px; padding-right: 20px; padding-top: 20px; ">&times;</button>
+                    </div>
+                    <div class="modal-body pt-0" style="">
+                        <div class="col-xl-12">
+                            @*@{
+                                    Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_ClinicInfoPartialView.cshtml", Model);
+                                }*@
+                        </div>
+                        <div class="col-xl-12">
+                            <div class="form-row" style="height:85px;">
+
+                                <div class="form-group" style="background-color: whitesmoke; border-radius: 8px; padding: 5px 10px 5px 10px; margin-bottom: 20px;">
+                                    <div><label class="mb-0">Source Type</label></div>
+
+                                    <div class="input-group input-daterange">
+                                        <div class="form-check form-check-inline">
+                                            <label class="form-check-label ">
+                                                <input type="checkbox" id="checkbox_opd" value="OPD" checked="checked" class="form-check-input"><span class="ml-2 align-text-top">OPD</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <label class="form-check-label">
+                                                <input type="checkbox" id="checkbox_er" checked="checked" value="ER" class="form-check-input"><span class=" ml-2 align-text-top">ER</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="form-group ml-2" style="background-color: whitesmoke; border-radius: 8px; padding: 5px 10px 5px 10px; margin-bottom: 20px;">
+                                    <div>
+                                        <label class="mb-0">Date Range</label>
+                                    </div>
+                                    <div class="input-group input-daterange">
+                                        <input type="date" class="form-control form-control-sm" value="2012-04-05">
+                                        <div class="input-group-addon input-group-sm" style="vertical-align:middle">~</div>
+                                        <input type="date" class="form-control form-control-sm" value="2012-04-19">
+                                    </div>
+
+                                </div>
+
+                                <div class="form-group ml-2" style="background-color: whitesmoke; border-radius: 8px; padding: 5px 10px 5px 10px; margin-bottom: 20px;">
+                                    <div><label class="mb-0">Display Order Type</label></div>
+
+                                    <div class="input-group input-daterange">
+                                        <div class="form-check form-check-inline">
+                                            <label class="form-check-label ">
+                                                <input type="checkbox" id="checkbox_opd" value="OPD" checked="checked" class="form-check-input"><span class="ml-2 align-text-top">Clinic Remarks & Managment</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <label class="form-check-label">
+                                                <input type="checkbox" id="checkbox_er" checked="checked" value="ER" class="form-check-input"><span class=" ml-2 align-text-top">Diagnosis</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <label class="form-check-label">
+                                                <input type="checkbox" id="checkbox_er" checked="checked" value="ER" class="form-check-input"><span class=" ml-2 align-text-top">Medicine</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <label class="form-check-label">
+                                                <input type="checkbox" id="checkbox_er" checked="checked" value="ER" class="form-check-input"><span class=" ml-2 align-text-top">Other</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-12 d-flex ">
+                            <div class="col-xl-3 p-0">
+                                <div class="nav flex-column nav-pills " id="v-pills-tab" role="tablist" aria-orientation="vertical" style="overflow: auto; height: calc( 100vh - 280px ); display: grid; align-content:start">
+
+                                    <button class="nav-link active" id="v-pills-home-tab" data-toggle="pill" data-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">2022/12/26 General Medical</button>
+                                    <button class="nav-link" id="v-pills-profile-tab" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2022/12/27 General Medical</button>
+                                    <button class="nav-link" id="v-pills-messages-tab" data-toggle="pill" data-target="#v-pills-messages" type="button" role="tab" aria-controls="v-pills-messages" aria-selected="false">2022/12/28 General Medical</button>
+                                    <button class="nav-link" id="v-pills-settings-tab" data-toggle="pill" data-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings" aria-selected="false">2022/12/26 General Medical</button>
+                                    <button class="nav-link" id="v-pills-home-tab" data-toggle="pill" data-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">2022/12/30 General Medical</button>
+                                    <button class="nav-link" id="v-pills-profile-tab" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2023/01/13 General Medical</button>
+                                    <button class="nav-link" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2023/01/13 General Medical</button>
+                                    <button class="nav-link" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">2023/01/13 Emgergecny</button>
+                                </div>
+                            </div>
+                            <div class="col-xl-9 p-0 pl-3">
+                                <div class="tab-content" id="v-pills-tabContent" style="overflow: auto; height: calc( 100vh - 280px );">
+                                    <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                                        @*@{
+            Html.RenderPartial("~/Areas/HisOrder/Views/HisOrder/PartialViews/_HistoryRecordPartialView.cshtml");
+        }*@
+
+                                        <div>
+
+                                            <div class="card" style="background-color: #eee ">
+                                                <div class="card-title  ">
+                                                    <h6>Clinic Remarks</h6>
+                                                </div>
+
+                                                <div class="card-body">
+                                                    select *
+                                                    from PSN.PSNDOC a
+                                                    where emp_code = '1070456'
+                                                    and a.doc_word in ( select CODENO
+                                                    from mcore.hiscoderef
+                                                    where codetype = 'CMED_DOC_PSN')
+                                                    and sysdate between a.sdate and nvl(a.edate,sysdate+1)
+                                                    有資料 → 專科 → A01
+                                                    無資料 → 兼任 → A02
+                                                </div>
+
+                                                <span class="section mt-2 mb-2" style="border-bottom: 1px solid #D3D3D3 "></span>
+
+                                                <div class="card-title  ">
+                                                    <h6>Clinic Remarks</h6>
+                                                </div>
+
+                                                <div class="card-body">
+                                                    select *
+                                                    from PSN.PSNDOC a
+                                                    where emp_code = '1070456'
+                                                    and a.doc_word in ( select CODENO
+                                                    from mcore.hiscoderef
+                                                    where codetype = 'CMED_DOC_PSN')
+                                                    and sysdate between a.sdate and nvl(a.edate,sysdate+1)
+                                                    有資料 → 專科 → A01
+                                                    無資料 → 兼任 → A02ˇ43434343
+                                                </div>
+
+                                                <span class="section mt-2 mb-2" style="border-bottom: 1px solid #D3D3D3 "></span>
+
+                                                <div class="card-title  ">
+                                                    <h6>Clinic Remarks</h6>
+                                                </div>
+
+                                                <div class="card-body">
+                                                    select *
+                                                    from PSN.PSNDOC a
+                                                    where emp_code = '1070456'
+                                                    and a.doc_word in ( select CODENO
+                                                    from mcore.hiscoderef
+                                                    where codetype = 'CMED_DOC_PSN')
+                                                    and sysdate between a.sdate and nvl(a.edate,sysdate+1)
+                                                    有資料 → 專科 → A01
+                                                    無資料 → 兼任 → A02
+                                                </div>
+
+                                                <span class="section mt-2 mb-2" style="border-bottom: 1px solid #D3D3D3 "></span>
+
+                                                <div class="card-title  ">
+                                                    <h6>Clinic Remarks</h6>
+                                                </div>
+
+                                                <div class="card-body">
+                                                    select *
+                                                    from PSN.PSNDOC a
+                                                    where emp_code = '1070456'
+                                                    and a.doc_word in ( select CODENO
+                                                    from mcore.hiscoderef
+                                                    where codetype = 'CMED_DOC_PSN')
+                                                    and sysdate between a.sdate and nvl(a.edate,sysdate+1)
+                                                    有資料 → 專科 → A01
+                                                    無資料 → 兼任 → A023333333
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">...</div>
+                                    <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">...</div>
+                                    <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+@section scripts
+    {
+
+    <!-- Tagify -->
+    <script src="~/lib/tagify/dist/jQuery.tagify.min.js"></script>
+    <!--DragSort-->
+    <script src="~/lib/dragsort/dragsort.js"></script>
+    <!-- Ckeditor -->
+    @*<script src="~/lib/ckeditor/ckeditor5-build-inline/build/ckeditor.js"></script>*@
+    <!-- iCheck -->
+    <script src="~/lib/iCheck/icheck.js"></script>
+    <!-- CKeditor 4 -->
+    <script src="~/lib/ckeditor4/ckeditor.js"></script>
+    <!-- HisOrder : clinicOrder -->
+    <script src="~/js/clinicOrder.js"></script>
+    <!-- HisOrder : soap -->
+    <script src="~/js/soap.js"></script>
+    <!-- HisOrder : medOrder -->
+    <script src="~/js/medOrder.js"></script>
+    <!-- HisOrder : nonMedOrder -->
+    <script src="~/js/nonMedOrder.js"></script>
+    <!-- HisOrder : Diagnosis -->
+    <script src="~/js/hisorderDiagnosisOrder.js"></script>
+    <!-- HisOrder InputHelper -->
+    <script src="~/js/hisorderInputHelper.js"></script>
+
+    <script type="text/javascript">
+
+    </script>
+}

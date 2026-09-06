@@ -1,0 +1,89 @@
+﻿@model IEnumerable<KMU.HisOrder.MVC.Models.KmuNonMedicine>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    ViewData["Title"] = "NonMedicines";
+}
+
+<link href="~/css/style.css" rel="stylesheet" />
+
+<h4>&nbsp;&nbsp;&nbsp;NonMedicines</h4>
+@*<table width="100%">
+    <tr>
+        <td>
+            <div class="col-lg-0 border-right">
+                <label class="form-control col-lg-1 border-0 font-weight-bold text-center ">Name</label>
+                <input type="text" id="ItemName" name="ItemName" class="form-control col-lg-2 rounded py-0 text-left" />
+            </div>
+            <div class="col-lg-0 border-right">
+                &nbsp;<button type="button" id="btn_Search" name="btn_Search" class="btn btn-primary" onclick="fn_s()">Search</button>
+            </div>
+        </td>*@
+
+<div class="row" style="margin:0px;">
+    <div class="col-md-9">
+        <div style=" display:inline-block; padding-right:35px;">
+            <label style="font-weight:bold; display:inline-block;">Name</label>
+            <input type="text" id="ItemName" name="ItemName" class="form-control rounded" style="margin-left:10px; width:250px; display:inline-block;" />
+            <button type="button" id="NonMedSearchBtn" name="btn_Search" class="btn btn-primary" style="margin-left:10px; display:inline-block;" onclick="fn_NonMedSearch()">Search</button>
+        </div>
+    </div>
+    <div class="col-md-3" style="text-align:right;">
+        <a asp-action="Create" class="btn btn-info">Create New</a>
+    </div>
+</div>
+
+
+<div id="NonMedDetailContain" style="0px 10px">
+    @Html.Partial("Search", Model)
+</div>
+
+<span id="loading" style="display:none;"><h4>loading...</h4></span>
+
+
+@section scripts{
+    <script>
+        function fn_NonMedSearch() {
+            $('#NonMedDetailContain').empty().html($('#loading').html());
+
+            let postData = {
+                ItemName: $('#ItemName').val()
+            };
+
+            $.post('@Url.Action("Search", "KmuNonMedicines")', postData, function (html) {
+                $('#NonMedDetailContain').html(html);
+
+                $('#NonMedSearchTable').DataTable({
+                    "searching": false,
+                    "ordering": false,
+                    "lengthChange": false,
+                });
+            });
+        }
+
+        function fn_Status(inItemId) {
+            var checked = $('input[name="' + inItemId + '"]').is(':checked')
+
+            let postData = {
+                inItemId: inItemId
+            };
+
+            $.post('@Url.Action("UpdateStatus", "KmuNonMedicines")', postData, null);
+        }
+
+        $(document).ready(function () {
+            $('#NonMedSearchTable').DataTable({
+                "searching": false,
+                "ordering": false,
+                "lengthChange": false,
+            });
+
+            $("#ItemName").keypress(function (e) {
+                var key = window.event ? e.keyCode : e.which;
+                if (key == 13) { // Enter
+                    fn_NonMedSearch();
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,110 @@
+﻿@using Microsoft.EntityFrameworkCore
+@inject KMU.HisOrder.MVC.Models.KMUContext _context
+@model List<KMU.HisOrder.MVC.Models.KmuDepartment>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Index";
+
+    var registration = _context.Registrations.ToList();
+    var startDate = DateOnly.Parse(TempData["startDate"].ToString());
+    var endDate = DateOnly.Parse(TempData["endDate"].ToString());
+
+}
+
+<div class="mx-5">
+    <div class="row">
+        <div class="col-sm-6 mb-3 mb-sm-0">
+            <div data-coreui-locale="en-US"
+                 data-coreui-toggle="date-range-picker"
+                 data-coreui-selection-type="month">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div data-coreui-start-date="2022-08"
+                 data-coreui-end-date="2023-05"
+                 data-coreui-locale="en-US"
+                 data-coreui-toggle="date-range-picker"
+                 data-coreui-selection-type="month">
+            </div>
+        </div>
+    </div>
+    <table class="table table-responsive">
+        <tr>
+
+            <form asp-area="Maintenance" asp-action="Index" asp-controller="Report" method="post">
+            <td>
+                Start Date
+                <input type="date" class="form-control input-sm" name="startDate" id="startDate" value="@TempData["startDate"]" style="width:10rem;" />
+
+            </td>
+            <td>
+                End Date
+                <div class="d-flex">
+                    <input class="form-control input-sm" type="date" name="endDate" id="endDate" value="@TempData["endDate"]" style="width:10rem;" />
+                    <input type="submit" class="btn btn-primary ml-2" id="btnsearch" value="Search" />
+                </div>
+            </td>
+            </form>
+            <form asp-area="Maintenance" asp-action="ExporttoExcel" asp-controller="Report" method="post">
+            <td>
+                <div class="mt-4">
+                    <input type="hidden" name="HtmlTable" />
+                    <input type="submit" id="btnsubmit" value="Export" class="btn btn-warning text-dark" />
+                </div>
+            </td>
+            </form>
+
+        </tr>
+    </table>
+
+    <div id="idEmployee">
+        <div hidden>
+            <h5>Date Range: @startDate.ToString("yyyy-MM-dd") to @endDate.ToString("yyyy-MM-dd")</h5>
+        </div>
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Total reservations</th>
+                    <th>Total finish</th>
+                    <th> Finish rate </th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var registrationsInRange = registration
+                    .Where(r => r.RegDepartment == item.DptCode && r.RegDate >= startDate && r.RegDate <= endDate)
+                    .ToList();
+
+                    var totalCount = registrationsInRange.Count();
+                    var totalCountC = registrationsInRange.Count();
+                    var filteredCount = registrationsInRange.Count(r => r.RegStatus == "*" || r.RegStatus == "T" || r.RegStatus == "O");
+
+                    double percentage = totalCount == 0 ? 0 : (double)filteredCount / totalCount * 100;
+                    var roundedPercentage = Math.Round(percentage, 2);
+
+                    if (registrationsInRange.Any(r => r.RegStatus == "*" || r.RegStatus == "T" || r.RegStatus == "O"))
+                    {
+                        <tr>
+                            <td>@item.DptName</td>
+                            <td>@totalCount</td>
+                            <td>@filteredCount</td>
+                            <td>@roundedPercentage%</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+<script src="~/lib/jquery1.min.js"></script>
+<script>
+    $("#btnsubmit").click(function () {
+        $("input[name='HtmlTable']").val($("#idEmployee").html());
+    });
+</script>

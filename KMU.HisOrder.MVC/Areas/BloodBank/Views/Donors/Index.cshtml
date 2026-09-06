@@ -1,0 +1,120 @@
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@using KMU.HisOrder.MVC.Models.BloodBank
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Blood Bank → Donor Registry";
+    var donors = ViewBag.Donors as List<DonorListItemViewModel> ?? new();
+    var totalDonors = donors.Count;
+    var passedCount = donors.Count(d => d.Status == DonorStatuses.Passed);
+    var pipelineCount = donors.Count(d => d.Status == DonorStatuses.Registered || d.Status == DonorStatuses.Screening);
+    var failedCount = donors.Count(d => d.Status == DonorStatuses.Failed || d.Status == DonorStatuses.Deferred);
+    var repeatCount = donors.Count(d => d.LifetimeVisits > 1);
+}
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankStyles.cshtml" />
+<div class="bb-his-shell bb-donor-registry-page">
+    <div class="bb-donor-registry-hero">
+        <div class="bb-donor-registry-hero__row">
+            <div>
+                <h6 class="direction mb-0"><i class="fa-solid fa-users"></i> @ViewData["Title"]</h6>
+                <span class="bb-donor-registry-hero__meta">Registered donors — search, register, and open lifetime history</span>
+            </div>
+            <div class="bb-donor-registry-hero__actions">
+                <a asp-action="Find" class="bb-btn bb-btn-hero bb-btn-sm"><i class="fa-solid fa-user-magnifying-glass"></i> Find Donor</a>
+                <a asp-action="Create" class="bb-btn bb-btn-hero bb-btn-hero--solid bb-btn-sm"><i class="fa-solid fa-user-plus"></i> Register Donor</a>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null) { <div data-bb-toast data-bb-toast-type="success" class="bb-sr-only">@TempData["Success"]</div> }
+
+    <div class="bb-kpi-row mx-2">
+        <div class="bb-kpi-card bb-kpi-card--crimson">
+            <i class="fa-solid fa-users bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@totalDonors</p>
+            <p class="bb-kpi-card__label">Total donors</p>
+            <span class="bb-kpi-card__link">Registry →</span>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--emerald">
+            <i class="fa-solid fa-circle-check bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@passedCount</p>
+            <p class="bb-kpi-card__label">Passed screening</p>
+            <span class="bb-kpi-card__link">Eligible →</span>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--sky">
+            <i class="fa-solid fa-hourglass-half bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@pipelineCount</p>
+            <p class="bb-kpi-card__label">In pipeline</p>
+            <span class="bb-kpi-card__link">Active →</span>
+        </div>
+        <div class="bb-kpi-card bb-kpi-card--violet">
+            <i class="fa-solid fa-repeat bb-kpi-card__icon"></i>
+            <p class="bb-kpi-card__value">@repeatCount</p>
+            <p class="bb-kpi-card__label">Repeat visitors</p>
+            <span class="bb-kpi-card__link">Return →</span>
+        </div>
+    </div>
+
+    <h6 class="bb-section-direction mx-2"><i class="fa-solid fa-table"></i> Donor list</h6>
+    <div class="bb-table-wrap bb-donor-registry-table mx-2">
+        <table class="bb-table bb-table-compact">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Blood</th>
+                    <th>Visits</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var d in donors)
+            {
+                var statusBadge = d.Status == DonorStatuses.Passed ? "bb-donor-status--passed"
+                    : d.Status == DonorStatuses.Failed ? "bb-donor-status--failed"
+                    : d.Status == DonorStatuses.Deferred ? "bb-donor-status--deferred"
+                    : d.Status == DonorStatuses.Screening ? "bb-donor-status--screening"
+                    : "bb-donor-status--registered";
+                var rowClass = d.Status == DonorStatuses.Passed ? "bb-donor-row--passed"
+                    : d.Status == DonorStatuses.Failed || d.Status == DonorStatuses.Deferred ? "bb-donor-row--failed"
+                    : d.Status == DonorStatuses.Screening ? "bb-donor-row--screening"
+                    : "";
+                var typeClass = d.DonationType == DonationTypes.Directed ? "bb-donor-type--directed" : "bb-donor-type--volunteer";
+                <tr class="@rowClass">
+                    <td>
+                        <strong>@d.FullName</strong>
+                        <div class="bb-table-sub">
+                            <span class="bb-donor-type-pill @typeClass">@d.DonationType</span>
+                            <span class="bb-mono">#@d.DonorId</span>
+                        </div>
+                    </td>
+                    <td class="bb-mono">@d.Phone</td>
+                    <td><span class="bb-badge bb-badge-blood">@d.BloodType</span></td>
+                    <td>
+                        <span class="bb-donor-visits-pill bb-donor-visits-pill--color" title="Lifetime visits (same phone)">@d.LifetimeVisits</span>
+                        @if (d.SuccessfulDonations > 0)
+                        {
+                            <span class="bb-donor-visits-pill bb-donor-visits-pill--ok" title="Successful donations">@d.SuccessfulDonations <i class="fa-solid fa-check" style="font-size:0.65rem;"></i></span>
+                        }
+                    </td>
+                    <td><span class="bb-donor-status-pill @statusBadge">@d.Status</span></td>
+                    <td>@d.RegisteredAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="bb-table-actions">
+                        <a asp-action="Profile" asp-route-donorId="@d.DonorId" class="bb-btn bb-btn-sm bb-btn-primary" title="@d.FullName · @d.Phone"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        @if (!donors.Any())
+        {
+            <div class="bb-donor-registry-empty">
+                <i class="fa-solid fa-user-plus"></i>
+                <p>No donors registered yet.</p>
+                <a asp-action="Create" class="bb-btn bb-btn-primary">Register first donor</a>
+            </div>
+        }
+    </div>
+</div>
+<partial name="~/Areas/BloodBank/Views/Shared/_BloodBankScripts.cshtml" />

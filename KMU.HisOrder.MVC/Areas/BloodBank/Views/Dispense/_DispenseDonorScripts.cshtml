@@ -1,0 +1,190 @@
+@model DispenseFormViewModel
+<script>
+(function () {
+  'use strict';
+  var form = document.getElementById('inventoryDispenseForm');
+  if (!form) return;
+
+  var unitId = form.getAttribute('data-unit-id');
+  var unitBloodType = form.getAttribute('data-unit-blood-type') || '';
+  var searchUrl = form.getAttribute('data-search-donor-url');
+  var registerUrl = form.getAttribute('data-register-donor-url');
+  var linkUrl = form.getAttribute('data-link-donor-url');
+  var profileUrlTemplate = form.getAttribute('data-donor-profile-url') || '';
+
+  function $(id) { return document.getElementById(id); }
+  function getToken() {
+    var t = form.querySelector('input[name="__RequestVerificationToken"]');
+    return t ? t.value : '';
+  }
+
+  function showDonor(donor) {
+    if ($('sourceDonorId')) $('sourceDonorId').value = donor.donorId;
+    if ($('selectedDonorName')) $('selectedDonorName').textContent = donor.fullName || '—';
+    if ($('selectedDonorBloodType')) $('selectedDonorBloodType').textContent = donor.bloodType || '—';
+    if ($('selectedDonorPhone')) $('selectedDonorPhone').textContent = donor.phone ? ' · ' + donor.phone : '';
+    if ($('donorSelectedCard')) $('donorSelectedCard').classList.remove('hidden');
+    if ($('donorSelectActions')) $('donorSelectActions').classList.add('hidden');
+    var link = $('selectedDonorProfileLink');
+    if (link) {
+      link.href = '@Url.Action("Profile", "Donors", new { area = "BloodBank" })?donorId=' + donor.donorId;
+    }
+    closeModal();
+  }
+
+  function closeModal() {
+    var m = $('externalDonorModal');
+    if (m) { m.hidden = true; m.setAttribute('aria-hidden', 'true'); }
+  }
+
+  function openModal() {
+    var m = $('externalDonorModal');
+    if (m) { m.hidden = false; m.setAttribute('aria-hidden', 'false'); }
+  }
+
+  document.querySelectorAll('[data-bb-donor-dismiss]').forEach(function (el) {
+    el.addEventListener('click', closeModal);
+  });
+
+  document.querySelectorAll('[data-donor-tab]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var tab = btn.getAttribute('data-donor-tab');
+      document.querySelectorAll('[data-donor-tab]').forEach(function (b) {
+        b.classList.toggle('is-active', b === btn);
+      });
+      if ($('donorTabSearch')) $('donorTabSearch').classList.toggle('hidden', tab !== 'search');
+      if ($('donorTabRegister')) $('donorTabRegister').classList.toggle('hidden', tab !== 'register');
+    });
+  });
+
+  if ($('btnOpenDonorModal')) $('btnOpenDonorModal').addEventListener('click', openModal);
+  if ($('btnChangeDonor')) $('btnChangeDonor').addEventListener('click', openModal);
+
+  if ($('btnExternalDonorSearch')) {
+    $('btnExternalDonorSearch').addEventListener('click', function () {
+      var q = ($('externalDonorSearchQuery') && $('externalDonorSearchQuery').value.trim()) || '';
+      if (!q) { alert('Enter a search term.'); return; }
+      var box = $('externalDonorSearchResults');
+      if (box) box.innerHTML = '<p class="bb-page-subtitle"><i class="fa-solid fa-spinner fa-spin"></i> Searching…</p>';
+      fetch(searchUrl + '?q=' + encodeURIComponent(q))
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!box) return;
+          if (!d.success || !d.items || !d.items.length) {
+            box.innerHTML = '<p class="bb-page-subtitle">No donors found. Use Register new.</p>';
+            return;
+          }
+          var html = '';
+          d.items.forEach(function (item) {
+            html += '<div class="bb-external-donor-hit">';
+            html += '<div><strong>' + escapeHtml(item.fullName) + '</strong> ';
+            html += '<span class="bb-badge bb-badge-blood">' + escapeHtml(item.bloodType) + '</span>';
+            if (item.isRepeatDonor) html += ' <span class="bb-badge">Repeat</span>';
+            html += '</div><p class="bb-page-subtitle">';
+            if (item.phone) html += escapeHtml(item.phone) + ' · ';
+            if (item.nationalId) html += 'ID: ' + escapeHtml(item.nationalId) + ' · ';
+            html += escapeHtml(item.bloodBankDonorId);
+            html += '</p>';
+            html += '<button type="button" class="bb-btn bb-btn-sm bb-btn-primary btn-pick-external-donor" data-donor-id="' + item.donorId + '">Select</button>';
+            html += '</div>';
+          });
+          box.innerHTML = html;
+          box.querySelectorAll('.btn-pick-external-donor').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              var id = parseInt(btn.getAttribute('data-donor-id'), 10);
+              var item = d.items.find(function (x) { return x.donorId === id; });
+              if (!item) return;
+              linkDonorAndShow(item);
+            });
+          });
+        });
+    });
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function linkDonorAndShow(item) {
+    var body = new URLSearchParams();
+    body.append('unitId', unitId);
+    body.append('donorId', item.donorId);
+    fetch(linkUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'RequestVerificationToken': getToken()
+      },
+      body: body.toString()
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res.success) {
+          alert(res.message || 'Could not link donor.');
+          return;
+        }
+        showDonor({
+          donorId: res.donor.donorId,
+          fullName: res.donor.fullName,
+          bloodType: res.donor.bloodType,
+          phone: res.donor.phone
+        });
+      });
+  }
+
+  if ($('btnRegisterExternalDonor')) {
+    $('btnRegisterExternalDonor').addEventListener('click', function () {
+      var first = ($('regDonorFirstName') && $('regDonorFirstName').value.trim()) || '';
+      var middle = ($('regDonorMiddleName') && $('regDonorMiddleName').value.trim()) || '';
+      var last = ($('regDonorLastName') && $('regDonorLastName').value.trim()) || '';
+      var bt = ($('regDonorBloodType') && $('regDonorBloodType').value) || '';
+      if (!first || !middle || !last || !bt) {
+        alert('First name, father\'s name, grandfather\'s name, and blood type are required.');
+        return;
+      }
+      if (unitBloodType && bt !== unitBloodType) {
+        if (!confirm('Donor blood type (' + bt + ') differs from unit (' + unitBloodType + '). Continue?')) return;
+      }
+      fetch(registerUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': getToken()
+        },
+        body: JSON.stringify({
+          firstName: first,
+          middleName: middle,
+          lastName: last,
+          bloodType: bt,
+          phoneNumber: ($('regDonorPhone') && $('regDonorPhone').value) || null,
+          nationalId: ($('regDonorNationalId') && $('regDonorNationalId').value) || null,
+          notes: ($('regDonorNotes') && $('regDonorNotes').value) || null
+        })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res.success) {
+            alert(res.message || 'Registration failed.');
+            return;
+          }
+          if (res.isExisting) alert(res.message);
+          linkDonorAndShow({
+            donorId: res.donor.donorId,
+            fullName: res.donor.fullName,
+            bloodType: res.donor.bloodType,
+            phone: res.donor.phone
+          });
+        });
+    });
+  }
+
+  var existingId = $('sourceDonorId') && $('sourceDonorId').value;
+  if (existingId && $('donorSelectedCard')) {
+    $('donorSelectedCard').classList.remove('hidden');
+    if ($('donorSelectActions')) $('donorSelectActions').classList.add('hidden');
+  }
+})();
+</script>

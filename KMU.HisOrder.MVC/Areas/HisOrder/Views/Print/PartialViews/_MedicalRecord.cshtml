@@ -1,0 +1,83 @@
+﻿@model KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.PrintClass
+@using KMU.HisOrder.MVC.Models
+
+@{
+    Model.FormTitle = "Medical Record (Diwaanka caafimaadka)";
+    List<Hisorderplan> IcdOrder = Model.OrderData.Where(c => c.HplanType == "ICD").ToList();
+}
+
+<div id="MedicalRecordPage" class="page">
+    <table class="PageContainerTable" style="margin-right: 20px; width: 100%">
+        <thead>
+            <tr>
+                <td class="PageFormTitleTd">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="header-space"></div>
+                </td>
+            </tr>
+        </thead>
+        <tbody style="vertical-align: top;">
+            <tr>
+                <td>
+                    <div class="PageContent" style="word-break: break-all;">
+                        <h2 class="PageFormTitle">@Model.FormTitle</h2>
+                        @if (IcdOrder.Count() > 0)
+                        {
+                        <h3 style="font-style:italic;">※ Diagnosis</h3>
+                        @for (int i = 0; i < IcdOrder.Count(); i++)
+                        {
+                        <span style="font-size: 20px;">@(i + 1). @IcdOrder[i].PlanCode @IcdOrder[i].PlanDes</span>
+                        <br />
+                        }
+                        }
+
+                        @if (Model.Ordersoa != null && Model.Ordersoa.Count() > 0)
+                        {
+                        if (Model.GlobalVariable.Clinic.InhospType == "EMG")
+                        {
+                        <hr style="border-style:dashed; border-color:#ccc;"></hr>
+                        }
+
+                        foreach (PrintHisordersoa soa in Model.Ordersoa)
+                        {
+                        if (Model.GlobalVariable.Clinic.InhospType == "EMG")
+                        {
+                        <h4 style="font-style:italic;">※ Ver. @soa.Version @(string.Format("{0:dd/MM/yyyy}", soa.CreateDate))</h4>
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(soa.ClinicRemarks))
+                        {
+                        <h3 style="font-style:italic;">※ Clinic Remarks</h3>
+                        <pre>@Html.Raw(soa.ClinicRemarks)</pre>
+                        }
+                        if (!string.IsNullOrWhiteSpace(soa.Management))
+                        {
+                        <h3 style="font-style:italic;">※ Management</h3>
+                        <pre style="font-size: 20px">@Html.Raw(soa.Management)</pre>
+                        }
+
+                        if (Model.GlobalVariable.Clinic.InhospType == "EMG")
+                        {
+                        <hr style="border-style:dashed; border-color:#ccc;"></hr>
+                        }
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Ordersoa[0].Transfer)){
+                        <h3 style="font-style:italic;">※ Transfer</h3>
+                        <pre style="font-size: 20px">@Html.Raw(Model.Ordersoa[0].Transfer)</pre>
+                        }
+                        }
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div style="width: 100%; margin-left: 35px">
+        <hr style="margin:0px; margin-right: 70px; border-color:#999;" />
+        @Html.Partial("~/Areas/HisOrder/Views/Print/PartialViews/_v_Footer.cshtml",Model)
+    </div>
+</div>
+

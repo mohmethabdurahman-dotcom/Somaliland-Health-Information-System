@@ -1,0 +1,42 @@
+@{
+    var bloodTypes = ViewBag.BloodTypes as string[] ?? KMU.HisOrder.MVC.Areas.BloodBank.Models.BloodBankLookups.BloodTypes;
+    var components = ViewBag.Components as string[] ?? KMU.HisOrder.MVC.Areas.BloodBank.Models.BloodBankLookups.Components;
+    var urgencyLevels = ViewBag.UrgencyLevels as string[] ?? KMU.HisOrder.MVC.Areas.BloodBank.Models.BloodBankLookups.UrgencyLevelOptions;
+    var statuses = ViewBag.Statuses as string[] ?? KMU.HisOrder.MVC.Areas.BloodBank.Models.BloodBankLookups.UnitStatusesList;
+    string? selBlood = ViewBag.SelectedBloodType as string;
+    string? selComponent = ViewBag.SelectedComponent as string;
+    string? selUrgency = ViewBag.SelectedUrgency as string;
+    string? selStatus = ViewBag.SelectedStatus as string;
+}
+@if (ViewBag.ShowBloodTypeFilter == true) {
+    <select name="FilterBloodType" class="form-control">
+        <option value="">All blood types</option>
+        @foreach (var bt in bloodTypes) {
+            <option value="@bt" selected="@(selBlood == bt)">@bt</option>
+        }
+    </select>
+}
+@if (ViewBag.ShowComponentFilter == true) {
+    <select name="FilterComponent" class="form-control">
+        <option value="">All components</option>
+        @foreach (var c in components) {
+            <option value="@c" selected="@(selComponent == c)">@c</option>
+        }
+    </select>
+}
+@if (ViewBag.ShowUrgencyFilter == true) {
+    <select name="UrgencyFilter" class="form-control">
+        <option value="">All urgency</option>
+        @foreach (var u in urgencyLevels) {
+            <option value="@u" selected="@(selUrgency == u)">@u</option>
+        }
+    </select>
+}
+@if (ViewBag.ShowStatusFilter == true) {
+    <select name="FilterStatus" class="form-control">
+        <option value="">All statuses</option>
+        @foreach (var s in statuses) {
+            <option value="@s" selected="@(selStatus == s)">@s</option>
+        }
+    </select>
+}

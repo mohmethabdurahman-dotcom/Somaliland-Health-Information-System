@@ -1,0 +1,1499 @@
+﻿@model KMU.HisOrder.MVC.Models.TestResult
+@using KMU.HisOrder.MVC.Models;
+@using KMU.HisOrder.MVC.Extesion;
+@addTagHelper *,Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var Title = ViewData["Title"];
+}
+
+<style>
+    .searchCard {
+        border: 1px solid black;
+    }
+
+    .infoCard {
+        width: 73%;
+        border-style: solid;
+        border-width: 5px;
+        border-color: black;
+    }
+
+    .tab-disabled {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+    .input-box {
+        display: flex;
+        align-items: center;
+        max-width: 300px;
+        background: #fff;
+        border: 1px solid #a0a0a0;
+        border-radius: 4px;
+        padding-left: 4px;
+        overflow: hidden;
+    }
+
+        .input-box .prefix {
+            font-weight: 300;
+            font-size: 14px;
+            color: #999;
+            margin-right: 5px;
+        }
+
+        .input-box input {
+            flex-grow: 1;
+            background: #fff;
+            border: none;
+            outline: none;
+            padding: 0px;
+        }
+
+    .disabledDiv {
+        pointer-events: none;
+        opacity: 0.4;
+        filter: blur(1px);
+    }
+
+    .fw {
+        font-size: 14px;
+    }
+
+    .kas {
+        width: 100px;
+    }
+
+    #loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+    }
+
+    .loading-indicator4 {
+        display: none;
+        position: fixed;
+        top: 150px;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        right: 0;
+        bottom: 0;
+    }
+
+    .loaderbody2 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loader2 {
+        border: 8px solid #f3f3f3; /* Light grey */
+        border-top: 8px solid #ff4122; /* Purple */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<h6 class="direction mx-2" style="">Complete Blood Count (CBC) Results</h6>
+<div class="row m-4 " id="all" style="height: 100vh;">
+    <div class="bg-white rounded border shadow border-dark shadow h-100 w-25 p-2 ml-2" id="searchCard">
+        <div class="d-flex flex-column justify-content-center p-1">
+            <div class="mx-auto " style="margin-top: 70px;">
+                <img src="~/images/CBC.png" height="180px" />
+            </div>
+            <div class="form-group">
+                <label><span class="text-danger">*</span> InHospital ID:</label>
+                <input class="form-control" value="" id="patID" />
+            </div>
+          
+                <div>
+                    <button class="btn btn-danger btn-sm form-control mt-2" id="find"><i class="fa fa-search"></i> Search</button>
+           
+                </div>
+                
+           
+           
+        </div>
+    </div>
+    <div class="bg-white rounded shadow h-100 infoCard p-2 ml-3" id="inbadan">
+        <div id="patCard">
+            <div>
+                <div class="d-flex align-items-center justify-content-between ">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-1 position-relative d-flex justify-content-end align-items-end">
+                            <img src="~/images/avatar.png"
+                                 class="avatar-xl rounded-circle border-width-4 border-white"
+                                 alt=""
+                                 style="width: 66px; height:66px;" />
+
+                        </div>
+                        <div class="ml-2">
+                            <div class="mt-2 d-block">
+                                <h5 class="d-inline-block" id="patientName"><strong>Patient Full Name</strong></h5>
+                                <div class="d-inline-block  ml-2 ">
+                                    <label class="badge rounded-pill badge-danger" hidden>Waiting</label>
+                                    <label class="badge rounded-pill badge-warning "><i class="fa far fa-star"></i></label>
+                                </div>
+                            </div>
+
+                            <div class="text-dark ">
+
+
+                                <h6 class="d-inline-block mr-3 pt-bl-color">
+                                    <a href="#" title="Patient ID">
+                                        <i class="fa-solid fa-id-card mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a> <span id="patientID">HealthID</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-3 ">
+                                    <a href="#" title="Birthday / Age">
+                                        <i class="fa-solid fa-b mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a><span id="birthdate">Brith Date</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-3">
+                                    <a href="#" title="Sex">
+                                        <i class="fa-solid  fas fa-venus-mars mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a>
+                                    <span id="sex">Sex</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-2 ">
+                                    <a href="#" title="Mobile">
+                                        <i class="fa fa-phone mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="patient id"></i>
+                                    </a> <span id="phoneNumber">Mobile Number</span>
+                                </h6>
+                                <h6 class="d-inline-block mr-2 pt-br-color">
+                                    <a href="#" title="Address">
+                                        <i class="fa far fas fa-location-dot mr-2 text-primary"
+                                           data-toggle="tooltip"
+                                           data-placement="right"
+                                           data-original-title="address"></i>
+                                    </a> <span id="address">Address</span>
+                                </h6>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <ul class="nav nav-tabs" role="tablist" style="width: 100%;">
+                <li class="nav-item" style="width: 50%;">
+                    <a class="nav-link active" id="3Div-tab" data-toggle="tab" href="#all-results" role="tab" aria-controls="all-results" aria-selected="true" style="font-weight: bold;">3 Diff CBC Sheat Results</a>
+                </li>
+                <li class="nav-item" style="width: 50%;">
+                    <a class="nav-link" id="5Div-tab" data-toggle="tab" href="#cbc-results" role="tab" aria-controls="cbc-results" aria-selected="false" style="font-weight: bold;">5 Diff CBC Sheat Results</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="all-results" role="tabpanel" aria-labelledby="3Div-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-2">
+                                    <div id="loading-indicator4" class="loading-indicator4  mt-5 flex justify-center items-center h-screen">
+                                        <div class="loaderbody2" id="loaderbody2">
+                                            <div class="loader2"></div>
+                                        </div>
+                                    </div>
+                                    <label class="form-label">WBC</label>
+                                    <div class="input-box">
+                                        <input id="WBC" maxlength="5" name="cbc_WBC" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">10^9/uL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">LYM%</label>
+                                    <div class="input-box">
+                                        <input id="LYM" maxlength="5" name="cbc_LYM%" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">MID%</label>
+                                    <div class="input-box">
+                                        <input id="MID" maxlength="5" name="cbc_MID%" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">GRAN%</label>
+                                    <div class="input-box">
+                                        <input id="GRAN" maxlength="5" name="cbc_GRAN%" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">LYM#</label>
+                                    <div class="input-box">
+                                        <input id="cbcLYM" maxlength="5" name="cbc_LYM#" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">10^9/uL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">MID#</label>
+                                    <div class="input-box">
+                                        <input id="cbcMID" maxlength="5" name="cbc_MID#" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">10^9/uL</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-2">
+                                    <label class="form-label">GRAN#</label>
+                                    <div class="input-box">
+                                        <input id="cbcGRAN" maxlength="5" name="cbc_GRAND#" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">10^9/uL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">RBC</label>
+                                    <div class="input-box">
+                                        <input id="RBC" maxlength="5" name="cbc_RBC" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">10^12/uL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">HGB</label>
+                                    <div class="input-box">
+                                        <input id="HGB" maxlength="5" name="cbc_HGB" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">g/DL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">HCT</label>
+                                    <div class="input-box">
+                                        <input id="HCT" maxlength="5" name="cbc_HCTT" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">MCV</label>
+                                    <div class="input-box">
+                                        <input id="MCV" maxlength="5" name="cbc_MCV" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">fL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">MCH</label>
+                                    <div class="input-box">
+                                        <input id="MCH" maxlength="5" name="cbc_MCH" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">pg</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2">
+                                    <label class="form-label">MCHC</label>
+                                    <div class="input-box">
+                                        <input id="MCHC" maxlength="5" name="cbc_MCHC" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">g/dL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">RDW_CV</label>
+                                    <div class="input-box">
+                                        <input id="RDWCV" maxlength="5" name="cbc_RDWCV" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">RDW_SD</label>
+                                    <div class="input-box">
+                                        <input id="RDWSD" maxlength="5" name="cbc_RDWSD" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">fL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">PLT</label>
+                                    <div class="input-box">
+                                        <input id="PLT" maxlength="5" name="cbc_PLT" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">10^9/uL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">MPV</label>
+                                    <div class="input-box">
+                                        <input id="MPV" maxlength="5" name="cbc_MPV" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">fL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">PDW</label>
+                                    <div class="input-box">
+                                        <input id="PDW" maxlength="5" name="cbc_PDW" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">fL</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2">
+                                    <label class="form-label">PCT</label>
+                                    <div class="input-box">
+                                        <input id="PCT" maxlength="5" name="cbc_PCT" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">P_LCR</label>
+                                    <div class="input-box">
+                                        <input id="P_LCR" maxlength="5" name="cbc_P_LCR" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">P_LCC</label>
+                                    <div class="input-box">
+                                        <input id="P_LCC" maxlength="5" name="cbc_P_LCC" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix ">10^9/uL</span>
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+
+                            </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: CBC Results -->
+                <div class="tab-pane fade" id="cbc-results" role="tabpanel" aria-labelledby="5Div-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-2">
+                                    <div id="loading-indicator4" class="loading-indicator4  mt-5 flex justify-center items-center h-screen">
+                                        <div class="loaderbody2" id="loaderbody2">
+                                            <div class="loader2"></div>
+                                        </div>
+                                    </div>
+                                    <label class="form-label">WBC</label>
+                                    <div class="input-box">
+                                        <input id="sheat2WBC" maxlength="5" name="cbc_WBC" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">10^3/L</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">NE</label>
+                                    <div class="input-box">
+                                        <input id="sheat2NE" maxlength="5" name="cbc_LYM%" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">LY</label>
+                                    <div class="input-box">
+                                        <input id="sheat2LY" maxlength="5" name="cbc_MID%" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">MO</label>
+                                    <div class="input-box">
+                                        <input id="sheat2MO" maxlength="5" name="cbc_GRAN%" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">EO</label>
+                                    <div class="input-box">
+                                        <input id="sheat2EO" maxlength="5" name="cbc_LYM#" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">BA</label>
+                                    <div class="input-box">
+                                        <input id="sheat2BA" maxlength="5" name="cbc_MID#" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                
+                                <div class="col-2">
+                                    <label class="form-label">RBC</label>
+                                    <div class="input-box">
+                                        <input id="sheat2RBC" maxlength="5" name="cbc_RBC" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">x10^6/L</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">HGB</label>
+                                    <div class="input-box">
+                                        <input id="sheat2HGB" maxlength="5" name="cbc_HGB" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">g/DL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">HCT</label>
+                                    <div class="input-box">
+                                        <input id="sheat2HCT" maxlength="5" name="cbc_HCTT" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">MCV</label>
+                                    <div class="input-box">
+                                        <input id="sheat2MCV" maxlength="5" name="cbc_MCV" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">fL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">MCH</label>
+                                    <div class="input-box">
+                                        <input id="sheat2MCH" maxlength="5" name="cbc_MCH" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">pg</span>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <label class="form-label">MCHC</label>
+                                    <div class="input-box">
+                                        <input id="sheat2MCHC" maxlength="5" name="cbc_MCHC" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">g/dL</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                               
+
+                                <div class="col-2">
+                                    <label class="form-label">RDW_CV</label>
+                                    <div class="input-box">
+                                        <input id="sheat2RDWCV" maxlength="5" name="cbc_RDWCV" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">RDW_SD</label>
+                                    <div class="input-box">
+                                        <input id="sheat2RDWSD" maxlength="5" name="cbc_RDWSD" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">fL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">PLT</label>
+                                    <div class="input-box">
+                                        <input id="sheat2PLT" maxlength="5" name="cbc_PLT" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">10^3/uL</span>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <label class="form-label">PCT</label>
+                                    <div class="input-box">
+                                        <input id="sheat2PCT" maxlength="5" name="cbc_PCT" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">MPV</label>
+                                    <div class="input-box">
+                                        <input id="sheat2MPV" maxlength="5" name="cbc_MPV" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">fL</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <label class="form-label">PDW</label>
+                                    <div class="input-box">
+                                        <input id="sheat2PDW" maxlength="5" name="cbc_PDW" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+
+                                <div class="col-2">
+                                    <label class="form-label">P_LCR</label>
+                                    <div class="input-box">
+                                        <input id="sheat2P_LCR" maxlength="5" name="cbc_P_LCR" class="form-control input-box" type="number" onKeyPress="if(this.value.length==5) return false;" />
+                                        <span class="prefix">%</span>
+                                    </div>
+                                </div>
+
+                              
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="row mt-2 p-1">
+                <div class="col-md-7">
+                    <a id="save" class="btn form-control btn-primary btn-sm"> <i class="fa fa-save"></i> Save</a>
+                    <a id="update" class="btn form-control btn-success btn-sm"> <i class="fa fa-pen"></i> Update</a>
+                </div>
+
+                <div class="col-md-2">
+                    <a id="clear" class="btn form-control btn-outline-secondary btn-sm"> <i class="fa fa-arrow-left"> </i> Back</a>
+                </div>
+            </div>
+
+         
+
+
+        </div>
+    </div>
+</div>
+
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        $("#update").hide();
+
+        $("#patCard").attr("disabled", "disabled").off('click');
+        var x1 = $("#patCard").hasClass("disabledDiv");
+        (x1 == true) ? $("#patCard").removeClass("disabledDiv") : $("#patCard").addClass("disabledDiv");
+
+        $("#find").on("click", function () {
+            var id = $("#patID").val();
+            if (id.length < 1) {
+                layer.alert('Enter correct  In HospitalId.', {
+                    skin: 'layui-layer-lan',
+                    closebtn: 1,
+                    anim: 5,
+                    icon: 2,
+                    btn: ['OK'],
+                    title: 'Error Message'
+                }, function (index) {
+                    layer.close(index);
+                });
+            } else {
+                var stdId = $("#patID").val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/CBC/CBC/FindPatient",
+                    data: {
+                        inhospid: stdId
+                    },
+                    beforeSend: function () {
+                        $('#loading-indicator4').show();
+                    },
+                    success: function (response) {
+                        if (response) {
+                            $("#patientName").text(response.chrPatientFirstname + " " + response.chrPatientMidname + " " + response.chrPatientLastname);
+                            $("#patientID").text(response.chrHealthId);
+                            $("#birthdate").text(response.chrEmgContact);  // Consider using a more appropriate field for birthdate
+                            $("#sex").text(response.chrSex);
+                            $("#phoneNumber").text(response.chrMobilePhone);
+                            $("#address").text(response.chrAddress);
+
+                            $('#healthID').text(response.chrHealthId);
+
+                            // Disable the search button and enable the patient card button
+                            $("#searchCard").prop("disabled", true).addClass("disabledDiv");
+                            $("#patCard").prop("disabled", false).removeClass("disabledDiv");
+
+ $('#3Div-tab').removeClass('disabled').addClass('active');
+        $('#5Div-tab').removeClass('disabled').removeClass('active');
+        $('#all-results').addClass('active show');
+        $('#cbc-results').removeClass('active show');
+
+                            $.ajax({
+                                type: "GET",
+                                url: "/CBC/CBC/GetCBCData",
+                                data: {
+                                    inhospid: stdId
+                                },
+                                success: function (response) {
+                                    if (response) {
+                            let hasCbcAttached = false;
+                                let allOtherFieldsEmpty = true;
+                                let isMOorBA = false;
+                                let isGRANorMID = false;
+                                // Check if CBC data is savable
+                                if (response.canSave) {
+                                    $("#save").show();
+                                    $("#update").hide();
+                                } else {
+                                                                           $.each(response, function (key, value) {
+                                            // Check if it's a field for sheet 2 (adjust condition accordingly)
+                                            if (["WBC", "LY", "MO", "BA", "NE", "EO", "RBC", "HGB", "HCT", "MCV", "MCH", "MCHC", "RDW-CV", "RDW-SD", "PLT", "PCT", "MPV", "PDW", "P-LCR"].includes(value.cbcType)) {
+                                                isMOorBA = true;
+
+                                                if (value.cbcType === "WBC") {
+                                                    $("#sheat2WBC").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "LY") {
+                                                    $("#sheat2LY").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MO") {
+                                                    $("#sheat2MO").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "BA") {
+                                                    $("#sheat2BA").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "NE") {
+                                                    $("#sheat2NE").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "EO") {
+                                                    $("#sheat2EO").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "RBC") {
+                                                    $("#sheat2RBC").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "HGB") {
+                                                    $("#sheat2HGB").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "HCT") {
+                                                    $("#sheat2HCT").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MCV") {
+                                                    $("#sheat2MCV").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MCH") {
+                                                    $("#sheat2MCH").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MCHC") {
+                                                    $("#sheat2MCHC").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "RDW-CV") {
+                                                    $("#sheat2RDWCV").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "RDW-SD") {
+                                                    $("#sheat2RDWSD").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "PLT") {
+                                                    $("#sheat2PLT").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "PCT") {
+                                                    $("#sheat2PCT").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MPV") {
+                                                    $("#sheat2MPV").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "PDW") {
+                                                    $("#sheat2PDW").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "P-LCR") {
+                                                    $("#sheat2P_LCR").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                }
+
+                                                // Check if CBC is attached
+                                                if (value.cbcType === "CBC" && value.cbcValue === "Attached") {
+                                                    hasCbcAttached = true;
+                                                }
+                                            }
+
+                                            else (["WBC", "MID%", "GRAN%", "LYM%", "MID#", "GRAN#", "LYM#", "RBC", "HGB", "HCT", "MCV", "MCH", "MCHC", "RDW-CV", "RDW-SD", "PLT", "PCT", "MPV", "PDW", "P-LCR"].includes(value.cbcType))
+
+                                            {
+                                                // Else block for sheet 1 fields
+                                                if (value.cbcType === "WBC") {
+                                                    $("#WBC").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "LYM%") {
+                                                    $("#LYM").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                    isGRANorMID = true;
+                                                } else if (value.cbcType === "MID%") {
+                                                    $("#MID").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "GRAN%") {
+                                                    $("#GRAN").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "LYM#") {
+                                                    $("#cbcLYM").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "GRAN#") {
+                                                    $("#cbcGRAN").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MID#") {
+                                                    $("#cbcMID").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "RBC") {
+                                                    $("#RBC").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "HGB") {
+                                                    $("#HGB").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "HCT") {
+                                                    $("#HCT").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MCV") {
+                                                    $("#MCV").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MCH") {
+                                                    $("#MCH").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MCHC") {
+                                                    $("#MCHC").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "RDW-CV") {
+                                                    $("#RDWCV").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "RDW-SD") {
+                                                    $("#RDWSD").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "PLT") {
+                                                    $("#PLT").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "PCT") {
+                                                    $("#PCT").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "MPV") {
+                                                    $("#MPV").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "PDW") {
+                                                    $("#PDW").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "P-LCC") {
+                                                    $("#P_LCC").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                } else if (value.cbcType === "P-LCR") {
+                                                    $("#P_LCR").val(value.cbcValue);
+                                                    allOtherFieldsEmpty = false;
+                                                }
+
+                                                // Check if CBC is attached
+                                                if (value.cbcType === "CBC" && value.cbcValue === "Attached") {
+                                                    hasCbcAttached = true;
+                                                }
+                                            }
+                                        });
+
+                                    // Determine tab visibility based on fields
+                                    if (isGRANorMID) {
+                                        $('#3Div-tab').removeClass('disabled').tab('show');
+                                        $('#5Div-tab').addClass('disabled');
+                                    } else if (isMOorBA) {
+                                        $('#5Div-tab').removeClass('disabled').tab('show');
+                                        $('#3Div-tab').addClass('disabled');
+                                    } else {
+                                        $('#3Div-tab').removeClass('disabled').tab('show');
+                                        $('#5Div-tab').removeClass('disabled');
+                                    }
+
+                                    // Show save button if CBC is attached and all other fields are empty
+                                    if (hasCbcAttached && allOtherFieldsEmpty) {
+                                        $("#save").show();
+                                        $("#update").hide();
+                                    } else {
+                                        $("#save").hide();
+                                        $("#update").show();
+                                    }
+                                }
+                            }
+                        },
+                                error: function (xhr) {
+                                    layer.alert(xhr.responseJSON.responseText, {
+                                        skin: 'layui-layer-lan',
+                                        closebtn: 1,
+                                        anim: 5,
+                                        icon: 2,
+                                        btn: ['OK'],
+                                        title: 'Error Message'
+                                    });
+                                      $("#searchCard").prop("disabled", false).removeClass("disabledDiv");
+                            $("#patCard").prop("disabled", true).addClass("disabledDiv");
+                                }
+                            });
+
+
+                        } else {
+                            layer.alert('Patient not found.', {
+                                skin: 'layui-layer-lan',
+                                closebtn: 1,
+                                anim: 5,
+                                icon: 2,
+                                btn: ['OK'],
+                                title: 'Error Message'
+                            });
+                        }
+                    },
+                    complete: function () {
+                        // Hide the loading spinner when the request is complete
+                        $('#loading-indicator4').hide();
+                    },
+                    error: function (xhr) {
+                        layer.alert(xhr.responseJSON.responseText, {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        });
+                        $("#searchCard").prop("disabled", false).removeClass("disabledDiv");
+                    }
+                });
+
+                // Second AJAX request to fetch CBC data if the patient exists
+            }
+        });
+
+
+
+        $("#clear").on("click", function () {
+            $("#patientName").text("Patient Full Name");
+            $("#patientID").text("HealthID");
+            $("#sex").text("Sex");
+            $("#phoneNumber").text("Mobile Number");
+            $("#address").text("Address");
+            $("#brithdate").text("Brith Date");
+            $("#update").hide();
+            $("#save").show();
+
+            $("#WBC").val('');
+            $("#RBC").val('');
+            $("#HGB").val('');
+            $("#HCT").val('');
+            $("#PLT").val('');
+            $("#LYM").val('');
+            $("#cbcLYM").val('');
+            $("#GRAN").val('');
+            $("#cbcGRAN").val('');
+            $("#MID").val('');
+            $("#cbcMID").val('');
+            $("#MCV").val('');
+            $("#MCH").val('');
+            $("#MCHC").val('');
+            $("#RDWCV").val('');
+            $("#RDWSD").val('');
+            $("#PCT").val('');
+            $("#MPV").val('');
+            $("#PDW").val('');
+            $("#P_LCR").val('');
+            $("#P_LCC").val('');
+           $("#sheat2WBC").val('');
+           $("#sheat2RBC").val('');
+           $("#sheat2HGB").val('');
+           $("#sheat2HCT").val('');
+           $("#sheat2PLT").val('');
+          $("#sheat2NE").val('');
+          $("#sheat2LY").val('');
+          $("#sheat2MO").val('');
+          $("#sheat2EO").val('');
+          $("#sheat2BA").val('');
+           $("#sheat2MCV").val('');
+           $("#sheat2MCH").val('');
+            $("#sheat2MCHC").val('');
+             $("#sheat2RDWCV").val('');
+             $("#sheat2RDWSD").val('');
+           $("#sheat2PCT").val('');
+           $("#sheat2MPV").val('');
+           $("#sheat2PDW").val('');
+            $("#sheat2P_LCR").val('');
+
+            $("#patCard").attr("disabled", "disabled").off('click');
+            var x1 = $("#patCard").hasClass("disabledDiv");
+            (x1 == true) ? $("#patCard").removeClass("disabledDiv") : $("#patCard").addClass("disabledDiv");
+
+            function sah1() {
+                // $("#patCard").attr("disabled", "disabled").off('click');
+                $("#searchCard").prop('disabled', false);
+
+                var x2 = $("#searchCard").hasClass("disabledDiv");
+                $("#searchCard").removeClass("disabledDiv");
+            }
+            sah1();
+
+        })
+
+
+        function inputClear() {
+            $("#patCard").attr("disabled", "disabled").off('click');
+            var x1 = $("#patCard").hasClass("disabledDiv");
+            (x1 == true) ? $("#patCard").removeClass("disabledDiv") : $("#patCard").addClass("disabledDiv");
+
+            function sah1() {
+                // $("#patCard").attr("disabled", "disabled").off('click');
+                $("#searchCard").prop('disabled', false);
+
+                var x2 = $("#searchCard").hasClass("disabledDiv");
+                $("#searchCard").removeClass("disabledDiv");
+            }
+            sah1();
+
+            $("#WBC").val('');
+            $("#RBC").val('');
+            $("#HGB").val('');
+            $("#HCT").val('');
+            $("#PLT").val('');
+            $("#LYM").val('');
+            $("#cbcLYM").val('');
+            $("#GRAN").val('');
+            $("#cbcGRAN").val('');
+            $("#MID").val('');
+            $("#cbcMID").val('');
+            $("#MCV").val('');
+            $("#MCH").val('');
+            $("#MCHC").val('');
+            $("#RDWCV").val('');
+            $("#RDWSD").val('');
+            $("#PCT").val('');
+            $("#MPV").val('');
+            $("#PDW").val('');
+            $("#P_LCR").val('');
+            $("#P_LCC").val('');
+            $("#sheat2WBC").val('');
+            $("#sheat2RBC").val('');
+            $("#sheat2HGB").val('');
+            $("#sheat2HCT").val('');
+            $("#sheat2PLT").val('');
+            $("#sheat2NE").val('');
+            $("#sheat2LY").val('');
+            $("#sheat2MO").val('');
+            $("#sheat2EO").val('');
+            $("#sheat2BA").val('');
+            $("#sheat2MCV").val('');
+            $("#sheat2MCH").val('');
+            $("#sheat2MCHC").val('');
+            $("#sheat2RDWCV").val('');
+            $("#sheat2RDWSD").val('');
+            $("#sheat2PCT").val('');
+            $("#sheat2MPV").val('');
+            $("#sheat2PDW").val('');
+            $("#sheat2P_LCR").val('');
+
+            $("#patientName").text("Patient Full Name");
+            $("#patientID").text("HealthID");
+            $("#sex").text("Sex");
+            $("#phoneNumber").text("Mobile Number");
+            $("#address").text("Address");
+            $("#brithdate").text("Brith Date");
+
+
+
+         
+        }
+
+        $("#save").on("click", function () {
+            var healthId = $("#patientID").text();
+            var InhealthId = $("#patID").val();
+
+
+            var cbcData = [];
+            var activeTab = $(".nav-tabs .nav-link.active").attr("id");
+            var sheetType = activeTab === "3Div-tab" ? "3Div" : "5Div";
+            if (activeTab === "3Div-tab") {
+                var WBCvalue = $("#WBC").val() || '';
+                var RBCvalue = $("#RBC").val() || '';
+                var HGBvalue = $("#HGB").val() || '';
+                var HCTvalue = $("#HCT").val() || '';
+                var PLTvalue = $("#PLT").val() || '';
+                var LYMvalue = $("#LYM").val() || '';
+                var LYMtwovalue = $("#cbcLYM").val() || '';
+                var GRANDvalue = $("#GRAN").val() || '';
+                var GRANDtwovalue = $("#cbcGRAN").val() || '';
+                var MIDvalue = $("#MID").val() || '';
+                var MIDtwovalue = $("#cbcMID").val() || '';
+                var MCVvalue = $("#MCV").val() || '';
+                var MCHvalue = $("#MCH").val() || '';
+                var MCHCvalue = $("#MCHC").val() || '';
+                var RDWCVvalue = $("#RDWCV").val() || '';
+                var RDWSDvalue = $("#RDWSD").val() || '';
+                var PCTvalue = $("#PCT").val() || '';
+                var MPVvalue = $("#MPV").val() || '';
+                var PDWvalue = $("#PDW").val() || '';
+                var PLCRvalue = $("#P_LCR").val() || '';
+                var PLCCvalue = $("#P_LCC").val() || '';
+                function showError(inputId) {
+                    $(inputId).css('border', '1px solid red');
+                }
+
+                function clearError(inputId) {
+                    $(inputId).css('border', ''); 
+                }
+
+                function validateField(value, inputId) {
+                    if (!value) {
+                        showError(inputId);
+                        return false;
+                    } else {
+                        clearError(inputId);
+                        return true;
+                    }
+                }
+             
+                // Validate all fields individually
+                var valid = true;
+                valid &= validateField(WBCvalue, "#WBC");
+                valid &= validateField(RBCvalue, "#RBC");
+                valid &= validateField(HGBvalue, "#HGB");
+                valid &= validateField(HCTvalue, "#HCT");
+                valid &= validateField(PLTvalue, "#PLT");
+                valid &= validateField(LYMvalue, "#LYM");
+                valid &= validateField(LYMtwovalue, "#cbcLYM");
+                valid &= validateField(GRANDvalue, "#GRAN");
+                valid &= validateField(GRANDtwovalue, "#cbcGRAN");
+                valid &= validateField(MIDvalue, "#MID");
+                valid &= validateField(MIDtwovalue, "#cbcMID");
+                valid &= validateField(MCVvalue, "#MCV");
+                valid &= validateField(MCHvalue, "#MCH");
+                valid &= validateField(MCHCvalue, "#MCHC");
+                valid &= validateField(RDWCVvalue, "#RDWCV");
+                valid &= validateField(RDWSDvalue, "#RDWSD");
+                valid &= validateField(PCTvalue, "#PCT");
+                valid &= validateField(MPVvalue, "#MPV");
+                valid &= validateField(PDWvalue, "#PDW");
+                valid &= validateField(PLCRvalue, "#P_LCR");
+                valid &= validateField(PLCCvalue, "#P_LCC");
+
+                if (!valid) {
+                    layer.alert("Please fill in all CBC test results.", {
+                        skin: 'layui-layer-lan',
+                        closeBtn: 1,
+                        anim: 5,
+                        icon: 2,
+                        btn: ['OK'],
+                        title: 'Error Message'
+                    });
+                    return; 
+                }
+
+                cbcData.push({ TestName: "WBC", Result: WBCvalue });
+                cbcData.push({ TestName: "RBC", Result: RBCvalue });
+                cbcData.push({ TestName: "HGB", Result: HGBvalue });
+                cbcData.push({ TestName: "HCT", Result: HCTvalue });
+                cbcData.push({ TestName: "PLT", Result: PLTvalue });
+                cbcData.push({ TestName: "LYM%", Result: LYMvalue });
+                cbcData.push({ TestName: "LYM#", Result: LYMtwovalue });
+                cbcData.push({ TestName: "GRAN%", Result: GRANDvalue });
+                cbcData.push({ TestName: "GRAN#", Result: GRANDtwovalue });
+                cbcData.push({ TestName: "MID%", Result: MIDvalue });
+                cbcData.push({ TestName: "MID#", Result: MIDtwovalue });
+                cbcData.push({ TestName: "MCV", Result: MCVvalue });
+                cbcData.push({ TestName: "MCH", Result: MCHvalue });
+                cbcData.push({ TestName: "MCHC", Result: MCHCvalue });
+                cbcData.push({ TestName: "RDW-CV", Result: RDWCVvalue });
+                cbcData.push({ TestName: "RDW-SD", Result: RDWSDvalue });
+                cbcData.push({ TestName: "PCT", Result: PCTvalue });
+                cbcData.push({ TestName: "MPV", Result: MPVvalue });
+                cbcData.push({ TestName: "PDW", Result: PDWvalue });
+                cbcData.push({ TestName: "P-LCR", Result: PLCRvalue });
+                cbcData.push({ TestName: "P-LCC", Result: PLCCvalue });
+            } 
+            else if (activeTab === "5Div-tab") {
+    
+                var WBCvalue = $("#sheat2WBC").val() || '';
+                var RBCvalue = $("#sheat2RBC").val() || '';
+                var HGBvalue = $("#sheat2HGB").val() || '';
+                var HCTvalue = $("#sheat2HCT").val() || '';
+                var PLTvalue = $("#sheat2PLT").val() || '';
+                var NEvalue = $("#sheat2NE").val() || '';
+                var LYvalue = $("#sheat2LY").val() || '';
+                var MOvalue = $("#sheat2MO").val() || '';
+                var EOvalue = $("#sheat2EO").val() || '';
+                var BAvalue = $("#sheat2BA").val() || '';
+                var MCVvalue = $("#sheat2MCV").val() || '';
+                var MCHvalue = $("#sheat2MCH").val() || '';
+                var MCHCvalue = $("#sheat2MCHC").val() || '';
+                var RDWCVvalue = $("#sheat2RDWCV").val() || '';
+                var RDWSDvalue = $("#sheat2RDWSD").val() || '';
+                var PCTvalue = $("#sheat2PCT").val() || '';
+                var MPVvalue = $("#sheat2MPV").val() || '';
+                var PDWvalue = $("#sheat2PDW").val() || '';
+                var PLCRvalue = $("#sheat2P_LCR").val() || '';
+            function showError(inputId) {
+                $(inputId).css('border', '1px solid red'); // Add a red border to highlight the field
+            }
+
+            function clearError(inputId) {
+                $(inputId).css('border', ''); // Clear the error styling
+            }
+
+            function validateField(value, inputId) {
+                if (!value) {
+                    showError(inputId);
+                    return false;
+                } else {
+                    clearError(inputId);
+                    return true;
+                }
+            }
+        
+            // Validate all fields individually
+            var valid = true;
+                valid &= validateField(WBCvalue, "#sheat2WBC");
+                valid &= validateField(RBCvalue, "#sheat2RBC");
+                valid &= validateField(HGBvalue, "#sheat2HGB");
+                valid &= validateField(HCTvalue, "#sheat2HCT");
+                valid &= validateField(PLTvalue, "#sheat2PLT");
+                valid &= validateField(LYvalue, "#sheat2LY");
+                valid &= validateField(MOvalue, "#sheat2MO");
+                valid &= validateField(BAvalue, "#sheat2BA");
+                valid &= validateField(NEvalue, "#sheat2NE");
+                valid &= validateField(EOvalue, "#sheat2EO");
+                valid &= validateField(MCVvalue, "#sheat2MCV");
+                valid &= validateField(MCHvalue, "#sheat2MCH");
+                valid &= validateField(MCHCvalue, "#sheat2MCHC");
+                valid &= validateField(RDWCVvalue, "#sheat2RDWCV");
+                valid &= validateField(RDWSDvalue, "#sheat2RDWSD");
+                valid &= validateField(PCTvalue, "#sheat2PCT");
+                valid &= validateField(MPVvalue, "#sheat2MPV");
+                valid &= validateField(PDWvalue, "#sheat2PDW");
+                valid &= validateField(PLCRvalue, "#sheat2P_LCR");
+
+            if (!valid) {
+                layer.alert("Please fill in all CBC test results.", {
+                    skin: 'layui-layer-lan',
+                    closeBtn: 1,
+                    anim: 5,
+                    icon: 2,
+                    btn: ['OK'],
+                    title: 'Error Message'
+                });
+                return; // Prevent further execution
+            }
+
+            cbcData.push({ TestName: "WBC", Result: WBCvalue });
+            cbcData.push({ TestName: "RBC", Result: RBCvalue });
+            cbcData.push({ TestName: "HGB", Result: HGBvalue });
+            cbcData.push({ TestName: "HCT", Result: HCTvalue });
+            cbcData.push({ TestName: "PLT", Result: PLTvalue });
+            cbcData.push({ TestName: "LY", Result: LYvalue });
+            cbcData.push({ TestName: "MO", Result: MOvalue });
+            cbcData.push({ TestName: "EO", Result: EOvalue });
+            cbcData.push({ TestName: "BA", Result: BAvalue });
+            cbcData.push({ TestName: "NE", Result: NEvalue });
+            cbcData.push({ TestName: "MCV", Result: MCVvalue });
+            cbcData.push({ TestName: "MCH", Result: MCHvalue });
+            cbcData.push({ TestName: "MCHC", Result: MCHCvalue });
+            cbcData.push({ TestName: "RDW-CV", Result: RDWCVvalue });
+            cbcData.push({ TestName: "RDW-SD", Result: RDWSDvalue });
+            cbcData.push({ TestName: "PCT", Result: PCTvalue });
+            cbcData.push({ TestName: "MPV", Result: MPVvalue });
+            cbcData.push({ TestName: "PDW", Result: PDWvalue });
+            cbcData.push({ TestName: "P-LCR", Result: PLCRvalue });
+            }
+                $.ajax({
+                    type: "POST",
+                    url: "/CBC/CBC/SaveCBC",
+                    data: {
+                        inhospid: InhealthId,
+                        patientId: healthId,
+                        cbcResults: cbcData,
+                    sheetType: sheetType
+                },
+            success: function (response) {
+                        inputClear();
+                        layer.msg('CBC Test Results Saved Successfully', { time: 1200, icon: 1 });
+                    },
+                    error: function (xhr, status, error) {
+                        layer.alert(xhr.responseJSON.responseText, {
+                            skin: 'layui-layer-lan',
+                            closebtn: 1,
+                            anim: 5,
+                            icon: 2,
+                            btn: ['OK'],
+                            title: 'Error Message'
+                        });
+                    }
+                }); // AJAX end
+            
+        }); // End onClick
+
+ 
+
+
+        $("#update").on("click", function () {
+            var healthId = $("#patientID").text();
+            var InhealthId = $("#patID").val();
+            var cbcTestId = $("#cbcTestId").val();
+            var activeTab = $(".nav-tabs .nav-link.active").attr("id");
+            var sheetType = activeTab === "3Div-tab" ? "3Div" : "5Div";
+            var cbcData = [];
+            if (activeTab === "3Div-tab") {
+                var WBCvalue = $("#WBC").val() || '';
+                var RBCvalue = $("#RBC").val() || '';
+                var HGBvalue = $("#HGB").val() || '';
+                var HCTvalue = $("#HCT").val() || '';
+                var PLTvalue = $("#PLT").val() || '';
+                var LYMvalue = $("#LYM").val() || '';
+                var LYMtwovalue = $("#cbcLYM").val() || '';
+                var GRANDvalue = $("#GRAN").val() || '';
+                var GRANDtwovalue = $("#cbcGRAN").val() || '';
+                var MIDvalue = $("#MID").val() || '';
+                var MIDtwovalue = $("#cbcMID").val() || '';
+                var MCVvalue = $("#MCV").val() || '';
+                var MCHvalue = $("#MCH").val() || '';
+                var MCHCvalue = $("#MCHC").val() || '';
+                var RDWCVvalue = $("#RDWCV").val() || '';
+                var RDWSDvalue = $("#RDWSD").val() || '';
+                var PCTvalue = $("#PCT").val() || '';
+                var MPVvalue = $("#MPV").val() || '';
+                var PDWvalue = $("#PDW").val() || '';
+                var PLCRvalue = $("#P_LCR").val() || '';
+                var PLCCvalue = $("#P_LCC").val() || '';
+                function showError(inputId) {
+                    $(inputId).css('border', '1px solid red'); 
+                }
+
+                function clearError(inputId) {
+                    $(inputId).css('border', ''); // Clear the error styling
+                }
+
+                function validateField(value, inputId) {
+                    if (!value) {
+                        showError(inputId);
+                        return false;
+                    } else {
+                        clearError(inputId);
+                        return true;
+                    }
+                }
+              
+                // Validate all fields individually
+                var valid = true;
+                valid &= validateField(WBCvalue, "#WBC");
+                valid &= validateField(RBCvalue, "#RBC");
+                valid &= validateField(HGBvalue, "#HGB");
+                valid &= validateField(HCTvalue, "#HCT");
+                valid &= validateField(PLTvalue, "#PLT");
+                valid &= validateField(LYMvalue, "#LYM");
+                valid &= validateField(LYMtwovalue, "#cbcLYM");
+                valid &= validateField(GRANDvalue, "#GRAN");
+                valid &= validateField(GRANDtwovalue, "#cbcGRAN");
+                valid &= validateField(MIDvalue, "#MID");
+                valid &= validateField(MIDtwovalue, "#cbcMID");
+                valid &= validateField(MCVvalue, "#MCV");
+                valid &= validateField(MCHvalue, "#MCH");
+                valid &= validateField(MCHCvalue, "#MCHC");
+                valid &= validateField(RDWCVvalue, "#RDWCV");
+                valid &= validateField(RDWSDvalue, "#RDWSD");
+                valid &= validateField(PCTvalue, "#PCT");
+                valid &= validateField(MPVvalue, "#MPV");
+                valid &= validateField(PDWvalue, "#PDW");
+                valid &= validateField(PLCRvalue, "#P_LCR");
+                valid &= validateField(PLCCvalue, "#P_LCC");
+
+                // If any field is invalid, return and prevent submission
+                if (!valid) {
+                    layer.alert("Please fill in all CBC test results.", {
+                        skin: 'layui-layer-lan',
+                        closeBtn: 1,
+                        anim: 5,
+                        icon: 2,
+                        btn: ['OK'],
+                        title: 'Error Message'
+                    });
+                    return; // Prevent further execution
+                }
+
+                cbcData.push({ TestName: "WBC", Result: WBCvalue });
+                cbcData.push({ TestName: "RBC", Result: RBCvalue });
+                cbcData.push({ TestName: "HGB", Result: HGBvalue });
+                cbcData.push({ TestName: "HCT", Result: HCTvalue });
+                cbcData.push({ TestName: "PLT", Result: PLTvalue });
+                cbcData.push({ TestName: "LYM%", Result: LYMvalue });
+                cbcData.push({ TestName: "LYM#", Result: LYMtwovalue });
+                cbcData.push({ TestName: "GRAN%", Result: GRANDvalue });
+                cbcData.push({ TestName: "GRAN#", Result: GRANDtwovalue });
+                cbcData.push({ TestName: "MID%", Result: MIDvalue });
+                cbcData.push({ TestName: "MID#", Result: MIDtwovalue });
+                cbcData.push({ TestName: "MCV", Result: MCVvalue });
+                cbcData.push({ TestName: "MCH", Result: MCHvalue });
+                cbcData.push({ TestName: "MCHC", Result: MCHCvalue });
+                cbcData.push({ TestName: "RDW-CV", Result: RDWCVvalue });
+                cbcData.push({ TestName: "RDW-SD", Result: RDWSDvalue });
+                cbcData.push({ TestName: "PCT", Result: PCTvalue });
+                cbcData.push({ TestName: "MPV", Result: MPVvalue });
+                cbcData.push({ TestName: "PDW", Result: PDWvalue });
+                cbcData.push({ TestName: "P-LCR", Result: PLCRvalue });
+                cbcData.push({ TestName: "P-LCC", Result: PLCCvalue });
+            } 
+            
+            else if (activeTab === "5Div-tab") {
+                var WBCvalue = $("#sheat2WBC").val() || '';
+                var RBCvalue = $("#sheat2RBC").val() || '';
+                var HGBvalue = $("#sheat2HGB").val() || '';
+                var HCTvalue = $("#sheat2HCT").val() || '';
+                var PLTvalue = $("#sheat2PLT").val() || '';
+                var NEvalue = $("#sheat2NE").val() || '';
+                var LYvalue = $("#sheat2LY").val() || '';
+                var MOvalue = $("#sheat2MO").val() || '';
+                var EOvalue = $("#sheat2EO").val() || '';
+                var BAvalue = $("#sheat2BA").val() || '';
+                var MCVvalue = $("#sheat2MCV").val() || '';
+                var MCHvalue = $("#sheat2MCH").val() || '';
+                var MCHCvalue = $("#sheat2MCHC").val() || '';
+                var RDWCVvalue = $("#sheat2RDWCV").val() || '';
+                var RDWSDvalue = $("#sheat2RDWSD").val() || '';
+                var PCTvalue = $("#sheat2PCT").val() || '';
+                var MPVvalue = $("#sheat2MPV").val() || '';
+                var PDWvalue = $("#sheat2PDW").val() || '';
+                var PLCRvalue = $("#sheat2P_LCR").val() || '';
+                function showError(inputId) {
+                    $(inputId).css('border', '4px solid red');
+                }
+
+                function clearError(inputId) {
+                    $(inputId).css('border', '');
+                }
+
+                function validateField(value, inputId) {
+                    if (!value) {
+                        showError(inputId);
+                        return false;
+                    } else {
+                        clearError(inputId);
+                        return true;
+                    }
+                }
+              
+                var valid = true;
+                valid &= validateField(WBCvalue, "#sheat2WBC");
+                valid &= validateField(RBCvalue, "#sheat2RBC");
+                valid &= validateField(HGBvalue, "#sheat2HGB");
+                valid &= validateField(HCTvalue, "#sheat2HCT");
+                valid &= validateField(PLTvalue, "#sheat2PLT");
+                valid &= validateField(LYvalue, "#sheat2LY");
+                valid &= validateField(MOvalue, "#sheat2MO");
+                valid &= validateField(BAvalue, "#sheat2BA");
+                valid &= validateField(NEvalue, "#sheat2NE");
+                valid &= validateField(EOvalue, "#sheat2EO");
+                valid &= validateField(MCVvalue, "#sheat2MCV");
+                valid &= validateField(MCHvalue, "#sheat2MCH");
+                valid &= validateField(MCHCvalue, "#sheat2MCHC");
+                valid &= validateField(RDWCVvalue, "#sheat2RDWCV");
+                valid &= validateField(RDWSDvalue, "#sheat2RDWSD");
+                valid &= validateField(PCTvalue, "#sheat2PCT");
+                valid &= validateField(MPVvalue, "#sheat2MPV");
+                valid &= validateField(PDWvalue, "#sheat2PDW");
+                valid &= validateField(PLCRvalue, "#sheat2P_LCR");
+                // If any field is invalid, show error and prevent submission
+                if (!valid) {
+                    layer.alert("Please fill in all CBC test results.", {
+                        skin: 'layui-layer-lan',
+                        closeBtn: 1,
+                        anim: 5,
+                        icon: 2,
+                        btn: ['OK'],
+                        title: 'Error Message'
+                    });
+                    return;
+                }
+
+                cbcData.push({ TestName: "WBC", Result: WBCvalue });
+                cbcData.push({ TestName: "RBC", Result: RBCvalue });
+                cbcData.push({ TestName: "HGB", Result: HGBvalue });
+                cbcData.push({ TestName: "HCT", Result: HCTvalue });
+                cbcData.push({ TestName: "PLT", Result: PLTvalue });
+                cbcData.push({ TestName: "LY", Result: LYvalue });
+                cbcData.push({ TestName: "MO", Result: MOvalue });
+                cbcData.push({ TestName: "EO", Result: EOvalue });
+                cbcData.push({ TestName: "BA", Result: BAvalue });
+                cbcData.push({ TestName: "NE", Result: NEvalue });
+                cbcData.push({ TestName: "MCV", Result: MCVvalue });
+                cbcData.push({ TestName: "MCH", Result: MCHvalue });
+                cbcData.push({ TestName: "MCHC", Result: MCHCvalue });
+                cbcData.push({ TestName: "RDW-CV", Result: RDWCVvalue });
+                cbcData.push({ TestName: "RDW-SD", Result: RDWSDvalue });
+                cbcData.push({ TestName: "PCT", Result: PCTvalue });
+                cbcData.push({ TestName: "MPV", Result: MPVvalue });
+                cbcData.push({ TestName: "PDW", Result: PDWvalue });
+                cbcData.push({ TestName: "P-LCR", Result: PLCRvalue });
+            
+
+            }
+          
+            $.ajax({
+                type: "PUT",  
+                url: "/CBC/CBC/UpdateCBC",  
+                data: {
+                    cbcTestId: cbcTestId,  
+                    inhospid: InhealthId,
+                    patientId: healthId,
+                    cbcResults: cbcData,
+                    sheetType: sheetType
+                },
+                success: function (response) {
+                    inputClear();  
+                    layer.msg('CBC Test Results Updated Successfully', { time: 1200, icon: 1 });
+                },
+                error: function (xhr, status, error) {
+                    layer.alert(xhr.responseJSON.responseText, {
+                        skin: 'layui-layer-lan',
+                        closeBtn: 1,
+                        anim: 5,
+                        icon: 2,
+                        btn: ['OK'],
+                        title: 'Error Message'
+                    });
+                }
+            }); // End AJAX
+        }); // End onClick
+
+       
+
+    })
+</script>
+
+
+
+

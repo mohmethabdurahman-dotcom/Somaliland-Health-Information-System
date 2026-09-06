@@ -1,0 +1,117 @@
+﻿@model KMU.HisOrder.MVC.Areas.HisOrder.ViewModels.PrintClass
+@using KMU.HisOrder.MVC.Extesion;
+
+<!-- 2 columns align -->
+@*<table id="HeaderTable" style="width:100%;">
+    <tr>
+        <td colspan="2">
+            <div style="text-align:center; margin-bottom: 20px;">
+                <h2>@Model.HospName</h2>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td style="vertical-align:top; width:40%;">
+            <b>ClinicInfo：</b><br />
+            @Model.GlobalVariable.Clinic.RegDate
+            <br />
+            @Model.GlobalVariable.Clinic.DeptName
+        </td>
+        <td style="vertical-align:top; width:60%;">
+            <b>PatientInfo：</b><br />
+            No：@Model.GlobalVariable.Patient.RegPatientId &nbsp;&nbsp;&nbsp; Sex：@(Model.GlobalVariable.Patient.Sex == "M" ? "Male" : "Female")<br />
+            Age：@(string.Format("{0 : dd/MM/yyyy}", Model.GlobalVariable.Patient.BirthDate)) (@Model.GlobalVariable.Patient.Age years)
+            <p style=" text-indent: -54px; margin: 0px 0px 0px 54px;">
+                Name：@Model.GlobalVariable.Patient.FirstName @Model.GlobalVariable.Patient.MidName @Model.GlobalVariable.Patient.LastName
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <hr style="margin-bottom:0px; border-color:#999;" />
+        </td>
+    </tr>
+</table>*@
+
+
+<!-- 2 rows align -->
+<table id="HeaderTable" style="width:50%;">
+    <!-- 醫院 Logo -->
+    @*<tr>
+    <td>
+    <div style="text-align:center; margin-bottom: 20px;">
+    <img src="~/images/HospLogo.png" style="width: 35px; position: absolute; margin-left: -170px; margin-top: -5px;" />
+    <h2>@Model.HospName</h2>
+    </div>
+    </td>
+    </tr>*@
+    <!-- 衛服部橫幅 -->
+    <tr>
+        @*   <td>
+        <div style="text-align:left; margin-bottom: 112px;">
+        <img src="~/images/MoHDLogo.png" style="width: 100%; position: absolute;" />
+        </div>
+        </td>*@
+        <td colspan="12" style="text-align: center">
+            <h3 style="font-size: 35px">HARGEISA GROUP HOSPITAL</h3>
+            <h2>REPUBLIC OF SOMALILAND</h2>
+            <h2>Ministry of Health Development</h2>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <br />
+        </td>
+    </tr>
+    <tr style="padding-top: 25px;">
+        <td style="vertical-align:top; font-size: 19px; white-space: normal;">
+            @*<b style="font-size:18px; font-style:italic;">ClinicInfo</b><br />*@
+            <b>Date:</b> @(string.Format("{0:dd/MM/yyyy}", Model.GlobalVariable.Clinic.RegDate)) &nbsp; <b>Department:</b>@Model.GlobalVariable.Clinic.DeptName
+        </td>
+    </tr>
+    <tr>
+        <td style="vertical-align:top; font-size: 19px">
+            @*<b style="font-size:18px; font-style:italic;">PatientInfo</b><br />*@
+            <b>No:</b> @Model.GlobalVariable.Patient.RegPatientId &nbsp;&nbsp; <b>Sex:</b> @(Model.GlobalVariable.Patient.Sex == "M" ? "Male" : "Female") &nbsp;&nbsp;<b>Age:</b> (@Model.GlobalVariable.Patient.Age.AgeFormat())
+            <p style=" text-indent: -54px; margin: 0px 0px 0px 54px; font-size: 22px;">
+                <span style="font-weight: bold">Name:</span> @Model.GlobalVariable.Patient.FirstName @Model.GlobalVariable.Patient.MidName @Model.GlobalVariable.Patient.LastName
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" style="vertical-align:top; width:50%; padding-bottom: 10px;">
+            <b style="font-size: 22px">Reservation Id：</b><span style="font-size: 22px">@Model.GlobalVariable.Patient.Inhospid</span>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="10" style="padding-bottom: 20px;">
+            <hr style="margin:0px; border-color:#999;" />
+        </td>
+    </tr>
+    <tr>
+        <td colspan="10" style="padding-bottom: 15px;">
+            <br />
+        </td>
+    </tr>
+</table>
+
+
+@*<div class="row">
+    <div class="col">
+        <div style="text-align:center;">
+            <h2>@Model.HospName</h2>
+            <h3>@Model.FormTitle</h3>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col" style="vertical-align:top;">
+        <b>ClinicInfo：</b><br />
+        @Model.GlobalVariable.Clinic.RegDate &nbsp;&nbsp;&nbsp; @Model.GlobalVariable.Clinic.DeptName
+    </div>
+    <div class="col" style="vertical-align:top;">
+        <b>PatientInfo：</b><br />
+        Age：@Model.GlobalVariable.Patient.Age &nbsp;&nbsp;&nbsp; ChartNo：@Model.GlobalVariable.Patient.RegPatientId <br />
+        PatientName：@Model.GlobalVariable.Patient.FirstName @Model.GlobalVariable.Patient.MidName @Model.GlobalVariable.Patient.LastName
+    </div>
+</div>*@

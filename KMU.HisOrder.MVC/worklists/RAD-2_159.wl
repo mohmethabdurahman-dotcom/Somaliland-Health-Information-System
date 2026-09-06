@@ -1,0 +1,23 @@
+{
+  "patientName": "Geele^Wali^Xuseen",
+  "patientID": "HG00006306",
+  "patientBirthDate": "19830405",
+  "patientSex": "M",
+  "patientAge": "043Y",
+  "accessionNumber": "RAD-2-159",
+  "requestedProcedureID": "159",
+  "requestedProcedureDescription": "X-ray - Chest",
+  "studyInstanceUID": "1.2.826.0.1.3680043.8.498.20260310163922044.159",
+  "modality": "X-Ray 1",
+  "scheduledStationAETitle": "X-Ray 1_ROOM_01",
+  "scheduledProcedureStepStartDate": "20260310",
+  "scheduledProcedureStepStartTime": "172611",
+  "scheduledPerformingPhysicianName": "AOA06",
+  "scheduledProcedureStepDescription": "X-ray - Chest",
+  "scheduledProcedureStepID": "1",
+  "requestedProcedureComments": "",
+  "sourceType": "EMG",
+  "ticketNumber": 1,
+  "roomNumber": "01",
+  "status": "SCHEDULED"
+}

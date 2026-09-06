@@ -1,0 +1,77 @@
+@model DispenseFormViewModel
+@using KMU.HisOrder.MVC.Areas.BloodBank.Models
+@using KMU.HisOrder.MVC.Models.BloodBank
+@{
+    ViewData.TemplateInfo.HtmlFieldPrefix = "Form";
+    var f = Model;
+    var hasDonor = f.SourceDonorId.HasValue && f.SourceDonorId > 0;
+}
+<div class="bb-dispense-donor-panel" id="dispenseDonorPanel">
+   
+
+    <div class="bb-field-wrap bb-mt-3">
+        <label class="bb-label" asp-for="DonationSource">Donation / handoff source <span class="bb-label-optional">(optional)</span></label>
+        <select asp-for="DonationSource" id="donationSource" class="form-control">
+            <option value="">— Select —</option>
+            @foreach (var src in BloodBankLookups.DonationSources)
+            {
+                <option value="@src" selected="@(f.DonationSource == src)">@src</option>
+            }
+        </select>
+    </div>
+</div>
+
+<div id="externalDonorModal" class="bb-pre-donation-modal" aria-hidden="true" role="dialog" hidden>
+    <div class="bb-pre-donation-modal__backdrop" data-bb-donor-dismiss></div>
+    <div class="bb-pre-donation-modal__panel" style="max-width:640px;">
+        <div class="bb-card__header">
+            <h2 style="margin:0;font-size:1.1rem;color:#fff;">Donor — search or register</h2>
+            <button type="button" class="bb-btn bb-btn-ghost bb-btn-sm" data-bb-donor-dismiss style="color:#fff;">×</button>
+        </div>
+        <div class="bb-pre-donation-modal__body">
+            <ul class="bb-recipient-mode-tabs" role="tablist" id="donorModalTabs">
+                <li><button type="button" class="bb-recipient-mode-tab is-active" data-donor-tab="search">Search</button></li>
+                <li><button type="button" class="bb-recipient-mode-tab" data-donor-tab="register">Register new</button></li>
+            </ul>
+            <div id="donorTabSearch">
+                <div class="bb-input-group-inline bb-mt-3">
+                    <input type="text" id="externalDonorSearchQuery" class="form-control" placeholder="Name, phone, national ID, or blood type (e.g. O+)" />
+                    <button type="button" class="bb-btn bb-btn-primary" id="btnExternalDonorSearch">Search</button>
+                </div>
+                <div id="externalDonorSearchResults" class="bb-external-donor-results bb-mt-3"></div>
+            </div>
+            <div id="donorTabRegister" class="hidden">
+                <div class="bb-field-wrap bb-mt-3">
+                    <label class="bb-label"><font color="red">*</font>Donor name</label>
+                    <div class="form-group row mx-0">
+                        <input type="text" id="regDonorFirstName" class="form-control col rounded py-0 text-center" placeholder="First Name" />
+                        <input type="text" id="regDonorMiddleName" class="form-control col rounded py-0 text-center" placeholder="Father's Name" />
+                        <input type="text" id="regDonorLastName" class="form-control col rounded py-0 text-center" placeholder="Grandfather's Name" />
+                    </div>
+                </div>
+                <div class="bb-field-wrap">
+                    <label class="bb-label">Blood type *</label>
+                    <select id="regDonorBloodType" class="form-control">
+                        @foreach (var bt in BloodBankLookups.BloodTypes)
+                        {
+                            <option value="@bt" selected="@(bt == f.UnitBloodType)">@bt</option>
+                        }
+                    </select>
+                </div>
+                <div class="bb-field-wrap">
+                    <label class="bb-label">Phone</label>
+                    <input type="tel" id="regDonorPhone" class="form-control" />
+                </div>
+                <div class="bb-field-wrap">
+                    <label class="bb-label">National ID</label>
+                    <input type="text" id="regDonorNationalId" class="form-control" placeholder="Prevents duplicate registration" />
+                </div>
+                <div class="bb-field-wrap">
+                    <label class="bb-label">Notes</label>
+                    <textarea id="regDonorNotes" class="form-control" rows="2"></textarea>
+                </div>
+                <button type="button" class="bb-btn bb-btn-success bb-mt-2" id="btnRegisterExternalDonor">Register &amp; select</button>
+            </div>
+        </div>
+    </div>
+</div>

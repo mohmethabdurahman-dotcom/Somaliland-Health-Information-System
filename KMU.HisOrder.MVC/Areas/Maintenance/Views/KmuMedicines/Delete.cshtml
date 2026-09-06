@@ -1,0 +1,80 @@
+﻿@model KMU.HisOrder.MVC.Models.KmuMedicine
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Delete";
+}
+<link href="~/css/style.css" rel="stylesheet" />
+
+<style>
+    .MedInfo {
+        display: block;
+        margin: 15px;
+        border: 1;
+        border-bottom: 1px solid;
+    }
+</style>
+
+
+<div class="row">
+    <div class="col-md-6">
+        <div style="padding:10px;">
+            <h4>Are you sure you want to delete this Medicine?</h4>
+            <hr />
+            <div class="MedInfo">
+                <b>MedId</b>：@Html.DisplayFor(model => model.MedId)
+            </div>
+            <div class="MedInfo">
+                <b>MedType</b>：
+                @if (Model.MedType == "1")
+                {
+                    <span>Oral</span>
+                }
+                else if (Model.MedType == "2")
+                {
+                    <span>Injection</span>
+                }
+                else if (Model.MedType == "3")
+                {
+                    <span>External</span>
+                }
+            </div>
+            <div class="MedInfo">
+                <b>GenericName</b>：@Html.DisplayFor(model => model.GenericName)
+            </div>
+            <div class="MedInfo">
+                <b>BrandName</b>：@Html.DisplayFor(model => model.BrandName)
+            </div>
+            <div class="MedInfo">
+                <b>UnitSpec</b>：@Html.DisplayFor(model => model.UnitSpec)
+            </div>
+            <div class="MedInfo">
+                <b>PackSpec</b>：@Html.DisplayFor(model => model.PackSpec)
+            </div>
+            <div class="MedInfo">
+                <b>DefaultFreq</b>：@Html.DisplayFor(model => model.DefaultFreq)
+            </div>
+            <div class="MedInfo">
+                <b>RefDuration</b>：@Html.DisplayFor(model => model.RefDuration)
+            </div>
+            <div class="MedInfo">
+                <b>Remarks</b>：@Html.DisplayFor(model => model.Remarks)
+            </div>
+            <div class="MedInfo">
+                <b>StartDate</b>：@Html.DisplayFor(model => model.StartDate)
+            </div>
+            <div class="MedInfo">
+                <b>EndDate</b>：@Html.DisplayFor(model => model.EndDate)
+            </div>
+            <div style="margin:15px;">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="MedId" />
+                    <input type="submit" value="Delete" class="btn btn-danger" style="width:140px; margin-right:10px;" />
+                    <a class="btn btn-default" asp-action="Index" style="width:140px; float:right;">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

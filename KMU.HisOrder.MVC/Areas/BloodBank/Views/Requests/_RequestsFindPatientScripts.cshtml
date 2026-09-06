@@ -1,0 +1,34 @@
+<script>
+(function () {
+    'use strict';
+
+    var $findId = $('#bbReq_Txt_PatientID');
+    var $findPhone = $('#bbReq_Txt_MobilePhone');
+    var $findBlood = $('#bbReq_Txt_BloodType');
+    var $form = $('#bbReqFindForm');
+
+    $(function () {
+        // Dr Requests: Find only filters the queue — no patient-search results table
+        $form.on('submit', function (e) {
+            var patientId = ($findId.val() || '').trim();
+            var mobilePhone = ($findPhone.val() || '').trim();
+            var bloodType = ($findBlood.val() || '').trim();
+            if (!patientId && !mobilePhone && !bloodType) {
+                e.preventDefault();
+                if (window.layer) {
+                    layer.alert('Enter patient ID, mobile phone, or blood type to filter.', {
+                        skin: 'layui-layer-lan',
+                        closebtn: 1,
+                        anim: 5,
+                        icon: 1,
+                        btn: ['OK'],
+                        title: 'Find patient'
+                    });
+                } else {
+                    alert('Enter patient ID, mobile phone, or blood type to filter.');
+                }
+            }
+        });
+    });
+})();
+</script>
